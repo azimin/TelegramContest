@@ -55,7 +55,7 @@ class GraphDataSource {
                                 lineRows.append(lineRow)
                             }
                         case "x":
-                            let dates = values.map({ Date(timeIntervalSince1970: TimeInterval($0)) })
+                            let dates = values.map({ Date(timeIntervalSince1970: TimeInterval($0 / 1000)) })
                             xRow = GraphXRow(dates: dates)
                         default:
                             break
@@ -107,7 +107,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         let path = Bundle.main.path(forResource: "chart_data", ofType: "json")!
         let data = try! Data(contentsOf: URL(fileURLWithPath: path), options: .mappedIfSafe)
         let jsonResult = try! JSONSerialization.jsonObject(with: data, options: .mutableLeaves)
-        if let jsonResult = jsonResult as? [Any], let first = jsonResult[4] as? [String: Any] {
+        if let jsonResult = jsonResult as? [Any], let first = jsonResult[0] as? [String: Any] {
             let graph = GraphDataSource(json: first)
             self.dataSource = graph!
         }
@@ -180,6 +180,10 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
+        guard indexPath.row > 0 else {
+            return
+        }
+
         let cell = tableView.cellForRow(at: indexPath)
 
         let row = indexPath.row - 1

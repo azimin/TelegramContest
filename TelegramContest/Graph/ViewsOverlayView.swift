@@ -24,9 +24,14 @@ class ViewsOverlayView: UIView {
     }
 
     var allItems: [VisualItem] = []
+    var onRemoving: [UILabel] = []
 
     func showItems(items: [Item]) {
         var newItems: [Item] = items
+        
+        self.onRemoving.forEach({ $0.removeFromSuperview() })
+        self.onRemoving = []
+
         for item in self.allItems.map({ $0.item }) {
             if let index = items.firstIndex(of: item) {
                 newItems.removeAll(where: { $0 == item })
@@ -66,6 +71,7 @@ class ViewsOverlayView: UIView {
         }
         let visualItem = self.allItems[index]
         self.allItems.remove(at: index)
+        self.onRemoving.append(visualItem.label)
 
         UIView.animate(withDuration: 0.1, animations: {
             visualItem.label.alpha = 0

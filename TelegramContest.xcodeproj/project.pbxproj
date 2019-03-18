@@ -22,6 +22,7 @@
 		9F264247224005AE00FEB2DD /* GraphDrawLayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F264246224005AE00FEB2DD /* GraphDrawLayerView.swift */; };
 		9F264249224005BF00FEB2DD /* AnimationCounter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F264248224005BF00FEB2DD /* AnimationCounter.swift */; };
 		9F26424B224005CC00FEB2DD /* chart_data.json in Resources */ = {isa = PBXBuildFile; fileRef = 9F26424A224005CC00FEB2DD /* chart_data.json */; };
+		9F26424D22400E3800FEB2DD /* DateSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F26424C22400E3800FEB2DD /* DateSelectionView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -42,6 +43,7 @@
 		9F264246224005AE00FEB2DD /* GraphDrawLayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GraphDrawLayerView.swift; sourceTree = "<group>"; };
 		9F264248224005BF00FEB2DD /* AnimationCounter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimationCounter.swift; sourceTree = "<group>"; };
 		9F26424A224005CC00FEB2DD /* chart_data.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = chart_data.json; sourceTree = "<group>"; };
+		9F26424C22400E3800FEB2DD /* DateSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateSelectionView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -105,6 +107,7 @@
 				9F2642442240059F00FEB2DD /* YAxisOverlayView.swift */,
 				9F264246224005AE00FEB2DD /* GraphDrawLayerView.swift */,
 				9F264248224005BF00FEB2DD /* AnimationCounter.swift */,
+				9F26424C22400E3800FEB2DD /* DateSelectionView.swift */,
 				9F26424A224005CC00FEB2DD /* chart_data.json */,
 			);
 			path = Graph;
@@ -183,6 +186,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				9F2642382240052D00FEB2DD /* GraphTableViewCell.swift in Sources */,
+				9F26424D22400E3800FEB2DD /* DateSelectionView.swift in Sources */,
 				9F2642452240059F00FEB2DD /* YAxisOverlayView.swift in Sources */,
 				9F26423F2240056400FEB2DD /* GraphContentView.swift in Sources */,
 				9F264247224005AE00FEB2DD /* GraphDrawLayerView.swift in Sources */,
@@ -341,6 +345,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 5MGEMLZRS4;
 				INFOPLIST_FILE = TelegramContest/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -348,7 +353,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.alex.telegram-context.TelegramContest";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 4.2;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -359,6 +364,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 5MGEMLZRS4;
 				INFOPLIST_FILE = TelegramContest/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -366,7 +372,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.alex.telegram-context.TelegramContest";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 4.2;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};

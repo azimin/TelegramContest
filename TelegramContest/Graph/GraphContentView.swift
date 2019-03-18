@@ -46,6 +46,7 @@ class GraphContentView: UIView {
     private var counter: AnimationCounter = AnimationCounter()
     private var dateLabels = ViewsOverlayView()
     private var yAxisOverlay = YAxisOverlayView()
+    private var selectionView = DateSelectionView()
 
     init(dataSource: GraphDataSource? = nil, selectedRange: Range<CGFloat> = 0..<1) {
         self.dataSource = dataSource
@@ -65,6 +66,7 @@ class GraphContentView: UIView {
                 self.graphDrawLayers.forEach({ $0.frame.size = CGSize(width: self.frame.size.width, height: graphHeight) })
                 self.yAxisOverlay.frame.size = CGSize(width: self.frame.size.width, height: graphHeight)
                 self.dateLabels.frame = CGRect(x: 0, y: graphHeight, width: self.frame.size.width, height: Constants.labelsHeight)
+                self.selectionView.frame = self.bounds
             }
         }
     }
@@ -72,6 +74,7 @@ class GraphContentView: UIView {
     func setup() {
         self.addSubview(self.dateLabels)
         self.addSubview(self.yAxisOverlay)
+        self.addSubview(self.selectionView)
     }
 
     func update(animated: Bool) {
@@ -84,7 +87,7 @@ class GraphContentView: UIView {
         while graphDrawLayers.count < dataSource.yRows.count {
             let graphView = GraphDrawLayerView()
             graphView.frame = CGRect(x: 0, y: 0, width: self.frame.width, height: self.frame.height - Constants.labelsHeight)
-            self.addSubview(graphView)
+            self.insertSubview(graphView, belowSubview: self.yAxisOverlay)
             self.graphDrawLayers.append(graphView)
         }
 
@@ -152,6 +155,7 @@ class GraphContentView: UIView {
             )
             graphView.update(graphContext: context, animationDuration: animated ? Constants.aniamtionDuration : 0)
             graphView.pathLayer.strokeColor = yRow.color.cgColor
+            graphView.selectedPath.strokeColor = yRow.color.cgColor
 
             if anyPoints.isEmpty {
                 anyPoints = graphView.reportPoints(graphContext: context)
@@ -174,5 +178,39 @@ class GraphContentView: UIView {
         let firstCount = Int(floor(range.lowerBound * CGFloat(count)))
         let endCount = Int(ceil(range.upperBound * CGFloat(count)))
         return Array(values[firstCount..<endCount])
+    }
+
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        print("Touch")
+        super.touchesBegan(touches, with: event)
+
+        guard let touch = touches.first else {
+            return
+        }
+        let location = touch.location(in: self)
+
+        guard let dataSource = self.dataSource else {
+            return
+        }
+
+        let layers = self.graphDrawLayers.filter({ $0.isHidden == false })
+
+        var isShowed: Bool = false
+
+        for layer in layers {
+            guard let context = layer.graphContext else {
+                continue
+            }
+
+            let position = layer.selectPosition(graphContext: context, position: location.x)
+
+            if !isShowed {
+                self.selectionView.show(position: position.0,
+                                        graph: dataSource,
+                                        enabledRows: self.enabledRows,
+                                        index: position.1)
+                isShowed = true
+            }
+        }
     }
 }
