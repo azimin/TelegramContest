@@ -72,7 +72,7 @@ class YAxisOverlayView: UIView {
             let percent = CGFloat(item.value) / CGFloat(self.maxValue)
             self.onRemoving.append(item.view)
             UIView.animate(withDuration: 0.25, delay: 0, options: [UIView.AnimationOptions.curveEaseOut], animations: {
-                item.view.center = CGPoint(x: item.view.center.x, y: self.frame.height * (1 - percent))
+                item.view.center = CGPoint(x: item.view.center.x, y: self.frame.height * (1 - percent) - item.view.frame.height / 2)
                 item.view.alpha = 0
             }, completion: { _ in
                 item.view.removeFromSuperview()
@@ -94,13 +94,13 @@ class YAxisOverlayView: UIView {
             view.label.text = "\(step * i)"
             view.frame = CGRect(x: 0, y: 0, width: self.frame.width, height: 26)
             view.alpha = 0
-            view.center = CGPoint(x: view.center.x, y: self.frame.height * (1 - oldPercent))
+            view.center = CGPoint(x: view.center.x, y: self.frame.height * (1 - oldPercent) - view.frame.height / 2)
             self.addSubview(view)
             self.items.append(Item(view: view, value: step * i))
 
             UIView.animate(withDuration: 0.25, delay: 0, options: [UIView.AnimationOptions.curveEaseOut], animations: {
                 view.alpha = 1
-                view.center = CGPoint(x: view.center.x, y: self.frame.height * (1 - percent))
+                view.center = CGPoint(x: view.center.x, y: self.frame.height * (1 - percent) - view.frame.height / 2)
             }, completion: nil)
         }
     }

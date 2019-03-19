@@ -33,6 +33,7 @@ struct GraphContext {
 }
 
 class GraphDrawLayerView: UIView {
+    var isHidding: Bool = false
     var graphContext: GraphContext? {
         didSet {
             self.pathLayer.path = self.generatePath(graphContext: self.graphContext)
@@ -54,6 +55,7 @@ class GraphDrawLayerView: UIView {
         self.layer.addSublayer(self.pathLayer)
         self.layer.addSublayer(self.selectedPath)
 
+        self.pathLayer.lineJoin = CAShapeLayerLineJoin.bevel
         self.pathLayer.strokeColor = UIColor.red.cgColor
         self.pathLayer.fillColor = UIColor.clear.cgColor
         self.pathLayer.lineWidth = 3
@@ -143,7 +145,7 @@ class GraphDrawLayerView: UIView {
         self.selectedPath.path = nil
     }
 
-    func selectPosition(graphContext: GraphContext?, position: CGFloat) -> (CGFloat, Int) {
+    func selectPosition(graphContext: GraphContext?, position: CGFloat, animationDuration: TimeInterval) -> (CGFloat, Int) {
         guard let graphContext = graphContext, self.frame.width > 0 else {
             return (0, 0)
         }
@@ -170,12 +172,22 @@ class GraphDrawLayerView: UIView {
             }
         }
 
-        self.selectedPath.path = UIBezierPath(ovalIn:
+        let newPath = UIBezierPath(ovalIn:
             CGRect(x: cachedPosition - 6,
-             y: cachedYPosition - 6,
-             width: 12,
-             height: 12)
-        ).cgPath
+                   y: cachedYPosition - 6,
+                   width: 12,
+                   height: 12)
+            ).cgPath
+
+        if animationDuration > 0, selectedPath.path != nil {
+            let animation = CABasicAnimation(keyPath: "path")
+            animation.fromValue = self.selectedPath.path
+            animation.toValue = newPath
+            animation.duration = animationDuration
+            animation.timingFunction = CAMediaTimingFunction(name: .easeOut)
+            self.selectedPath.add(animation, forKey: "path")
+        }
+        self.selectedPath.path = newPath
 
         return (cachedPosition, cachedIndex)
     }

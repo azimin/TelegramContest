@@ -27,6 +27,7 @@ class GraphContentView: UIView {
     }
     var selectedRange: Range<CGFloat> {
         didSet {
+            self.hideSelection()
             self.update(animated: false)
         }
     }
@@ -40,6 +41,10 @@ class GraphContentView: UIView {
     func updateEnabledRows(_ values: [Int], animated: Bool) {
         self.enabledRows = values
         self.update(animated: animated)
+
+        if let selection = self.selectedLocation {
+            self.showSelection(location: selection, animated: animated)
+        }
     }
 
     private var graphDrawLayers: [GraphDrawLayerView] = []
@@ -47,6 +52,7 @@ class GraphContentView: UIView {
     private var dateLabels = ViewsOverlayView()
     private var yAxisOverlay = YAxisOverlayView()
     private var selectionView = DateSelectionView()
+    private var lastVisible: GraphDrawLayerView?
 
     init(dataSource: GraphDataSource? = nil, selectedRange: Range<CGFloat> = 0..<1) {
         self.dataSource = dataSource
@@ -66,7 +72,7 @@ class GraphContentView: UIView {
                 self.graphDrawLayers.forEach({ $0.frame.size = CGSize(width: self.frame.size.width, height: graphHeight) })
                 self.yAxisOverlay.frame.size = CGSize(width: self.frame.size.width, height: graphHeight)
                 self.dateLabels.frame = CGRect(x: 0, y: graphHeight, width: self.frame.size.width, height: Constants.labelsHeight)
-                self.selectionView.frame = self.bounds
+                self.selectionView.frame.size = CGSize(width: self.frame.size.width, height: graphHeight)
             }
         }
     }
@@ -110,6 +116,13 @@ class GraphContentView: UIView {
                 }
             }
         }
+        if maxValue == 0 {
+            if let max = self.lastVisible?.graphContext?.maxValue {
+                maxValue = max
+            } else {
+                maxValue = 1
+            }
+        }
 
         if self.currentMaxValue == 0 || animated {
             self.currentMaxValue = maxValue
@@ -127,6 +140,7 @@ class GraphContentView: UIView {
             let graphView = self.graphDrawLayers[index]
             let isHidden = !enabledRows.contains(index)
             let shouldUpdateOpacity = graphView.isHidden != isHidden
+            graphView.isHidding = isHidden
 
             if !isHidden {
                 graphView.isHidden = isHidden
@@ -160,6 +174,10 @@ class GraphContentView: UIView {
             if anyPoints.isEmpty {
                 anyPoints = graphView.reportPoints(graphContext: context)
             }
+
+            if !graphView.isHidding {
+                self.lastVisible = graphView
+            }
         }
 
         var items: [ViewsOverlayView.Item] = []
@@ -188,12 +206,32 @@ class GraphContentView: UIView {
             return
         }
         let location = touch.location(in: self)
+        self.showSelection(location: location, animated: false)
+    }
 
+    func hideSelection() {
+        self.selectedLocation = nil
+        self.selectionView.hide()
+        for layer in self.graphDrawLayers {
+            layer.hidePosition()
+        }
+    }
+
+    var selectedLocation: CGPoint?
+
+    func showSelection(location: CGPoint, animated: Bool) {
         guard let dataSource = self.dataSource else {
             return
         }
 
-        let layers = self.graphDrawLayers.filter({ $0.isHidden == false })
+
+        let layers = self.graphDrawLayers.filter({ $0.isHidding == false })
+        guard layers.count > 0 else {
+            self.hideSelection()
+            return
+        }
+
+        self.selectedLocation = location
 
         var isShowed: Bool = false
 
@@ -202,7 +240,11 @@ class GraphContentView: UIView {
                 continue
             }
 
-            let position = layer.selectPosition(graphContext: context, position: location.x)
+            let position = layer.selectPosition(
+                graphContext: context,
+                position: location.x,
+                animationDuration: animated ? Constants.aniamtionDuration : 0
+            )
 
             if !isShowed {
                 self.selectionView.show(position: position.0,
