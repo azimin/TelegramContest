@@ -23,6 +23,14 @@ class ViewsOverlayView: UIView {
         }
     }
 
+    var theme: Theme = .light {
+        didSet {
+            let config = theme.configuration
+            self.backgroundColor = config.backgroundColor
+            self.allItems.forEach({ $0.label.textColor = config.titleColor })
+        }
+    }
+
     var allItems: [VisualItem] = []
     var onRemoving: [UILabel] = []
 
@@ -60,6 +68,8 @@ class ViewsOverlayView: UIView {
         label.text = item.text
         label.font = UIFont.systemFont(ofSize: 12)
         label.textAlignment = .center
+        let config = theme.configuration
+        label.textColor = config.titleColor
         self.addSubview(label)
         let visualItem = VisualItem(label: label, item: item)
         self.allItems.append(visualItem)

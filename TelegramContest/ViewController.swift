@@ -115,6 +115,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         self.enabledRows = Array(0..<self.dataSource.yRows.count)
 
         self.view.addSubview(self.tableView)
+        self.tableView.canCancelContentTouches = false
         self.tableView.dataSource = self
         self.tableView.delegate = self
         self.tableView.translatesAutoresizingMaskIntoConstraints = false

@@ -11,6 +11,7 @@ import UIKit
 class GraphControlView: UIView {
     enum Constants {
         static var aniamtionDuration: TimeInterval = 0.25
+        static var offset: CGFloat = 24
     }
 
     var dataSource: GraphDataSource? {
@@ -40,6 +41,14 @@ class GraphControlView: UIView {
         self.setup()
     }
 
+    var theme: Theme = .light {
+        didSet {
+            let config = theme.configuration
+            self.backgroundColor = config.backgroundColor
+            self.graphDrawLayers.forEach({ $0.theme = theme })
+        }
+    }
+
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -47,10 +56,14 @@ class GraphControlView: UIView {
     override var frame: CGRect {
         didSet {
             if frame != oldValue {
-                self.graphDrawLayers.forEach({ $0.frame.size = self.frame.size })
-                self.control.frame = self.bounds
+                self.updateFrame()
             }
         }
+    }
+
+    func updateFrame() {
+        self.graphDrawLayers.forEach({ $0.frame = CGRect(x: Constants.offset, y: 0, width: self.frame.width - Constants.offset * 2, height: self.frame.height) })
+        self.control.frame = CGRect(x: Constants.offset, y: 0, width: self.frame.width - Constants.offset * 2, height: self.frame.height)
     }
 
     private func setup() {
@@ -66,6 +79,8 @@ class GraphControlView: UIView {
 
         while graphDrawLayers.count < dataSource.yRows.count {
             let graphView = GraphDrawLayerView()
+            graphView.layer.masksToBounds = true
+            graphView.lineWidth = 1
             graphView.frame = CGRect(x: 0, y: 0, width: self.frame.width, height: self.frame.height)
             self.insertSubview(graphView, belowSubview: self.control)
             self.graphDrawLayers.append(graphView)
@@ -115,6 +130,8 @@ class GraphControlView: UIView {
                 graphView.pathLayer.strokeColor = yRow.color.cgColor
             }
         }
+
+        self.updateFrame()
     }
 }
 

@@ -12,6 +12,14 @@ class YAxisView: UIView {
     var label: UILabel = UILabel()
     var line: UIView = UIView()
 
+    var theme: Theme = .light {
+        didSet {
+            let config = theme.configuration
+            self.label.textColor = config.titleColor
+            self.line.backgroundColor = config.lineColor
+        }
+    }
+
     init() {
         super.init(frame: .zero)
         self.setup()
@@ -23,7 +31,7 @@ class YAxisView: UIView {
 
     override var frame: CGRect {
         didSet {
-            self.line.frame = CGRect(x: 0, y: 25, width: self.frame.width, height: 1)
+            self.line.frame = CGRect(x: 0, y: 25, width: self.frame.width, height: 0.5)
         }
     }
 
@@ -32,7 +40,7 @@ class YAxisView: UIView {
         self.label.textAlignment = .left
         self.label.frame = CGRect(x: 0, y: 0, width: 60, height: 26)
 
-        self.line.frame = CGRect(x: 0, y: 25, width: self.frame.width, height: 1)
+        self.line.frame = CGRect(x: 0, y: 25, width: self.frame.width, height: 0.5)
         self.line.backgroundColor = UIColor.black.withAlphaComponent(0.3)
 
         self.addSubview(self.label)
@@ -49,6 +57,12 @@ class YAxisOverlayView: UIView {
     var maxValue: Int = 0
     var items: [Item] = []
     var onRemoving: [YAxisView] = []
+
+    var theme: Theme = .light {
+        didSet {
+            self.items.forEach({ $0.view.theme = theme })
+        }
+    }
 
     func update(value: Int) {
         let step = (value / 5)
@@ -95,6 +109,7 @@ class YAxisOverlayView: UIView {
             view.frame = CGRect(x: 0, y: 0, width: self.frame.width, height: 26)
             view.alpha = 0
             view.center = CGPoint(x: view.center.x, y: self.frame.height * (1 - oldPercent) - view.frame.height / 2)
+            view.theme = self.theme
             self.addSubview(view)
             self.items.append(Item(view: view, value: step * i))
 

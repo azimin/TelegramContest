@@ -23,6 +23,17 @@ class GraphView: UIView {
         }
     }
 
+    var theme: Theme = .light {
+        didSet {
+            self.updateTheme()
+        }
+    }
+
+    func updateTheme() {
+        self.graphControlView.theme = theme
+        self.graphContentView.theme = theme
+    }
+
     func updateEnabledRows(_ values: [Int], animated: Bool) {
         self.graphControlView.updateEnabledRows(values, animated: animated)
         self.graphContentView.updateEnabledRows(values, animated: animated)
@@ -35,6 +46,7 @@ class GraphView: UIView {
         self.selectedRange = 0..<1
         super.init(frame: .zero)
         self.setup()
+        self.updateTheme()
     }
 
     required init?(coder aDecoder: NSCoder) {

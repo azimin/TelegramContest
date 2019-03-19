@@ -43,6 +43,20 @@ class GraphDrawLayerView: UIView {
     var pathLayer: CAShapeLayer = CAShapeLayer()
     var selectedPath: CAShapeLayer = CAShapeLayer()
 
+    var theme: Theme = .light {
+        didSet {
+            let config = theme.configuration
+            self.backgroundColor = config.backgroundColor
+            self.selectedPath.fillColor = config.backgroundColor.cgColor
+        }
+    }
+
+    var lineWidth: CGFloat = 3 {
+        didSet {
+            self.pathLayer.lineWidth = self.lineWidth
+        }
+    }
+
     init() {
         super.init(frame: .zero)
 
@@ -58,10 +72,10 @@ class GraphDrawLayerView: UIView {
         self.pathLayer.lineJoin = CAShapeLayerLineJoin.bevel
         self.pathLayer.strokeColor = UIColor.red.cgColor
         self.pathLayer.fillColor = UIColor.clear.cgColor
-        self.pathLayer.lineWidth = 3
+        self.pathLayer.lineWidth = self.lineWidth
 
         self.selectedPath.fillColor = UIColor.white.cgColor
-        self.selectedPath.lineWidth = 3
+        self.selectedPath.lineWidth = self.lineWidth
     }
 
     required init?(coder aDecoder: NSCoder) {

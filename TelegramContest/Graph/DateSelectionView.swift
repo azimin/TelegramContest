@@ -13,6 +13,8 @@ class DateSelectionView: UIView {
     var line = UIView()
     var numberLabels: [UILabel] = []
 
+    var selectedIndex: Int?
+
     var plate = UIVisualEffectView(effect: UIBlurEffect(style: .dark))
 
     init() {
@@ -41,10 +43,13 @@ class DateSelectionView: UIView {
         self.line.frame = CGRect(x: 0, y: 0, width: 1, height: 100)
     }
 
-    func update(isLight: Bool) {
-        self.dateLabel.textColor = isLight ? UIColor(hex: "6D6D72") : UIColor.white
-        self.plate.effect = isLight ? UIBlurEffect(style: .light) : UIBlurEffect(style: .dark)
-        self.line.backgroundColor = isLight ? UIColor(hex: "CFD1D2") : UIColor(hex: "151B22")
+    var theme: Theme = .light {
+        didSet {
+            let config = theme.configuration
+            self.dateLabel.textColor = config.isLight ? UIColor(hex: "6D6D72") : UIColor.white
+            self.plate.effect = config.isLight ? UIBlurEffect(style: .light) : UIBlurEffect(style: .dark)
+            self.line.backgroundColor = config.lineColor
+        }
     }
 
     func show(position: CGFloat, graph: GraphDataSource, enabledRows: [Int], index: Int) {
@@ -52,6 +57,7 @@ class DateSelectionView: UIView {
         self.line.isHidden = false
         self.numberLabels.forEach({ $0.removeFromSuperview() })
         self.numberLabels = []
+        self.selectedIndex = index
 
         var maxWidth: CGFloat = 0
         for row in enabledRows.sorted() {
@@ -104,9 +110,6 @@ class DateSelectionView: UIView {
         self.dateLabel.center = CGPoint(x: self.dateLabel.center.x, y: self.plate.frame.height / 2)
         self.line.frame.size = CGSize(width: 1, height: self.frame.height)
         self.line.center = CGPoint(x: position, y: self.center.y)
-
-
-        self.update(isLight: true)
     }
 
     func getDateComponents(_ date: Date) -> (String, String) {
@@ -122,5 +125,6 @@ class DateSelectionView: UIView {
     func hide() {
         self.plate.isHidden = true
         self.line.isHidden = true
+        self.selectedIndex = nil
     }
 }

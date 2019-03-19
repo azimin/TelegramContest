@@ -12,6 +12,7 @@ class GraphContentView: UIView {
     enum Constants {
         static var aniamtionDuration: TimeInterval = 0.2
         static var labelsHeight: CGFloat = 44
+        static var offset: CGFloat = 24
     }
 
     var dataSource: GraphDataSource? {
@@ -43,7 +44,7 @@ class GraphContentView: UIView {
         self.update(animated: animated)
 
         if let selection = self.selectedLocation {
-            self.showSelection(location: selection, animated: animated)
+            self.showSelection(location: selection, animated: animated, shouldRespectCahce: false)
         }
     }
 
@@ -68,12 +69,28 @@ class GraphContentView: UIView {
     override var frame: CGRect {
         didSet {
             if self.frame != oldValue {
-                let graphHeight = self.frame.height - Constants.labelsHeight
-                self.graphDrawLayers.forEach({ $0.frame.size = CGSize(width: self.frame.size.width, height: graphHeight) })
-                self.yAxisOverlay.frame.size = CGSize(width: self.frame.size.width, height: graphHeight)
-                self.dateLabels.frame = CGRect(x: 0, y: graphHeight, width: self.frame.size.width, height: Constants.labelsHeight)
-                self.selectionView.frame.size = CGSize(width: self.frame.size.width, height: graphHeight)
+                self.updateFrame()
             }
+        }
+    }
+
+    func updateFrame() {
+        let graphHeight = self.frame.height - Constants.labelsHeight
+        let topFrame = CGRect(x: Constants.offset, y: 0, width: self.frame.size.width - Constants.offset * 2, height: graphHeight)
+        self.graphDrawLayers.forEach({ $0.frame = topFrame })
+        self.yAxisOverlay.frame = topFrame
+        self.dateLabels.frame = CGRect(x: Constants.offset, y: graphHeight, width: self.frame.size.width - Constants.offset * 2, height: Constants.labelsHeight)
+        self.selectionView.frame = topFrame
+    }
+
+    var theme: Theme = .light {
+        didSet {
+            let config = theme.configuration
+            self.backgroundColor = config.backgroundColor
+            self.graphDrawLayers.forEach({ $0.theme = theme })
+            self.selectionView.theme = theme
+            self.yAxisOverlay.theme = theme
+            self.dateLabels.theme = theme
         }
     }
 
@@ -92,6 +109,7 @@ class GraphContentView: UIView {
 
         while graphDrawLayers.count < dataSource.yRows.count {
             let graphView = GraphDrawLayerView()
+            graphView.layer.masksToBounds = true
             graphView.frame = CGRect(x: 0, y: 0, width: self.frame.width, height: self.frame.height - Constants.labelsHeight)
             self.insertSubview(graphView, belowSubview: self.yAxisOverlay)
             self.graphDrawLayers.append(graphView)
@@ -189,6 +207,7 @@ class GraphContentView: UIView {
             items.append(item)
         }
         self.dateLabels.showItems(items: items)
+        self.updateFrame()
     }
 
     func converValues(values: [Int], range: Range<CGFloat>) -> [Int] {
@@ -199,14 +218,29 @@ class GraphContentView: UIView {
     }
 
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        print("Touch")
         super.touchesBegan(touches, with: event)
 
         guard let touch = touches.first else {
             return
         }
         let location = touch.location(in: self)
-        self.showSelection(location: location, animated: false)
+        let locationInSelection = touch.location(in: self.selectionView)
+        if self.selectionView.frame.contains(location) {
+            self.showSelection(location: locationInSelection, animated: false, shouldRespectCahce: false)
+        }
+    }
+
+    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
+        super.touchesMoved(touches, with: event)
+
+        guard let touch = touches.first else {
+            return
+        }
+        let location = touch.location(in: self)
+        let locationInSelection = touch.location(in: self.selectionView)
+        if self.selectionView.frame.contains(location) {
+            self.showSelection(location: locationInSelection, animated: false, shouldRespectCahce: true)
+        }
     }
 
     func hideSelection() {
@@ -219,7 +253,7 @@ class GraphContentView: UIView {
 
     var selectedLocation: CGPoint?
 
-    func showSelection(location: CGPoint, animated: Bool) {
+    func showSelection(location: CGPoint, animated: Bool, shouldRespectCahce: Bool) {
         guard let dataSource = self.dataSource else {
             return
         }
@@ -247,6 +281,10 @@ class GraphContentView: UIView {
             )
 
             if !isShowed {
+                if shouldRespectCahce && self.selectionView.selectedIndex == position.1 {
+                    continue
+                }
+
                 self.selectionView.show(position: position.0,
                                         graph: dataSource,
                                         enabledRows: self.enabledRows,
