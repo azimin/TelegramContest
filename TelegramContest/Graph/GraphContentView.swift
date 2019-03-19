@@ -11,8 +11,8 @@ import UIKit
 class GraphContentView: UIView {
     enum Constants {
         static var aniamtionDuration: TimeInterval = 0.2
-        static var labelsHeight: CGFloat = 44
-        static var offset: CGFloat = 24
+        static var labelsHeight: CGFloat = 26
+        static var offset: CGFloat = 16
     }
 
     var dataSource: GraphDataSource? {
@@ -23,6 +23,7 @@ class GraphContentView: UIView {
             } else {
                 self.enabledRows = []
             }
+            self.hideSelection()
             self.update(animated: false)
         }
     }
@@ -76,11 +77,11 @@ class GraphContentView: UIView {
 
     func updateFrame() {
         let graphHeight = self.frame.height - Constants.labelsHeight
-        let topFrame = CGRect(x: Constants.offset, y: 0, width: self.frame.size.width - Constants.offset * 2, height: graphHeight)
+        let topFrame = CGRect(x: Constants.offset, y: 20, width: self.frame.size.width - Constants.offset * 2, height: graphHeight)
         self.graphDrawLayers.forEach({ $0.frame = topFrame })
         self.yAxisOverlay.frame = topFrame
-        self.dateLabels.frame = CGRect(x: Constants.offset, y: graphHeight, width: self.frame.size.width - Constants.offset * 2, height: Constants.labelsHeight)
-        self.selectionView.frame = topFrame
+        self.dateLabels.frame = CGRect(x: Constants.offset, y: graphHeight + 20, width: self.frame.size.width - Constants.offset * 2, height: Constants.labelsHeight)
+        self.selectionView.frame = CGRect(x: Constants.offset, y: 6, width: self.frame.size.width - Constants.offset * 2, height: graphHeight + 14)
     }
 
     var theme: Theme = .light {
@@ -113,6 +114,11 @@ class GraphContentView: UIView {
             graphView.frame = CGRect(x: 0, y: 0, width: self.frame.width, height: self.frame.height - Constants.labelsHeight)
             self.insertSubview(graphView, belowSubview: self.yAxisOverlay)
             self.graphDrawLayers.append(graphView)
+        }
+
+        while graphDrawLayers.count > dataSource.yRows.count {
+            let layer = self.graphDrawLayers.removeLast()
+            layer.removeFromSuperview()
         }
 
         var maxValue = 0

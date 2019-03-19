@@ -46,12 +46,11 @@ class GraphDrawLayerView: UIView {
     var theme: Theme = .light {
         didSet {
             let config = theme.configuration
-            self.backgroundColor = config.backgroundColor
             self.selectedPath.fillColor = config.backgroundColor.cgColor
         }
     }
 
-    var lineWidth: CGFloat = 3 {
+    var lineWidth: CGFloat = 2 {
         didSet {
             self.pathLayer.lineWidth = self.lineWidth
         }
@@ -187,10 +186,10 @@ class GraphDrawLayerView: UIView {
         }
 
         let newPath = UIBezierPath(ovalIn:
-            CGRect(x: cachedPosition - 6,
-                   y: cachedYPosition - 6,
-                   width: 12,
-                   height: 12)
+            CGRect(x: cachedPosition - 4,
+                   y: cachedYPosition - 4,
+                   width: 8,
+                   height: 8)
             ).cgPath
 
         if animationDuration > 0, selectedPath.path != nil {

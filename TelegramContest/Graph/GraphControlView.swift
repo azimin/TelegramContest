@@ -11,7 +11,7 @@ import UIKit
 class GraphControlView: UIView {
     enum Constants {
         static var aniamtionDuration: TimeInterval = 0.25
-        static var offset: CGFloat = 24
+        static var offset: CGFloat = 16
     }
 
     var dataSource: GraphDataSource? {

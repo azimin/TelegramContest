@@ -9,6 +9,8 @@
 import UIKit
 
 class GraphView: UIView {
+    var rangeUpdated: ((_ range: Range<CGFloat>) -> Void)?
+
     var dataSource: GraphDataSource? {
         didSet {
             self.graphControlView.dataSource = dataSource
@@ -25,6 +27,8 @@ class GraphView: UIView {
 
     var theme: Theme = .light {
         didSet {
+            let config = theme.configuration
+            self.backgroundColor = config.backgroundColor
             self.updateTheme()
         }
     }
@@ -55,8 +59,8 @@ class GraphView: UIView {
 
     override var frame: CGRect {
         didSet {
-            self.graphContentView.frame = CGRect(x: 0, y: 0, width: self.frame.width, height: 300)
-            self.graphControlView.frame = CGRect(x: 0, y: 300, width: self.frame.width, height: 72)
+            self.graphContentView.frame = CGRect(x: 0, y: 0, width: self.frame.width, height: 320)
+            self.graphControlView.frame = CGRect(x: 0, y: 320, width: self.frame.width, height: 72)
         }
     }
 
@@ -68,6 +72,7 @@ class GraphView: UIView {
 
     @objc func rangeUpdated(control: ThumbnailControl) {
         self.selectedRange = control.range
+        self.rangeUpdated?(control.range)
     }
 
 }

@@ -33,14 +33,15 @@ class DateSelectionView: UIView {
         self.plate.layer.cornerRadius = 8
         self.plate.layer.masksToBounds = true
 
-        self.dateLabel.frame = CGRect(x: 8, y: 0, width: 100, height: 44)
+        self.dateLabel.frame = CGRect(x: 8, y: 0, width: 100, height: 30)
         self.dateLabel.text = "Feb 12\n2019"
         self.dateLabel.textColor = UIColor.white
         self.dateLabel.numberOfLines = 0
         self.plate.contentView.addSubview(self.dateLabel)
-        self.dateLabel.font = UIFont.boldSystemFont(ofSize: 18)
+        self.dateLabel.font = UIFont.boldSystemFont(ofSize: 12)
 
         self.line.frame = CGRect(x: 0, y: 0, width: 1, height: 100)
+        self.line.isHidden = true
     }
 
     var theme: Theme = .light {
@@ -64,7 +65,7 @@ class DateSelectionView: UIView {
             let rowValue = graph.yRows[row]
             let label = UILabel()
             label.textAlignment = .left
-            label.font = UIFont.boldSystemFont(ofSize: 18)
+            label.font = UIFont.boldSystemFont(ofSize: 12)
             label.textColor = rowValue.color
             label.text = "\(rowValue.values[index])"
 
@@ -80,24 +81,24 @@ class DateSelectionView: UIView {
 
         var y: CGFloat = 8
         for label in self.numberLabels {
-            label.frame = CGRect(x: 94, y: y, width: maxWidth, height: 28)
-            y += (28)
+            label.frame = CGRect(x: 63, y: y, width: maxWidth, height: 19)
+            y += (19)
         }
         y += 8
 
         let date = graph.xRow.dates[index]
         let components = self.getDateComponents(date)
 
-        let myAttribute = [ NSAttributedString.Key.font: UIFont.boldSystemFont(ofSize: 18) ]
+        let myAttribute = [ NSAttributedString.Key.font: UIFont.boldSystemFont(ofSize: 12) ]
         let myString = NSMutableAttributedString(string: "\(components.0)\n", attributes: myAttribute )
 
-        let myAttribute2 = [ NSAttributedString.Key.font: UIFont.systemFont(ofSize: 18) ]
+        let myAttribute2 = [ NSAttributedString.Key.font: UIFont.systemFont(ofSize: 12) ]
         let myString2 = NSMutableAttributedString(string: components.1, attributes: myAttribute2 )
 
         myString.append(myString2)
         self.dateLabel.attributedText = myString
 
-        let plateWidth = maxWidth + 94 + 8
+        let plateWidth = maxWidth + 63 + 8
         var platePosition = position
         self.plate.frame = CGRect(x: 0, y: 0, width: plateWidth, height: y)
         if platePosition - plateWidth / 2 < 0 {

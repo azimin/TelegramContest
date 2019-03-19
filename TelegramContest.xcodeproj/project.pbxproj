@@ -24,6 +24,7 @@
 		9F26424B224005CC00FEB2DD /* chart_data.json in Resources */ = {isa = PBXBuildFile; fileRef = 9F26424A224005CC00FEB2DD /* chart_data.json */; };
 		9F26424D22400E3800FEB2DD /* DateSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F26424C22400E3800FEB2DD /* DateSelectionView.swift */; };
 		9F26424F2240E30300FEB2DD /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F26424E2240E30300FEB2DD /* Theme.swift */; };
+		9F2642512240ECB000FEB2DD /* ButtonTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F2642502240ECB000FEB2DD /* ButtonTableViewCell.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -46,6 +47,7 @@
 		9F26424A224005CC00FEB2DD /* chart_data.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = chart_data.json; sourceTree = "<group>"; };
 		9F26424C22400E3800FEB2DD /* DateSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateSelectionView.swift; sourceTree = "<group>"; };
 		9F26424E2240E30300FEB2DD /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
+		9F2642502240ECB000FEB2DD /* ButtonTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonTableViewCell.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -95,6 +97,7 @@
 			isa = PBXGroup;
 			children = (
 				9F2642372240052D00FEB2DD /* GraphTableViewCell.swift */,
+				9F2642502240ECB000FEB2DD /* ButtonTableViewCell.swift */,
 			);
 			path = Cell;
 			sourceTree = "<group>";
@@ -193,6 +196,7 @@
 				9F2642452240059F00FEB2DD /* YAxisOverlayView.swift in Sources */,
 				9F26423F2240056400FEB2DD /* GraphContentView.swift in Sources */,
 				9F26424F2240E30300FEB2DD /* Theme.swift in Sources */,
+				9F2642512240ECB000FEB2DD /* ButtonTableViewCell.swift in Sources */,
 				9F264247224005AE00FEB2DD /* GraphDrawLayerView.swift in Sources */,
 				9F264227224004D400FEB2DD /* ViewController.swift in Sources */,
 				9F264249224005BF00FEB2DD /* AnimationCounter.swift in Sources */,
