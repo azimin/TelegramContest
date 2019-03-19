@@ -12,6 +12,7 @@ class GraphControlView: UIView {
     enum Constants {
         static var aniamtionDuration: TimeInterval = 0.25
         static var offset: CGFloat = 16
+        static var graphHeight: CGFloat = 38
     }
 
     var dataSource: GraphDataSource? {
@@ -45,6 +46,7 @@ class GraphControlView: UIView {
         didSet {
             let config = theme.configuration
             self.backgroundColor = config.backgroundColor
+            control.theme = theme
             self.graphDrawLayers.forEach({ $0.theme = theme })
         }
     }
@@ -62,7 +64,8 @@ class GraphControlView: UIView {
     }
 
     func updateFrame() {
-        self.graphDrawLayers.forEach({ $0.frame = CGRect(x: Constants.offset, y: 0, width: self.frame.width - Constants.offset * 2, height: self.frame.height) })
+        let topSpace = (self.frame.height - Constants.graphHeight) / 2
+        self.graphDrawLayers.forEach({ $0.frame = CGRect(x: Constants.offset, y: topSpace, width: self.frame.width - Constants.offset * 2, height: Constants.graphHeight) })
         self.control.frame = CGRect(x: Constants.offset, y: 0, width: self.frame.width - Constants.offset * 2, height: self.frame.height)
     }
 

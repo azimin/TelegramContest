@@ -226,7 +226,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
 
         switch indexPath.row {
         case 0:
-            return 392
+            return 362
         default:
             return 65
         }

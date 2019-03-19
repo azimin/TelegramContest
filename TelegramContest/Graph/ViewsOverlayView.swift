@@ -63,7 +63,7 @@ class ViewsOverlayView: UIView {
     }
 
     func show(item: Item) {
-        let label = UILabel(frame: CGRect(x: 0, y: 0, width: 60, height: 40))
+        let label = UILabel(frame: CGRect(x: 0, y: 0, width: 60, height: 26))
         label.center = CGPoint(x: item.position, y: label.center.y)
         label.text = item.text
         label.font = UIFont.systemFont(ofSize: 12)

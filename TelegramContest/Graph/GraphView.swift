@@ -60,7 +60,7 @@ class GraphView: UIView {
     override var frame: CGRect {
         didSet {
             self.graphContentView.frame = CGRect(x: 0, y: 0, width: self.frame.width, height: 320)
-            self.graphControlView.frame = CGRect(x: 0, y: 320, width: self.frame.width, height: 72)
+            self.graphControlView.frame = CGRect(x: 0, y: 320, width: self.frame.width, height: 42)
         }
     }
 

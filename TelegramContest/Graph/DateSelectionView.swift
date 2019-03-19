@@ -101,10 +101,10 @@ class DateSelectionView: UIView {
         let plateWidth = maxWidth + 63 + 8
         var platePosition = position
         self.plate.frame = CGRect(x: 0, y: 0, width: plateWidth, height: y)
-        if platePosition - plateWidth / 2 < 0 {
-            platePosition -= (platePosition - plateWidth / 2)
-        } else if platePosition + plateWidth / 2 > self.frame.width {
-            platePosition += (self.frame.width - platePosition - plateWidth / 2)
+        if platePosition - plateWidth / 2 < -1 {
+            platePosition -= (platePosition + 1 - plateWidth / 2)
+        } else if platePosition + plateWidth / 2 > (self.frame.width + 1) {
+            platePosition += (self.frame.width + 1 - platePosition - plateWidth / 2)
         }
         self.plate.center = CGPoint(x: platePosition, y: y / 2)
 

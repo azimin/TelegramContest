@@ -9,6 +9,10 @@
 import UIKit
 
 class ThumbnailControl: UIControl {
+    enum Constants {
+        static var graphHeight: CGFloat = 38
+    }
+
     enum Gesture {
         case increaseLeft
         case increaseRight
@@ -24,6 +28,14 @@ class ThumbnailControl: UIControl {
         let strechingImage = image.resizableImage(withCapInsets: insets, resizingMode: .stretch)
         return UIImageView(image: strechingImage)
     }()
+
+    var theme: Theme = .light {
+        didSet {
+            let config = theme.configuration
+            self.beforeOverlay.backgroundColor = config.backgroundColor.withAlphaComponent(0.7)
+            self.endOverlay.backgroundColor = config.backgroundColor.withAlphaComponent(0.7)
+        }
+    }
 
     private var gesture: Gesture = .none
     var range: Range<CGFloat> = 0..<1 {
@@ -45,8 +57,8 @@ class ThumbnailControl: UIControl {
     }
 
     private func setup() {
-        self.beforeOverlay.backgroundColor = UIColor.black.withAlphaComponent(0.2)
-        self.endOverlay.backgroundColor = UIColor.black.withAlphaComponent(0.2)
+        self.beforeOverlay.backgroundColor = UIColor.black.withAlphaComponent(0.3)
+        self.endOverlay.backgroundColor = UIColor.black.withAlphaComponent(0.3)
 
         self.addSubview(self.beforeOverlay)
         self.addSubview(self.endOverlay)
@@ -64,10 +76,12 @@ class ThumbnailControl: UIControl {
     func update() {
         let width = self.frame.width
         let height = self.frame.height
-        self.beforeOverlay.frame = CGRect(x: 0, y: 0, width: self.range.lowerBound * width, height: height)
+        let topSpace = (self.frame.height - Constants.graphHeight) / 2
+
+        self.beforeOverlay.frame = CGRect(x: 0, y: topSpace, width: self.range.lowerBound * width, height: Constants.graphHeight)
 
         let lastWidth = width - self.range.upperBound * width
-        self.endOverlay.frame = CGRect(x: self.range.upperBound * width, y: 0, width: lastWidth, height: height)
+        self.endOverlay.frame = CGRect(x: self.range.upperBound * width, y: topSpace, width: lastWidth, height: Constants.graphHeight)
 
         self.controlImageView.frame = CGRect(x: self.beforeOverlay.frame.width, y: 0, width: self.endOverlay.frame.minX - self.beforeOverlay.frame.width, height: height)
     }

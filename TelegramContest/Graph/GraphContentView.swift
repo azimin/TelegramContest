@@ -17,6 +17,7 @@ class GraphContentView: UIView {
 
     var dataSource: GraphDataSource? {
         didSet {
+            self.preveous = .zero
             self.currentMaxValue = 0
             if let dataSource = dataSource {
                 self.enabledRows = Array(0..<dataSource.yRows.count)
@@ -41,6 +42,7 @@ class GraphContentView: UIView {
     var currentMaxValue: Int = 0
 
     func updateEnabledRows(_ values: [Int], animated: Bool) {
+        self.preveous = .zero
         self.enabledRows = values
         self.update(animated: animated)
 
@@ -75,8 +77,15 @@ class GraphContentView: UIView {
         }
     }
 
+    var preveous: CGRect = .zero
+
     func updateFrame() {
-        let graphHeight = self.frame.height - Constants.labelsHeight
+        guard self.frame != preveous else {
+            return
+        }
+        self.preveous = self.frame
+
+        let graphHeight = self.frame.height - Constants.labelsHeight - 20
         let topFrame = CGRect(x: Constants.offset, y: 20, width: self.frame.size.width - Constants.offset * 2, height: graphHeight)
         self.graphDrawLayers.forEach({ $0.frame = topFrame })
         self.yAxisOverlay.frame = topFrame
