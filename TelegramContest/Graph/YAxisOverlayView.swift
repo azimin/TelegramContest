@@ -64,7 +64,7 @@ class YAxisOverlayView: UIView {
         }
     }
 
-    func update(value: Int) {
+    func update(value: Int, animated: Bool) {
         let step = (value / 5)
         let maxValue = step * 5
         let oldValue = self.maxValue
@@ -74,18 +74,18 @@ class YAxisOverlayView: UIView {
         }
 
         self.maxValue = maxValue
-        self.disapear()
-        self.animate(step: step, from: oldValue)
+        self.disapear(animated: animated)
+        self.animate(step: step, from: oldValue, animated: animated)
     }
 
-    private func disapear() {
+    private func disapear(animated: Bool) {
         self.onRemoving.forEach({ $0.removeFromSuperview() })
         self.onRemoving = []
 
         for item in self.items {
             let percent = CGFloat(item.value) / CGFloat(self.maxValue)
             self.onRemoving.append(item.view)
-            UIView.animate(withDuration: 0.25, delay: 0, options: [UIView.AnimationOptions.curveEaseOut], animations: {
+            UIView.animate(withDuration: animated ? 0.25 : 0, delay: 0, options: [UIView.AnimationOptions.curveEaseOut], animations: {
                 item.view.center = CGPoint(x: item.view.center.x, y: self.frame.height * (1 - percent) - item.view.frame.height / 2)
                 item.view.alpha = 0
             }, completion: { _ in
@@ -95,7 +95,7 @@ class YAxisOverlayView: UIView {
         self.items = []
     }
 
-    private func animate(step: Int, from: Int) {
+    private func animate(step: Int, from: Int, animated: Bool) {
         for i in 0..<5 {
             let percent = CGFloat(i * step) / CGFloat(self.maxValue)
             let oldPercent: CGFloat
@@ -113,7 +113,7 @@ class YAxisOverlayView: UIView {
             self.addSubview(view)
             self.items.append(Item(view: view, value: step * i))
 
-            UIView.animate(withDuration: 0.25, delay: 0, options: [UIView.AnimationOptions.curveEaseOut], animations: {
+            UIView.animate(withDuration: animated ? 0.25 : 0, delay: 0, options: [UIView.AnimationOptions.curveEaseOut], animations: {
                 view.alpha = 1
                 view.center = CGPoint(x: view.center.x, y: self.frame.height * (1 - percent) - view.frame.height / 2)
             }, completion: nil)

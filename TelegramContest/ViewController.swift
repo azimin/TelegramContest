@@ -140,16 +140,6 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         self.tableView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor).isActive = true
         self.tableView.register(GraphTableViewCell.self, forCellReuseIdentifier: "GraphTableViewCell")
         self.tableView.register(ButtonTableViewCell.self, forCellReuseIdentifier: "ButtonTableViewCell")
-
-        //        let controlView = GraphControlView()
-        //        controlView.frame = CGRect(x: 0, y: 100, width: UIScreen.main.bounds.width, height: 60)
-        //        self.view.addSubview(controlView)
-        //        controlView.dataSource = self.dataSource
-        //
-        //        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-        //            controlView.updateEnabledRows([0], animated: true)
-        //        }
-        // Do any additional setup after loading the view, typically from a nib.
     }
 
     var theme: Theme = Theme.light {
@@ -205,7 +195,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
             cell.selectionStyle = .none
             cell.textLabel?.font = UIFont.systemFont(ofSize: 17)
             cell.isSelected = true
-            cell.accessoryType = .checkmark
+            cell.accessoryType = section.enabledRows.contains(indexPath.row - 1) ? .checkmark : .none
             cell.contentView.backgroundColor = config.backgroundColor
             cell.backgroundColor = config.backgroundColor
             return cell

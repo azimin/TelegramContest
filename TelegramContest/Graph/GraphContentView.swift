@@ -44,7 +44,8 @@ class GraphContentView: UIView {
     func updateEnabledRows(_ values: [Int], animated: Bool) {
         self.preveous = .zero
         self.enabledRows = values
-        self.update(animated: animated)
+
+        self.update(animated: animated, force: true)
 
         if let selection = self.selectedLocation {
             self.showSelection(location: selection, animated: animated, shouldRespectCahce: false)
@@ -110,7 +111,7 @@ class GraphContentView: UIView {
         self.addSubview(self.selectionView)
     }
 
-    func update(animated: Bool) {
+    func update(animated: Bool, force: Bool = false) {
         guard let dataSource = self.dataSource else {
             // We are not removing them for smother reusability if graph will be inside table view
             self.graphDrawLayers.forEach({ $0.isHidden = true })
@@ -157,15 +158,20 @@ class GraphContentView: UIView {
             }
         }
 
+        if force {
+            self.currentMaxValue = maxValue
+            self.yAxisOverlay.update(value: maxValue, animated: false)
+        }
+
         if self.currentMaxValue == 0 || animated {
             self.currentMaxValue = maxValue
-            self.yAxisOverlay.update(value: maxValue)
+            self.yAxisOverlay.update(value: maxValue, animated: false)
         } else {
             self.counter.animate(from: self.currentMaxValue, to: maxValue) { (value) in
                 self.currentMaxValue = value
                 self.update(animated: false)
             }
-            self.yAxisOverlay.update(value: maxValue)
+            self.yAxisOverlay.update(value: maxValue, animated: true)
         }
 
         var anyPoints: [(Int, CGFloat)] = []

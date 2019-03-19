@@ -36,22 +36,26 @@ class ViewsOverlayView: UIView {
 
     func showItems(items: [Item]) {
         var newItems: [Item] = items
-        
-        self.onRemoving.forEach({ $0.removeFromSuperview() })
-        self.onRemoving = []
+        var itemsToDisapear: [Item] = []
 
         for item in self.allItems.map({ $0.item }) {
             if let index = items.firstIndex(of: item) {
                 newItems.removeAll(where: { $0 == item })
                 self.move(item: items[index])
             } else {
-                self.disaper(item: item)
+                itemsToDisapear.append(item)
             }
         }
 
         for item in newItems {
             self.show(item: item)
         }
+
+        if newItems.count > 0 {
+            self.onRemoving.forEach({ $0.removeFromSuperview() })
+            self.onRemoving = []
+        }
+        itemsToDisapear.forEach({ self.disaper(item: $0) })
     }
 
     func move(item: Item) {
@@ -83,7 +87,7 @@ class ViewsOverlayView: UIView {
         self.allItems.remove(at: index)
         self.onRemoving.append(visualItem.label)
 
-        UIView.animate(withDuration: 0.1, animations: {
+        UIView.animate(withDuration: 0.25, animations: {
             visualItem.label.alpha = 0
         }) { (success) in
             visualItem.label.removeFromSuperview()
