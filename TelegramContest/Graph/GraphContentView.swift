@@ -211,7 +211,7 @@ class GraphContentView: UIView {
             graphView.selectedPath.strokeColor = yRow.color.cgColor
 
             if anyPoints.isEmpty {
-                anyPoints = graphView.reportPoints(graphContext: context)
+                anyPoints = graphView.reportLabelPoints(graphContext: context)
             }
 
             if !graphView.isHidding {

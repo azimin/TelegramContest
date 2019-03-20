@@ -147,6 +147,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
             let config = theme.configuration
             self.tableView.separatorColor = config.lineColor
             self.tableView.backgroundColor = config.mainBackgroundColor
+            self.setNeedsStatusBarAppearanceUpdate()
         }
     }
 
@@ -192,7 +193,6 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
             cell.imageView?.image = image(from: row.color)?.roundedImage
             cell.textLabel?.text = row.name
             cell.textLabel?.textColor = config.nameColor
-            cell.selectionStyle = .none
             cell.textLabel?.font = UIFont.systemFont(ofSize: 17)
             cell.isSelected = true
             cell.accessoryType = section.enabledRows.contains(indexPath.row - 1) ? .checkmark : .none
@@ -252,6 +252,10 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         graphView.updateEnabledRows(section.enabledRows, animated: true)
 
         cell?.accessoryType = shouldSelect ? .checkmark : .none
+    }
+
+    override var preferredStatusBarStyle: UIStatusBarStyle {
+        return self.theme == .light ? .default : .lightContent
     }
 }
 

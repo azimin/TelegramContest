@@ -122,14 +122,13 @@ class GraphDrawLayerView: UIView {
                 path.move(to: CGPoint(x: x, y: (1 - yPercent) * self.frame.height))
             } else {
                 path.addLine(to: CGPoint(x: x, y: (1 - yPercent) * self.frame.height))
-//                path.addEllipse(in: CGRect(x: x, y: (1 - yPercent) * self.frame.height, width: 5, height: 5))
             }
         }
 
         return path
     }
 
-    func reportPoints(graphContext: GraphContext?) -> [(Int, CGFloat)] {
+    func reportLabelPoints(graphContext: GraphContext?) -> [(Int, CGFloat)] {
         guard let graphContext = graphContext, self.frame.width > 0 else {
             return []
         }
