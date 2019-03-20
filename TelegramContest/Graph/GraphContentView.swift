@@ -221,10 +221,8 @@ class GraphContentView: UIView {
 
         var items: [ViewsOverlayView.Item] = []
         for point in anyPoints {
-            let xRow = dataSource.xRow.dates[point.0]
-            let dateFormatter = DateFormatter()
-            dateFormatter.dateFormat = "MMM d"
-            let item = ViewsOverlayView.Item(text: dateFormatter.string(from: xRow), position: point.1)
+            let xRow = dataSource.xRow.dateStrings[point.0]
+            let item = ViewsOverlayView.Item(text: xRow, position: point.1)
             items.append(item)
         }
         self.dateLabels.showItems(items: items)

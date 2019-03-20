@@ -113,14 +113,17 @@ class GraphDrawLayerView: UIView {
 
         let steps = graphContext.stepsBaseOn(width: fullWidth)
         let path = CGMutablePath()
+        var isMoved: Bool = false
 
         for index in 0..<(graphContext.values.count / steps.points) {
             let value: Int = graphContext.values[index] // FIXME
             let x = round(steps.pixels * CGFloat(index)) - offset
             let yPercent = CGFloat(value) / CGFloat(graphContext.maxValue)
-            if index == 0 {
-                path.move(to: CGPoint(x: x, y: (1 - yPercent) * self.frame.height))
-            } else {
+            if x > (-1.3 * self.frame.width) && x < (self.frame.width * 1.3) {
+                if !isMoved {
+                    path.move(to: CGPoint(x: x, y: (1 - yPercent) * self.frame.height))
+                    isMoved = true
+                }
                 path.addLine(to: CGPoint(x: x, y: (1 - yPercent) * self.frame.height))
             }
         }

@@ -14,6 +14,7 @@ class AnimationCounter {
     private var cachedFrom: Int = 0
     private var cachedTo: Int = 0
     private var progress: CGFloat = 0
+    private var block: ((Int) -> Void)?
 
     func animate(from: Int, to: Int, block: @escaping (Int) -> Void) {
         guard to != self.cachedTo, (from - to) != 0 else {
@@ -24,18 +25,33 @@ class AnimationCounter {
         self.cachedFrom = from
         self.cachedTo = to
         self.progress = 0
+        self.block = block
 
-        self.timer = Timer(timeInterval: 1 / 60, repeats: true, block: { (_) in
-            self.progress += 1 / 15
-            if self.progress >= 1 {
-                self.timer?.invalidate()
-            }
-            let progress = self.quadraticEaseOut(self.progress)
-            let delta = self.cachedTo - self.cachedFrom
-            self.currentValue = self.cachedFrom + Int(CGFloat(delta) * progress)
-            block(self.currentValue)
-        })
+        self.timer = Timer(timeInterval: 1 / 60, target: self, selector: #selector(self.fireTimer), userInfo: nil, repeats: true)
+
+//        self.timer = Timer(timeInterval: 1 / 60, repeats: true, block: { (_) in
+//            self.progress += 1 / 15
+//            if self.progress >= 1 {
+//                self.timer?.invalidate()
+//            }
+//            let progress = self.quadraticEaseOut(self.progress)
+//            let delta = self.cachedTo - self.cachedFrom
+//            self.currentValue = self.cachedFrom + Int(CGFloat(delta) * progress)
+//            block(self.currentValue)
+//        })
         RunLoop.main.add(self.timer!, forMode: RunLoop.Mode.common)
+    }
+
+    @objc
+    func fireTimer() {
+        self.progress += 1 / 15
+        if self.progress >= 1 {
+            self.timer?.invalidate()
+        }
+        let progress = self.quadraticEaseOut(self.progress)
+        let delta = self.cachedTo - self.cachedFrom
+        self.currentValue = self.cachedFrom + Int(CGFloat(delta) * progress)
+        self.block?(self.currentValue)
     }
 
     func invalidate() {

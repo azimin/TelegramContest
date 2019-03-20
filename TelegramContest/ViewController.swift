@@ -8,14 +8,29 @@
 
 import UIKit
 
-struct GraphLineRow {
+class GraphLineRow {
     var color: UIColor
     var name: String
     var values: [Int]
+
+    init(color: UIColor, name: String, values: [Int]) {
+        self.color = color
+        self.name = name
+        self.values = values
+    }
 }
 
-struct GraphXRow {
+class GraphXRow {
     var dates: [Date]
+    var dateStrings: [String]
+
+    init(dates: [Date]) {
+        self.dates = dates
+
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "MMM d"
+        self.dateStrings = dates.map({ dateFormatter.string(from: $0) })
+    }
 }
 
 class Section {
@@ -50,11 +65,11 @@ class GraphDataSource {
         if let columns = json["columns"] as? [[AnyObject]] {
             for column in columns {
                 var name: String?
-                var values: [Int] = []
+                var values: [Int64] = []
                 for row in column {
                     if let nameValue = row as? String {
                         name = nameValue
-                    } else if let value = row as? Int {
+                    } else if let value = row as? Int64 {
                         values.append(value)
                     }
                 }
@@ -63,7 +78,7 @@ class GraphDataSource {
                         switch type {
                         case "line":
                             if let color = colors[name], let realName = names[name] {
-                                let lineRow = GraphLineRow(color: color, name: realName, values: values)
+                                let lineRow = GraphLineRow(color: color, name: realName, values: values.map({ Int($0) }))
                                 lineRows.append(lineRow)
                             }
                         case "x":
@@ -77,7 +92,7 @@ class GraphDataSource {
             }
         }
 
-        if let xRow = xRow, lineRows.count > 0 {
+        if let xRow = xRow, xRow.dates.count > 0, lineRows.count > 0 {
             self.xRow = xRow
             self.yRows = lineRows
         } else {

@@ -38,6 +38,9 @@ class ViewsOverlayView: UIView {
         var newItems: [Item] = items
         var itemsToDisapear: [Item] = []
 
+        self.onRemoving.forEach({ $0.removeFromSuperview() })
+        self.onRemoving = []
+
         for item in self.allItems.map({ $0.item }) {
             if let index = items.firstIndex(of: item) {
                 newItems.removeAll(where: { $0 == item })
