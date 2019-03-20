@@ -119,7 +119,7 @@ class GraphDrawLayerView: UIView {
             let value: Int = graphContext.values[index] // FIXME
             let x = round(steps.pixels * CGFloat(index)) - offset
             let yPercent = CGFloat(value) / CGFloat(graphContext.maxValue)
-            if x > (-1.3 * self.frame.width) && x < (self.frame.width * 1.3) {
+            if x > (-1.1 * self.frame.width) && x < (self.frame.width * 1.1) {
                 if !isMoved {
                     path.move(to: CGPoint(x: x, y: (1 - yPercent) * self.frame.height))
                     isMoved = true

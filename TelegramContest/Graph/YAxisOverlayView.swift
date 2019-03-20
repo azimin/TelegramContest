@@ -95,28 +95,56 @@ class YAxisOverlayView: UIView {
         self.items = []
     }
 
-    private func animate(step: Int, from: Int, animated: Bool) {
-        for i in 0..<5 {
-            let percent = CGFloat(i * step) / CGFloat(self.maxValue)
-            let oldPercent: CGFloat
-            if from == 0 {
-                oldPercent = 0
-            } else {
-                oldPercent = CGFloat(i * step) / CGFloat(from)
-            }
-            let view = YAxisView()
-            view.label.text = "\(step * i)"
-            view.frame = CGRect(x: 0, y: 0, width: self.frame.width, height: 26)
-            view.alpha = 0
-            view.center = CGPoint(x: view.center.x, y: self.frame.height * (1 - oldPercent) - view.frame.height / 2)
-            view.theme = self.theme
-            self.addSubview(view)
-            self.items.append(Item(view: view, value: step * i))
+    private var showAction: (() -> Void)?
+    private var startTime = 0.0
+    private var displayLink: CADisplayLink?
 
-            UIView.animate(withDuration: animated ? 0.25 : 0, delay: 0, options: [UIView.AnimationOptions.curveEaseOut], animations: {
-                view.alpha = 1
-                view.center = CGPoint(x: view.center.x, y: self.frame.height * (1 - percent) - view.frame.height / 2)
-            }, completion: nil)
+    private func animate(step: Int, from: Int, animated: Bool) {
+        self.showAction = {
+            for i in 0..<5 {
+                let percent = CGFloat(i * step) / CGFloat(self.maxValue)
+                let oldPercent: CGFloat
+                if from == 0 {
+                    oldPercent = 0
+                } else {
+                    oldPercent = CGFloat(i * step) / CGFloat(from)
+                }
+                let view = YAxisView()
+                view.label.text = "\(step * i)"
+                view.frame = CGRect(x: 0, y: 0, width: self.frame.width, height: 26)
+                view.alpha = 0
+                view.center = CGPoint(x: view.center.x, y: self.frame.height * (1 - oldPercent) - view.frame.height / 2)
+                view.theme = self.theme
+                self.addSubview(view)
+                self.items.append(Item(view: view, value: step * i))
+
+                UIView.animate(withDuration: animated ? 0.25 : 0, delay: 0, options: [UIView.AnimationOptions.curveEaseOut], animations: {
+                    view.alpha = 1
+                    view.center = CGPoint(x: view.center.x, y: self.frame.height * (1 - percent) - view.frame.height / 2)
+                }, completion: nil)
+
+                self.showAction = nil
+                self.displayLink?.invalidate()
+                self.displayLink = nil
+            }
+        }
+
+        if displayLink == nil {
+            self.startTime = CACurrentMediaTime()
+            self.displayLink = CADisplayLink(target: self, selector: #selector(self.displayLinkDidFire(_:)))
+            self.displayLink?.add(to: .main, forMode: .common)
         }
     }
+
+    @objc
+    func displayLinkDidFire(_ displayLink: CADisplayLink) {
+        let elapsed = CACurrentMediaTime() - self.startTime
+
+        if elapsed > 0.001 {
+            self.showAction?()
+            self.displayLink?.invalidate()
+            self.displayLink = nil
+        }
+    }
+
 }

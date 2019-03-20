@@ -89,6 +89,11 @@ class GraphControlView: UIView {
             self.graphDrawLayers.append(graphView)
         }
 
+        while graphDrawLayers.count > dataSource.yRows.count {
+            let layer = self.graphDrawLayers.removeLast()
+            layer.removeFromSuperview()
+        }
+
         var maxValue = 0
         var minValue = 0
 
@@ -119,6 +124,8 @@ class GraphControlView: UIView {
                 UIView.animate(withDuration: Constants.aniamtionDuration) {
                     graphView.alpha = isHidden ? 0 : 1
                 }
+            } else {
+                graphView.alpha = isHidden ? 0 : 1
             }
 
             if !isHidden {
