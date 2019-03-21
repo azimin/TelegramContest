@@ -9,18 +9,25 @@
 import UIKit
 
 class YAxisView: UIView {
-    var label: UILabel = UILabel()
-    var line: UIView = UIView()
+    enum Style {
+        case line
+        case label
+    }
+
+    var label: UILabel?
+    var line: UIView?
+    let style: Style
 
     var theme: Theme = .light {
         didSet {
             let config = theme.configuration
-            self.label.textColor = config.titleColor
-            self.line.backgroundColor = config.lineColor
+            self.label?.textColor = config.titleColor
+            self.line?.backgroundColor = config.lineColor
         }
     }
 
-    init() {
+    init(style: Style) {
+        self.style = style
         super.init(frame: .zero)
         self.setup()
     }
@@ -31,20 +38,31 @@ class YAxisView: UIView {
 
     override var frame: CGRect {
         didSet {
-            self.line.frame = CGRect(x: 0, y: 25, width: self.frame.width, height: 0.5)
+            self.line?.frame = CGRect(x: 0, y: 25, width: self.frame.width, height: 0.5)
         }
     }
 
     func setup() {
-        self.label.font = UIFont.systemFont(ofSize: 12)
-        self.label.textAlignment = .left
-        self.label.frame = CGRect(x: 0, y: 0, width: 60, height: 26)
+        switch self.style {
+        case .label:
+            self.label = UILabel()
+        case .line:
+            self.line = UIView()
+        }
 
-        self.line.frame = CGRect(x: 0, y: 25, width: self.frame.width, height: 0.5)
-        self.line.backgroundColor = UIColor.black.withAlphaComponent(0.3)
+        self.label?.font = UIFont.systemFont(ofSize: 12)
+        self.label?.textAlignment = .left
+        self.label?.frame = CGRect(x: 0, y: 0, width: 60, height: 26)
 
-        self.addSubview(self.label)
-        self.addSubview(self.line)
+        self.line?.frame = CGRect(x: 0, y: 25, width: self.frame.width, height: 0.5)
+        self.line?.backgroundColor = UIColor.black.withAlphaComponent(0.3)
+
+        if let label = self.label {
+            self.addSubview(label)
+        }
+        if let line = self.line {
+            self.addSubview(line)
+        }
     }
 }
 
@@ -58,6 +76,16 @@ class YAxisOverlayView: UIView {
     var items: [Item] = []
     var onRemoving: [YAxisView] = []
     var thresholdOptimization = ThresholdOptimization(elapsedTime: 0.001)
+    let style: YAxisView.Style
+
+    init(style: YAxisView.Style) {
+        self.style = style
+        super.init(frame: .zero)
+    }
+
+    required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
 
     var theme: Theme = .light {
         didSet {
@@ -107,8 +135,8 @@ class YAxisOverlayView: UIView {
             } else {
                 oldPercent = CGFloat(i * step) / CGFloat(from)
             }
-            let view = YAxisView()
-            view.label.text = "\(step * i)"
+            let view = YAxisView(style: self.style)
+            view.label?.text = "\(step * i)"
             view.frame = CGRect(x: 0, y: 0, width: self.frame.width, height: 26)
             view.alpha = 0
             view.center = CGPoint(x: view.center.x, y: self.frame.height * (1 - oldPercent) - view.frame.height / 2)

@@ -55,7 +55,9 @@ class GraphContentView: UIView {
     private var graphDrawLayers: [GraphDrawLayerView] = []
     private var counter: AnimationCounter = AnimationCounter()
     private var dateLabels = ViewsOverlayView()
-    private var yAxisOverlay = YAxisOverlayView()
+    private var yAxisLineOverlay = YAxisOverlayView(style: .line)
+    private var yAxisLabelOverlay = YAxisOverlayView(style: .label)
+    private lazy var yAxisOverlays = [yAxisLineOverlay, yAxisLabelOverlay]
     private var selectionView = DateSelectionView()
     private var lastVisible: GraphDrawLayerView?
 
@@ -89,7 +91,7 @@ class GraphContentView: UIView {
         let graphHeight = self.frame.height - Constants.labelsHeight - 20
         let topFrame = CGRect(x: Constants.offset, y: 20, width: self.frame.size.width - Constants.offset * 2, height: graphHeight)
         self.graphDrawLayers.forEach({ $0.frame = topFrame })
-        self.yAxisOverlay.frame = topFrame
+        self.yAxisOverlays.forEach({ $0.frame = topFrame })
         self.dateLabels.frame = CGRect(x: Constants.offset, y: graphHeight + 20, width: self.frame.size.width - Constants.offset * 2, height: Constants.labelsHeight)
         self.selectionView.frame = CGRect(x: Constants.offset, y: 6, width: self.frame.size.width - Constants.offset * 2, height: graphHeight + 14)
     }
@@ -100,14 +102,15 @@ class GraphContentView: UIView {
             self.backgroundColor = config.backgroundColor
             self.graphDrawLayers.forEach({ $0.theme = theme })
             self.selectionView.theme = theme
-            self.yAxisOverlay.theme = theme
+            self.yAxisOverlays.forEach({ $0.theme = theme })
             self.dateLabels.theme = theme
         }
     }
 
     func setup() {
         self.addSubview(self.dateLabels)
-        self.addSubview(self.yAxisOverlay)
+        self.addSubview(self.yAxisLineOverlay)
+        self.addSubview(self.yAxisLabelOverlay)
         self.addSubview(self.selectionView)
     }
 
@@ -122,7 +125,7 @@ class GraphContentView: UIView {
             let graphView = GraphDrawLayerView()
             graphView.layer.masksToBounds = true
             graphView.frame = CGRect(x: 0, y: 0, width: self.frame.width, height: self.frame.height - Constants.labelsHeight)
-            self.insertSubview(graphView, belowSubview: self.yAxisOverlay)
+            self.insertSubview(graphView, belowSubview: self.yAxisLabelOverlay)
             self.graphDrawLayers.append(graphView)
         }
 
@@ -160,18 +163,18 @@ class GraphContentView: UIView {
 
         if force {
             self.currentMaxValue = maxValue
-            self.yAxisOverlay.update(value: maxValue, animated: false)
+            self.yAxisOverlays.forEach({ $0.update(value: maxValue, animated: false) })
         }
 
         if self.currentMaxValue == 0 || animated {
             self.currentMaxValue = maxValue
-            self.yAxisOverlay.update(value: maxValue, animated: false)
+            self.yAxisOverlays.forEach({ $0.update(value: maxValue, animated: false) })
         } else {
             self.counter.animate(from: self.currentMaxValue, to: maxValue) { (value) in
                 self.currentMaxValue = value
                 self.update(animated: false)
             }
-            self.yAxisOverlay.update(value: maxValue, animated: true)
+            self.yAxisOverlays.forEach({ $0.update(value: maxValue, animated: true) })
         }
 
         var anyPoints: [(Int, CGFloat)] = []
