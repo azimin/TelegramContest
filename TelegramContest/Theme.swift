@@ -10,11 +10,11 @@ import UIKit
 
 struct ThemeConfiguration {
     var isLight: Bool
-    var mainBackgroundColor: UIColor // 1A222C, EFEFF4
-    var backgroundColor: UIColor // 242E3E, FEFEFE
-    var nameColor: UIColor // FEFEFE, 000000
-    var titleColor: UIColor // 5F6B7F, 6C6C71
-    var lineColor: UIColor // 171D24 , D1D3D4
+    var mainBackgroundColor: UIColor
+    var backgroundColor: UIColor
+    var nameColor: UIColor
+    var titleColor: UIColor
+    var lineColor: UIColor
 }
 
 enum Theme {

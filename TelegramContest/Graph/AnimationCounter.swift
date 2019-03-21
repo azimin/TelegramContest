@@ -28,17 +28,6 @@ class AnimationCounter {
         self.block = block
 
         self.timer = Timer(timeInterval: 1 / 60, target: self, selector: #selector(self.fireTimer), userInfo: nil, repeats: true)
-
-//        self.timer = Timer(timeInterval: 1 / 60, repeats: true, block: { (_) in
-//            self.progress += 1 / 15
-//            if self.progress >= 1 {
-//                self.timer?.invalidate()
-//            }
-//            let progress = self.quadraticEaseOut(self.progress)
-//            let delta = self.cachedTo - self.cachedFrom
-//            self.currentValue = self.cachedFrom + Int(CGFloat(delta) * progress)
-//            block(self.currentValue)
-//        })
         RunLoop.main.add(self.timer!, forMode: RunLoop.Mode.common)
     }
 

@@ -340,37 +340,3 @@ class GraphContentView: UIView {
         }
     }
 }
-
-extension UIImage {
-    static func gradientImageWithBounds(bounds: CGRect, colors: [CGColor]) -> UIImage? {
-        let gradientLayer = CAGradientLayer()
-        gradientLayer.frame = bounds
-        gradientLayer.colors = colors
-
-        guard let context = UIGraphicsGetCurrentContext() else {
-            return nil
-        }
-
-        UIGraphicsBeginImageContext(gradientLayer.bounds.size)
-        gradientLayer.render(in: context)
-        let image = UIGraphicsGetImageFromCurrentImageContext()
-        UIGraphicsEndImageContext()
-        return image
-    }
-}
-
-extension UIImage {
-    convenience init?(size: CGSize, gradientColor: [UIColor]) {
-        UIGraphicsBeginImageContextWithOptions(size, false, UIScreen.main.scale)
-
-        guard let context = UIGraphicsGetCurrentContext() else { return nil }       // If the size is zero, the context will be nil.
-        guard let gradient = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(), colors: gradientColor.map({ $0.cgColor }) as CFArray, locations: nil) else {
-            return nil
-        }
-
-        context.drawLinearGradient(gradient, start: CGPoint.zero, end: CGPoint(x: 0, y: size.height), options: CGGradientDrawingOptions())
-        guard let image = UIGraphicsGetImageFromCurrentImageContext()?.cgImage else { return nil }
-        self.init(cgImage: image)
-        defer { UIGraphicsEndImageContext() }
-    }
-}

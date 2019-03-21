@@ -310,7 +310,7 @@ func image(from color: UIColor) -> UIImage? {
 extension UIImage{
     var roundedImage: UIImage? {
         let rect = CGRect(origin:CGPoint(x: 0, y: 0), size: self.size)
-        UIGraphicsBeginImageContextWithOptions(self.size, false, 1)
+        UIGraphicsBeginImageContextWithOptions(self.size, false, UIScreen.main.scale)
         UIBezierPath(
             roundedRect: rect,
             cornerRadius: 4
@@ -343,5 +343,21 @@ public extension UIColor {
             blue: CGFloat(rgbValue & 0x0000FF) / 255.0,
             alpha: CGFloat(1.0)
         )
+    }
+}
+
+extension UIImage {
+    convenience init?(size: CGSize, gradientColor: [UIColor]) {
+        UIGraphicsBeginImageContextWithOptions(size, false, UIScreen.main.scale)
+
+        guard let context = UIGraphicsGetCurrentContext() else { return nil }
+        guard let gradient = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(), colors: gradientColor.map({ $0.cgColor }) as CFArray, locations: nil) else {
+            return nil
+        }
+
+        context.drawLinearGradient(gradient, start: CGPoint.zero, end: CGPoint(x: 0, y: size.height), options: CGGradientDrawingOptions())
+        guard let image = UIGraphicsGetImageFromCurrentImageContext()?.cgImage else { return nil }
+        self.init(cgImage: image)
+        defer { UIGraphicsEndImageContext() }
     }
 }
