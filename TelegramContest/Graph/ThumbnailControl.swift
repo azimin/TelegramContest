@@ -11,6 +11,7 @@ import UIKit
 class ThumbnailControl: UIControl {
     enum Constants {
         static var graphHeight: CGFloat = 38
+        static var offset: CGFloat = 16
     }
 
     enum Gesture {
@@ -74,16 +75,17 @@ class ThumbnailControl: UIControl {
     }
 
     func update() {
-        let width = self.frame.width
+        let offset = Constants.offset
+        let width = self.frame.width - offset * 2
         let height = self.frame.height
         let topSpace = (self.frame.height - Constants.graphHeight) / 2
 
-        self.beforeOverlay.frame = CGRect(x: 0, y: topSpace, width: self.range.lowerBound * width, height: Constants.graphHeight)
+        self.beforeOverlay.frame = CGRect(x: offset, y: topSpace, width: self.range.lowerBound * width, height: Constants.graphHeight)
 
         let lastWidth = width - self.range.upperBound * width
-        self.endOverlay.frame = CGRect(x: self.range.upperBound * width, y: topSpace, width: lastWidth, height: Constants.graphHeight)
+        self.endOverlay.frame = CGRect(x: offset + self.range.upperBound * width, y: topSpace, width: lastWidth, height: Constants.graphHeight)
 
-        self.controlImageView.frame = CGRect(x: self.beforeOverlay.frame.width, y: 0, width: self.endOverlay.frame.minX - self.beforeOverlay.frame.width, height: height)
+        self.controlImageView.frame = CGRect(x: offset + self.beforeOverlay.frame.width, y: 0, width: self.endOverlay.frame.minX - self.beforeOverlay.frame.width - offset, height: height)
     }
 
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {

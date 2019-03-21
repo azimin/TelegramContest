@@ -66,7 +66,7 @@ class GraphControlView: UIView {
     func updateFrame() {
         let topSpace = (self.frame.height - Constants.graphHeight) / 2
         self.graphDrawLayers.forEach({ $0.frame = CGRect(x: Constants.offset, y: topSpace, width: self.frame.width - Constants.offset * 2, height: Constants.graphHeight) })
-        self.control.frame = CGRect(x: Constants.offset, y: 0, width: self.frame.width - Constants.offset * 2, height: self.frame.height)
+        self.control.frame = CGRect(x: 0, y: 0, width: self.frame.width, height: self.frame.height)
     }
 
     private func setup() {
@@ -75,7 +75,6 @@ class GraphControlView: UIView {
 
     func update(animated: Bool) {
         guard let dataSource = self.dataSource else {
-            // We are not removing them for smother reusability if graph will be inside table view
             self.graphDrawLayers.forEach({ $0.isHidden = true })
             return
         }
