@@ -62,6 +62,8 @@ class GraphContentView: UIView {
     private var selectionLineView = DateSelectionView(style: .line)
     private lazy var selectionViews = [selectionPlateView, selectionLineView]
     private var lastVisible: GraphDrawLayerView?
+    private var shadowImage = UIImageView(frame: .zero)
+    private var shadowCachedSize: CGRect = .zero
 
     init(dataSource: GraphDataSource? = nil, selectedRange: Range<CGFloat> = 0..<1) {
         self.dataSource = dataSource
@@ -92,10 +94,13 @@ class GraphContentView: UIView {
 
         let graphHeight = self.frame.height - Constants.labelsHeight - 20
         let topFrame = CGRect(x: Constants.offset, y: 20, width: self.frame.size.width - Constants.offset * 2, height: graphHeight)
-        self.graphDrawLayers.forEach({ $0.frame = topFrame })
+        let graphFrame = CGRect(x: Constants.offset, y: 0, width: self.frame.size.width - Constants.offset * 2, height: graphHeight + 20)
+        self.graphDrawLayers.forEach({ $0.frame = graphFrame })
         self.yAxisOverlays.forEach({ $0.frame = topFrame })
         self.dateLabels.frame = CGRect(x: Constants.offset, y: graphHeight + 20, width: self.frame.size.width - Constants.offset * 2, height: Constants.labelsHeight)
         self.selectionViews.forEach({ $0.frame = CGRect(x: Constants.offset, y: 6, width: self.frame.size.width - Constants.offset * 2, height: graphHeight + 14) })
+        self.graphDrawLayers.forEach({ $0.offset = 20 })
+        self.updateShadow()
     }
 
     var theme: Theme = .light {
@@ -106,14 +111,29 @@ class GraphContentView: UIView {
             self.selectionViews.forEach({ $0.theme = theme })
             self.yAxisOverlays.forEach({ $0.theme = theme })
             self.dateLabels.theme = theme
+            self.shadowCachedSize = .zero
+            self.updateShadow()
         }
     }
 
+    func updateShadow() {
+        let shadowFrame = CGRect(x: 0, y: 0, width: self.frame.size.width, height: 20)
+        guard self.shadowCachedSize != shadowFrame else {
+            return
+        }
+        let config = self.theme.configuration
+        self.shadowCachedSize = shadowFrame
+        self.shadowImage.frame = shadowFrame
+        self.shadowImage.image = UIImage(size: shadowFrame.size, gradientColor: [config.backgroundColor, config.backgroundColor.withAlphaComponent(0)])
+    }
+
     func setup() {
+        self.yAxisOverlays.forEach({ $0.layer.masksToBounds = true })
         self.addSubview(self.dateLabels)
         self.addSubview(self.yAxisLineOverlay)
         self.addSubview(self.selectionLineView)
         self.addSubview(self.yAxisLabelOverlay)
+        self.addSubview(self.shadowImage)
         self.addSubview(self.selectionPlateView)
     }
 
@@ -318,5 +338,39 @@ class GraphContentView: UIView {
                 isShowed = true
             }
         }
+    }
+}
+
+extension UIImage {
+    static func gradientImageWithBounds(bounds: CGRect, colors: [CGColor]) -> UIImage? {
+        let gradientLayer = CAGradientLayer()
+        gradientLayer.frame = bounds
+        gradientLayer.colors = colors
+
+        guard let context = UIGraphicsGetCurrentContext() else {
+            return nil
+        }
+
+        UIGraphicsBeginImageContext(gradientLayer.bounds.size)
+        gradientLayer.render(in: context)
+        let image = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        return image
+    }
+}
+
+extension UIImage {
+    convenience init?(size: CGSize, gradientColor: [UIColor]) {
+        UIGraphicsBeginImageContextWithOptions(size, false, UIScreen.main.scale)
+
+        guard let context = UIGraphicsGetCurrentContext() else { return nil }       // If the size is zero, the context will be nil.
+        guard let gradient = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(), colors: gradientColor.map({ $0.cgColor }) as CFArray, locations: nil) else {
+            return nil
+        }
+
+        context.drawLinearGradient(gradient, start: CGPoint.zero, end: CGPoint(x: 0, y: size.height), options: CGGradientDrawingOptions())
+        guard let image = UIGraphicsGetImageFromCurrentImageContext()?.cgImage else { return nil }
+        self.init(cgImage: image)
+        defer { UIGraphicsEndImageContext() }
     }
 }

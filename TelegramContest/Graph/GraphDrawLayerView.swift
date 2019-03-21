@@ -56,6 +56,12 @@ class GraphDrawLayerView: UIView {
         }
     }
 
+    var offset: CGFloat = 0 {
+        didSet {
+            self.updateFrame()
+        }
+    }
+
     init() {
         super.init(frame: .zero)
 
@@ -84,11 +90,18 @@ class GraphDrawLayerView: UIView {
     override var frame: CGRect {
         didSet {
             if self.frame != oldValue {
-                self.pathLayer.frame.size = self.frame.size
-                self.selectedPath.frame.size = self.frame.size
-                self.pathLayer.path = self.generatePath(graphContext: self.graphContext)
+                self.updateFrame()
             }
         }
+    }
+
+    var availbleFrame: CGRect = .zero
+
+    func updateFrame() {
+        self.availbleFrame = CGRect(x: 0, y: self.offset, width: self.frame.width, height: self.frame.height - self.offset)
+        self.pathLayer.frame = self.availbleFrame
+        self.selectedPath.frame = self.availbleFrame
+        self.pathLayer.path = self.generatePath(graphContext: self.graphContext)
     }
 
     func update(graphContext: GraphContext?, animationDuration: TimeInterval) {
@@ -104,11 +117,11 @@ class GraphDrawLayerView: UIView {
     }
 
     func generatePath(graphContext: GraphContext?) -> CGPath {
-        guard let graphContext = graphContext, self.frame.width > 0 else {
+        guard let graphContext = graphContext, self.availbleFrame.width > 0 else {
             return CGMutablePath()
         }
 
-        let fullWidth = round(self.frame.width / graphContext.interval)
+        let fullWidth = round(self.availbleFrame.width / graphContext.interval)
         let offset = graphContext.range.lowerBound * fullWidth
 
         let steps = graphContext.stepsBaseOn(width: fullWidth)
@@ -119,12 +132,12 @@ class GraphDrawLayerView: UIView {
             let value: Int = graphContext.values[index] // FIXME
             let x = round(steps.pixels * CGFloat(index)) - offset
             let yPercent = CGFloat(value) / CGFloat(graphContext.maxValue)
-            if x > (-1.1 * self.frame.width) && x < (self.frame.width * 1.1) {
+            if x > (-1.1 * self.availbleFrame.width) && x < (self.availbleFrame.width * 1.1) {
                 if !isMoved {
-                    path.move(to: CGPoint(x: x, y: (1 - yPercent) * self.frame.height))
+                    path.move(to: CGPoint(x: x, y: (1 - yPercent) * self.availbleFrame.height))
                     isMoved = true
                 }
-                path.addLine(to: CGPoint(x: x, y: (1 - yPercent) * self.frame.height))
+                path.addLine(to: CGPoint(x: x, y: (1 - yPercent) * self.availbleFrame.height))
             }
         }
 
@@ -132,11 +145,11 @@ class GraphDrawLayerView: UIView {
     }
 
     func reportLabelPoints(graphContext: GraphContext?) -> [(Int, CGFloat)] {
-        guard let graphContext = graphContext, self.frame.width > 0 else {
+        guard let graphContext = graphContext, self.availbleFrame.width > 0 else {
             return []
         }
 
-        let fullWidth = round(self.frame.width / graphContext.interval)
+        let fullWidth = round(self.availbleFrame.width / graphContext.interval)
         let offset = graphContext.range.lowerBound * fullWidth
         let numberOfLabels = Int(ceil(5 / graphContext.interval))
         let stepOfLabel = (graphContext.values.count / numberOfLabels)
@@ -147,7 +160,7 @@ class GraphDrawLayerView: UIView {
         for index in 0..<(graphContext.values.count / steps.points) {
             if (index * steps.points) % stepOfLabel == 0 {
                 let x = round(steps.pixels * CGFloat(index)) - offset
-                if x > (-1.5 * self.frame.width) && x < (self.frame.width * 1.5) {
+                if x > (-1.5 * self.availbleFrame.width) && x < (self.availbleFrame.width * 1.5) {
                     positivePoints.append(((index * steps.points), x))
                 }
             }
@@ -161,11 +174,11 @@ class GraphDrawLayerView: UIView {
     }
 
     func selectPosition(graphContext: GraphContext?, position: CGFloat, animationDuration: TimeInterval) -> (CGFloat, Int) {
-        guard let graphContext = graphContext, self.frame.width > 0 else {
+        guard let graphContext = graphContext, self.availbleFrame.width > 0 else {
             return (0, 0)
         }
 
-        let fullWidth = round(self.frame.width / graphContext.interval)
+        let fullWidth = round(self.availbleFrame.width / graphContext.interval)
         let offset = graphContext.range.lowerBound * fullWidth
         let steps = graphContext.stepsBaseOn(width: fullWidth)
 
@@ -182,7 +195,7 @@ class GraphDrawLayerView: UIView {
             if abs(x - position) < delta {
                 delta = abs(x - position)
                 cachedPosition = x
-                cachedYPosition = (1 - yPercent) * self.frame.height
+                cachedYPosition = (1 - yPercent) * self.availbleFrame.height
                 cachedIndex = index * steps.points
             }
         }
