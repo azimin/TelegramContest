@@ -9,15 +9,22 @@
 import UIKit
 
 class DateSelectionView: UIView {
-    let dateLabel = UILabel()
-    var line = UIView()
-    var numberLabels: [UILabel] = []
+    enum Style {
+        case plate
+        case line
+    }
+
+    private var line: UIView?
+    private var plate: UIVisualEffectView?
+
+    private let dateLabel = UILabel()
+    private var numberLabels: [UILabel] = []
 
     var selectedIndex: Int?
+    private let style: Style
 
-    var plate = UIVisualEffectView(effect: UIBlurEffect(style: .dark))
-
-    init() {
+    init(style: Style) {
+        self.style = style
         super.init(frame: .zero)
         self.setup()
     }
@@ -26,36 +33,74 @@ class DateSelectionView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
 
-    func setup() {
-        self.addSubview(self.line)
-        self.addSubview(self.plate)
+    private func setup() {
+        switch self.style {
+        case .line:
+            self.setupLine()
+        case .plate:
+            self.setupPlate()
+        }
+    }
 
-        self.plate.layer.cornerRadius = 8
-        self.plate.layer.masksToBounds = true
+    private func setupLine() {
+        let line = UIView()
+        line.frame = CGRect(x: 0, y: 0, width: 1, height: 100)
+        line.isHidden = true
+        self.addSubview(line)
+        self.line = line
+    }
+
+    private func setupPlate() {
+        let plate = UIVisualEffectView(effect: UIBlurEffect(style: .dark))
+        self.addSubview(plate)
+
+        plate.layer.cornerRadius = 8
+        plate.layer.masksToBounds = true
 
         self.dateLabel.frame = CGRect(x: 8, y: 0, width: 100, height: 30)
         self.dateLabel.text = "Feb 12\n2019"
         self.dateLabel.textColor = UIColor.white
         self.dateLabel.numberOfLines = 0
-        self.plate.contentView.addSubview(self.dateLabel)
+        plate.contentView.addSubview(self.dateLabel)
         self.dateLabel.font = UIFont.boldSystemFont(ofSize: 12)
 
-        self.line.frame = CGRect(x: 0, y: 0, width: 1, height: 100)
-        self.line.isHidden = true
+        self.plate = plate
     }
 
     var theme: Theme = .light {
         didSet {
             let config = theme.configuration
             self.dateLabel.textColor = config.isLight ? UIColor(hex: "6D6D72") : UIColor.white
-            self.plate.effect = config.isLight ? UIBlurEffect(style: .light) : UIBlurEffect(style: .dark)
-            self.line.backgroundColor = config.lineColor
+            self.plate?.effect = config.isLight ? UIBlurEffect(style: .light) : UIBlurEffect(style: .dark)
+            self.line?.backgroundColor = config.lineColor
         }
     }
 
     func show(position: CGFloat, graph: GraphDataSource, enabledRows: [Int], index: Int) {
-        self.plate.isHidden = false
-        self.line.isHidden = false
+        switch self.style {
+        case .line:
+            self.showLine(position: position)
+        case .plate:
+            self.showPlate(position: position, graph: graph, enabledRows: enabledRows, index: index)
+        }
+    }
+
+    private func showLine(position: CGFloat) {
+        guard let line = self.line else {
+            return
+        }
+
+        line.isHidden = false
+        line.frame.size = CGSize(width: 1, height: self.frame.height)
+        line.center = CGPoint(x: position, y: self.center.y)
+    }
+
+    private func showPlate(position: CGFloat, graph: GraphDataSource, enabledRows: [Int], index: Int) {
+        guard let plate = self.plate else {
+            return
+        }
+
+        plate.isHidden = false
         self.numberLabels.forEach({ $0.removeFromSuperview() })
         self.numberLabels = []
         self.selectedIndex = index
@@ -74,7 +119,7 @@ class DateSelectionView: UIView {
                 maxWidth = size.width
             }
 
-            self.plate.contentView.addSubview(label)
+            plate.contentView.addSubview(label)
 
             self.numberLabels.append(label)
         }
@@ -100,20 +145,18 @@ class DateSelectionView: UIView {
 
         let plateWidth = maxWidth + 63 + 8
         var platePosition = position
-        self.plate.frame = CGRect(x: 0, y: 0, width: plateWidth, height: y)
+        plate.frame = CGRect(x: 0, y: 0, width: plateWidth, height: y)
         if platePosition - plateWidth / 2 < -1 {
             platePosition -= (platePosition + 1 - plateWidth / 2)
         } else if platePosition + plateWidth / 2 > (self.frame.width + 1) {
             platePosition += (self.frame.width + 1 - platePosition - plateWidth / 2)
         }
-        self.plate.center = CGPoint(x: platePosition, y: y / 2)
+        plate.center = CGPoint(x: platePosition, y: y / 2)
 
-        self.dateLabel.center = CGPoint(x: self.dateLabel.center.x, y: self.plate.frame.height / 2)
-        self.line.frame.size = CGSize(width: 1, height: self.frame.height)
-        self.line.center = CGPoint(x: position, y: self.center.y)
+        self.dateLabel.center = CGPoint(x: self.dateLabel.center.x, y: plate.frame.height / 2)
     }
 
-    func getDateComponents(_ date: Date) -> (String, String) {
+    private func getDateComponents(_ date: Date) -> (String, String) {
         let dateFormatter1 = DateFormatter()
         dateFormatter1.dateFormat = "MMM d"
 
@@ -124,8 +167,8 @@ class DateSelectionView: UIView {
     }
 
     func hide() {
-        self.plate.isHidden = true
-        self.line.isHidden = true
+        self.plate?.isHidden = true
+        self.line?.isHidden = true
         self.selectedIndex = nil
     }
 }

@@ -58,7 +58,9 @@ class GraphContentView: UIView {
     private var yAxisLineOverlay = YAxisOverlayView(style: .line)
     private var yAxisLabelOverlay = YAxisOverlayView(style: .label)
     private lazy var yAxisOverlays = [yAxisLineOverlay, yAxisLabelOverlay]
-    private var selectionView = DateSelectionView()
+    private var selectionPlateView = DateSelectionView(style: .plate)
+    private var selectionLineView = DateSelectionView(style: .line)
+    private lazy var selectionViews = [selectionPlateView, selectionLineView]
     private var lastVisible: GraphDrawLayerView?
 
     init(dataSource: GraphDataSource? = nil, selectedRange: Range<CGFloat> = 0..<1) {
@@ -93,7 +95,7 @@ class GraphContentView: UIView {
         self.graphDrawLayers.forEach({ $0.frame = topFrame })
         self.yAxisOverlays.forEach({ $0.frame = topFrame })
         self.dateLabels.frame = CGRect(x: Constants.offset, y: graphHeight + 20, width: self.frame.size.width - Constants.offset * 2, height: Constants.labelsHeight)
-        self.selectionView.frame = CGRect(x: Constants.offset, y: 6, width: self.frame.size.width - Constants.offset * 2, height: graphHeight + 14)
+        self.selectionViews.forEach({ $0.frame = CGRect(x: Constants.offset, y: 6, width: self.frame.size.width - Constants.offset * 2, height: graphHeight + 14) })
     }
 
     var theme: Theme = .light {
@@ -101,7 +103,7 @@ class GraphContentView: UIView {
             let config = theme.configuration
             self.backgroundColor = config.backgroundColor
             self.graphDrawLayers.forEach({ $0.theme = theme })
-            self.selectionView.theme = theme
+            self.selectionViews.forEach({ $0.theme = theme })
             self.yAxisOverlays.forEach({ $0.theme = theme })
             self.dateLabels.theme = theme
         }
@@ -110,8 +112,9 @@ class GraphContentView: UIView {
     func setup() {
         self.addSubview(self.dateLabels)
         self.addSubview(self.yAxisLineOverlay)
+        self.addSubview(self.selectionLineView)
         self.addSubview(self.yAxisLabelOverlay)
-        self.addSubview(self.selectionView)
+        self.addSubview(self.selectionPlateView)
     }
 
     func update(animated: Bool, force: Bool = false) {
@@ -247,8 +250,8 @@ class GraphContentView: UIView {
             return
         }
         let location = touch.location(in: self)
-        let locationInSelection = touch.location(in: self.selectionView)
-        if self.selectionView.frame.contains(location) {
+        let locationInSelection = touch.location(in: self.selectionPlateView)
+        if self.selectionPlateView.frame.contains(location) {
             self.showSelection(location: locationInSelection, animated: false, shouldRespectCahce: false)
         }
     }
@@ -260,15 +263,15 @@ class GraphContentView: UIView {
             return
         }
         let location = touch.location(in: self)
-        let locationInSelection = touch.location(in: self.selectionView)
-        if self.selectionView.frame.contains(location) {
+        let locationInSelection = touch.location(in: self.selectionPlateView)
+        if self.selectionPlateView.frame.contains(location) {
             self.showSelection(location: locationInSelection, animated: false, shouldRespectCahce: true)
         }
     }
 
     func hideSelection() {
         self.selectedLocation = nil
-        self.selectionView.hide()
+        self.selectionViews.forEach({ $0.hide() })
         for layer in self.graphDrawLayers {
             layer.hidePosition()
         }
@@ -304,14 +307,14 @@ class GraphContentView: UIView {
             )
 
             if !isShowed {
-                if shouldRespectCahce && self.selectionView.selectedIndex == position.1 {
+                if shouldRespectCahce && self.selectionPlateView.selectedIndex == position.1 {
                     continue
                 }
 
-                self.selectionView.show(position: position.0,
-                                        graph: dataSource,
-                                        enabledRows: self.enabledRows,
-                                        index: position.1)
+                self.selectionViews.forEach({ $0.show(position: position.0,
+                                                      graph: dataSource,
+                                                      enabledRows: self.enabledRows,
+                                                      index: position.1) })
                 isShowed = true
             }
         }
