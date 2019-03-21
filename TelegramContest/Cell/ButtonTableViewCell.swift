@@ -9,7 +9,6 @@
 import UIKit
 
 class ButtonTableViewCell: UITableViewCell {
-
     var buttonLabel = UILabel()
 
     var theme: Theme = .light {
@@ -43,16 +42,4 @@ class ButtonTableViewCell: UITableViewCell {
         self.buttonLabel.centerXAnchor.constraint(equalTo: self.contentView.centerXAnchor).isActive = true
         self.buttonLabel.centerYAnchor.constraint(equalTo: self.contentView.centerYAnchor).isActive = true
     }
-
-    override func awakeFromNib() {
-        super.awakeFromNib()
-        // Initialization code
-    }
-
-    override func setSelected(_ selected: Bool, animated: Bool) {
-        super.setSelected(selected, animated: animated)
-
-        // Configure the view for the selected state
-    }
-
 }

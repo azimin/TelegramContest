@@ -101,6 +101,32 @@ class GraphDataSource {
     }
 }
 
+class SelectioTableViewCell: UITableViewCell {
+    var theme: Theme = .light {
+        didSet {
+            self.updateTheme()
+        }
+    }
+
+    func updateTheme() {
+        let config = self.theme.configuration
+        self.textLabel?.textColor = config.nameColor
+        self.contentView.backgroundColor = config.backgroundColor
+        self.textLabel?.backgroundColor = config.backgroundColor
+        self.accessoryView?.backgroundColor = config.backgroundColor
+        self.backgroundColor = config.backgroundColor
+    }
+    
+    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
+        super.init(style: style, reuseIdentifier: reuseIdentifier)
+        self.updateTheme()
+    }
+
+    required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+}
+
 class ViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
 
     let tableView = UITableView(frame: .zero, style: .grouped)
@@ -155,6 +181,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         self.tableView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor).isActive = true
         self.tableView.register(GraphTableViewCell.self, forCellReuseIdentifier: "GraphTableViewCell")
         self.tableView.register(ButtonTableViewCell.self, forCellReuseIdentifier: "ButtonTableViewCell")
+        self.tableView.register(SelectioTableViewCell.self, forCellReuseIdentifier: "SelectionUITableViewCell")
     }
 
     var theme: Theme = Theme.light {
@@ -201,18 +228,14 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
             cell.graphView.updateEnabledRows(section.enabledRows, animated: false)
             return cell
         default:
-            let config = theme.configuration
-            let cell = UITableViewCell(style: .default, reuseIdentifier: nil)
+            let cell = tableView.dequeueReusableCell(withIdentifier: "SelectionUITableViewCell", for: indexPath) as! SelectioTableViewCell
+            cell.theme = self.theme
             let index = indexPath.row - 1
             let row = dataSource.yRows[index]
             cell.imageView?.image = image(from: row.color)?.roundedImage
             cell.textLabel?.text = row.name
-            cell.textLabel?.textColor = config.nameColor
             cell.textLabel?.font = UIFont.systemFont(ofSize: 17)
-            cell.isSelected = true
             cell.accessoryType = section.enabledRows.contains(indexPath.row - 1) ? .checkmark : .none
-            cell.contentView.backgroundColor = config.backgroundColor
-            cell.backgroundColor = config.backgroundColor
             return cell
         }
     }

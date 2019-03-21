@@ -33,9 +33,7 @@ class ViewsOverlayView: UIView {
 
     private var allItems: [VisualItem] = []
     private var onRemoving: [UILabel] = []
-    private var showAction: (() -> Void)?
-    private var startTime = 0.0
-    private var displayLink: CADisplayLink?
+    var thresholdOptimization = ThresholdOptimization(elapsedTime: 0.02)
 
     func showItems(items: [Item]) {
         var newItems: [Item] = items
@@ -50,7 +48,9 @@ class ViewsOverlayView: UIView {
             }
         }
 
-        self.show(items: newItems)
+        thresholdOptimization.update {
+            self.show(items: newItems)
+        }
 
         if newItems.count > 0 {
             self.onRemoving.forEach({ $0.removeFromSuperview() })
@@ -68,39 +68,17 @@ class ViewsOverlayView: UIView {
     }
 
     func show(items: [Item]) {
-        self.showAction = {
-            let config = self.theme.configuration
-            for item in items {
-                let label = UILabel(frame: CGRect(x: 0, y: 0, width: 60, height: 26))
-                label.center = CGPoint(x: item.position, y: label.center.y)
-                label.text = item.text
-                label.font = UIFont.systemFont(ofSize: 12)
-                label.textAlignment = .center
-                label.textColor = config.titleColor
-                self.addSubview(label)
-                let visualItem = VisualItem(label: label, item: item)
-                self.allItems.append(visualItem)
-            }
-            self.showAction = nil
-            self.displayLink?.invalidate()
-            self.displayLink = nil
-        }
-
-        if displayLink == nil {
-            self.startTime = CACurrentMediaTime()
-            self.displayLink = CADisplayLink(target: self, selector: #selector(self.displayLinkDidFire(_:)))
-            self.displayLink?.add(to: .main, forMode: .common)
-        }
-    }
-
-    @objc
-    func displayLinkDidFire(_ displayLink: CADisplayLink) {
-        let elapsed = CACurrentMediaTime() - self.startTime
-
-        if elapsed > 0.02 {
-            self.showAction?()
-            self.displayLink?.invalidate()
-            self.displayLink = nil
+        let config = self.theme.configuration
+        for item in items {
+            let label = UILabel(frame: CGRect(x: 0, y: 0, width: 60, height: 26))
+            label.center = CGPoint(x: item.position, y: label.center.y)
+            label.text = item.text
+            label.font = UIFont.systemFont(ofSize: 12)
+            label.textAlignment = .center
+            label.textColor = config.titleColor
+            self.addSubview(label)
+            let visualItem = VisualItem(label: label, item: item)
+            self.allItems.append(visualItem)
         }
     }
 

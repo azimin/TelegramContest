@@ -25,6 +25,7 @@
 		9F26424D22400E3800FEB2DD /* DateSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F26424C22400E3800FEB2DD /* DateSelectionView.swift */; };
 		9F26424F2240E30300FEB2DD /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F26424E2240E30300FEB2DD /* Theme.swift */; };
 		9F2642512240ECB000FEB2DD /* ButtonTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F2642502240ECB000FEB2DD /* ButtonTableViewCell.swift */; };
+		9FAAA9A52242132300726226 /* ThresholdOptimization.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FAAA9A42242132300726226 /* ThresholdOptimization.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -48,6 +49,7 @@
 		9F26424C22400E3800FEB2DD /* DateSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateSelectionView.swift; sourceTree = "<group>"; };
 		9F26424E2240E30300FEB2DD /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		9F2642502240ECB000FEB2DD /* ButtonTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonTableViewCell.swift; sourceTree = "<group>"; };
+		9FAAA9A42242132300726226 /* ThresholdOptimization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThresholdOptimization.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -114,6 +116,7 @@
 				9F264246224005AE00FEB2DD /* GraphDrawLayerView.swift */,
 				9F264248224005BF00FEB2DD /* AnimationCounter.swift */,
 				9F26424C22400E3800FEB2DD /* DateSelectionView.swift */,
+				9FAAA9A42242132300726226 /* ThresholdOptimization.swift */,
 				9F26424A224005CC00FEB2DD /* chart_data.json */,
 			);
 			path = Graph;
@@ -204,6 +207,7 @@
 				9F2642432240058600FEB2DD /* ViewsOverlayView.swift in Sources */,
 				9F264225224004D300FEB2DD /* AppDelegate.swift in Sources */,
 				9F26423B2240054700FEB2DD /* GraphView.swift in Sources */,
+				9FAAA9A52242132300726226 /* ThresholdOptimization.swift in Sources */,
 				9F26423D2240055500FEB2DD /* GraphControlView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
