@@ -68,11 +68,26 @@ class GraphView: UIView {
         self.addSubview(self.graphControlView)
         self.addSubview(self.graphContentView)
         self.graphControlView.control.addTarget(self, action: #selector(self.rangeUpdated(control:)), for: .valueChanged)
+        self.graphControlView.control.addTarget(self, action: #selector(self.rangeUpdateEnded(control:)), for: .editingDidEnd)
+        self.graphControlView.control.addTarget(self, action: #selector(self.rangeUpdateStated(control:)), for: .editingDidBegin)
     }
 
     @objc func rangeUpdated(control: ThumbnailControl) {
         self.selectedRange = control.range
         self.rangeUpdated?(control.range)
+    }
+
+    @objc func rangeUpdateEnded(control: ThumbnailControl) {
+        self.graphContentView.isZoomingMode = false
+    }
+
+    @objc func rangeUpdateStated(control: ThumbnailControl) {
+        switch control.gesture {
+        case .increaseLeft, .increaseRight:
+            self.graphContentView.isZoomingMode = true
+        case .move, .none:
+            break
+        }
     }
 
 }

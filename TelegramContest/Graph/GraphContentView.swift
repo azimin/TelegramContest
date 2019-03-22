@@ -28,10 +28,29 @@ class GraphContentView: UIView {
             self.update(animated: false)
         }
     }
+
     var selectedRange: Range<CGFloat> {
         didSet {
             self.hideSelection()
             self.update(animated: false)
+        }
+    }
+
+    var isZoomingMode: Bool = false {
+        didSet {
+            if oldValue != isZoomingMode {
+                self.updateZoomingStatus()
+            }
+        }
+    }
+    private var cachedRange: Range<CGFloat>?
+
+    func updateZoomingStatus() {
+        if self.isZoomingMode {
+            self.cachedRange = self.selectedRange
+        } else {
+            self.cachedRange = nil
+            self.dateLabels.finishTransision()
         }
     }
 
@@ -98,7 +117,7 @@ class GraphContentView: UIView {
         self.graphDrawLayers.forEach({ $0.frame = graphFrame })
         self.yAxisOverlays.forEach({ $0.frame = topFrame })
         self.dateLabels.frame = CGRect(x: Constants.offset, y: graphHeight + 20, width: self.frame.size.width - Constants.offset * 2, height: Constants.labelsHeight)
-        self.selectionViews.forEach({ $0.frame = CGRect(x: Constants.offset, y: 6, width: self.frame.size.width - Constants.offset * 2, height: graphHeight + 14) })
+        self.selectionViews.forEach({ $0.frame = CGRect(x: Constants.offset, y: 6, width: self.frame.size.width - Constants.offset * 2, height: graphHeight + 8) })
         self.graphDrawLayers.forEach({ $0.offset = 20 })
         self.updateShadow()
     }
@@ -186,12 +205,12 @@ class GraphContentView: UIView {
 
         if force {
             self.currentMaxValue = maxValue
-            self.yAxisOverlays.forEach({ $0.update(value: maxValue, animated: false) })
+            self.yAxisOverlays.forEach({ $0.update(value: maxValue, animated: animated) })
         }
 
         if self.currentMaxValue == 0 || animated {
             self.currentMaxValue = maxValue
-            self.yAxisOverlays.forEach({ $0.update(value: maxValue, animated: false) })
+            self.yAxisOverlays.forEach({ $0.update(value: maxValue, animated: animated) })
         } else {
             self.counter.animate(from: self.currentMaxValue, to: maxValue) { (value) in
                 self.currentMaxValue = value
@@ -200,7 +219,7 @@ class GraphContentView: UIView {
             self.yAxisOverlays.forEach({ $0.update(value: maxValue, animated: true) })
         }
 
-        var anyPoints: [(Int, CGFloat)] = []
+        var anyPoints: [GraphDrawLayerView.LabelPosition] = []
         for index in 0..<self.graphDrawLayers.count {
             let graphView = self.graphDrawLayers[index]
             let isHidden = !enabledRows.contains(index)
@@ -238,7 +257,7 @@ class GraphContentView: UIView {
             graphView.selectedPath.strokeColor = yRow.color.cgColor
 
             if anyPoints.isEmpty {
-                anyPoints = graphView.reportLabelPoints(graphContext: context)
+                anyPoints = graphView.reportLabelPoints2(graphContext: context, startingRange: self.cachedRange, zooming: self.isZoomingMode)
             }
 
             if !graphView.isHidding {
@@ -248,8 +267,8 @@ class GraphContentView: UIView {
 
         var items: [ViewsOverlayView.Item] = []
         for point in anyPoints {
-            let xRow = dataSource.xRow.dateStrings[point.0]
-            let item = ViewsOverlayView.Item(text: xRow, position: point.1)
+            let xRow = dataSource.xRow.dateStrings[point.index]
+            let item = ViewsOverlayView.Item(text: xRow, position: point.position, alpha: point.alpha)
             items.append(item)
         }
         self.dateLabels.showItems(items: items)

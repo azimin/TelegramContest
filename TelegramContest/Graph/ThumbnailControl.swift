@@ -37,8 +37,17 @@ class ThumbnailControl: UIControl {
             self.endOverlay.backgroundColor = config.backgroundColor.withAlphaComponent(0.7)
         }
     }
+    private(set) var gesture: Gesture = .none {
+        didSet {
+            switch gesture {
+            case .increaseLeft, .increaseRight, .move:
+                self.sendActions(for: .editingDidBegin)
+            case .none:
+                self.sendActions(for: .editingDidEnd)
+            }
+        }
+    }
 
-    private var gesture: Gesture = .none
     var range: Range<CGFloat> = 0..<1 {
         didSet {
             self.update()

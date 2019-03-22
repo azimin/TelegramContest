@@ -169,6 +169,102 @@ class GraphDrawLayerView: UIView {
         return positivePoints
     }
 
+    // MARK: Labels
+
+    struct LabelPosition {
+        var position: CGFloat
+        var index: Int
+        var alpha: CGFloat
+    }
+
+    private func getValue(baseOn value: Int) -> Int {
+        return Int(pow(2, CGFloat(Int(ceil(log2(CGFloat(value)))))))
+    }
+
+    private func findNear(value: Int, step: Int, positive: Bool, devidedBy: Int) -> Int {
+        if (value + step) % devidedBy == 0 {
+            return value + step
+        }
+        if positive {
+            return findNear(value: value, step: step + 1, positive: positive, devidedBy: devidedBy)
+        } else {
+            return findNear(value: value, step: step - 1, positive: positive, devidedBy: devidedBy)
+        }
+    }
+
+    typealias ConverResult = (lower: Int, upper: Int, step: CGFloat, progress: CGFloat)
+    private func convert(range: Range<CGFloat>, count: Int, defineLow: Int? = nil, defineUpper: Int? = nil) -> ConverResult {
+        let maxValue = pow(2, CGFloat(Int(log2(CGFloat(count)))))
+        let step = CGFloat(count) / CGFloat(maxValue)
+
+        var lower = Int((CGFloat(count) * range.lowerBound) / step)
+        var upper = Int((CGFloat(count) * range.upperBound) / step)
+        let interval = upper - lower
+
+        let value = getValue(baseOn: interval)
+        let progress = ceil(log2(CGFloat(value))) - log2(CGFloat(interval))
+
+        lower = defineLow ?? findNear(value: lower, step: 0, positive: false, devidedBy: value)
+        upper = defineUpper ?? findNear(value: upper, step: 0, positive: true, devidedBy: value)
+
+        return (lower, upper, step, progress)
+    }
+
+    func reportLabelPoints2(graphContext: GraphContext?, startingRange: Range<CGFloat>?, zooming: Bool) -> [LabelPosition] {
+        guard let graphContext = graphContext, self.availbleFrame.width > 0 else {
+            return []
+        }
+
+        let fullWidth = round(self.availbleFrame.width / graphContext.interval)
+        let steps = graphContext.stepsBaseOn(width: fullWidth)
+        let offset = graphContext.range.lowerBound * fullWidth
+
+        let count = (graphContext.values.count / steps.points)
+        let currentPair: ConverResult
+        if let startingRange = startingRange {
+            let startingPair = self.convert(range: startingRange, count: count)
+            if startingRange.lowerBound == graphContext.range.lowerBound {
+                currentPair = self.convert(range: graphContext.range, count: count, defineLow: startingPair.lower)
+            } else {
+                currentPair = self.convert(range: graphContext.range, count: count, defineUpper: startingPair.upper)
+            }
+        } else {
+            currentPair = self.convert(range: graphContext.range, count: count)
+        }
+
+        let lower = currentPair.lower
+        let upper = currentPair.upper
+
+        let center = (upper - lower) / 2
+        let secondLevel = center / 2
+        let thirdLevel = secondLevel / 2
+
+        let newValues: [Int]
+        if zooming || currentPair.progress > 0.5 {
+            newValues = [lower, lower + thirdLevel, lower + secondLevel, lower + secondLevel + thirdLevel, lower + center, lower + center + thirdLevel, lower + center + secondLevel, lower + center + thirdLevel + secondLevel, upper]
+        } else {
+            newValues = [lower, lower + secondLevel, lower + center, lower + center + secondLevel, upper]
+        }
+        let indexes = newValues.map({ Int(CGFloat($0) * currentPair.step) })
+
+        var positivePoints: [(Int, CGFloat)] = []
+        for index in 0..<(graphContext.values.count / steps.points) {
+            if indexes.contains(index) {
+                let x = round(steps.pixels * CGFloat(index)) - offset
+                positivePoints.append(((index * steps.points), x))
+            }
+        }
+
+        var points: [LabelPosition] = []
+        for (index, pair) in positivePoints.enumerated() {
+            let alpha = (index % 2 == 1) ? currentPair.progress : 1
+            let point = LabelPosition(position: pair.1, index: pair.0, alpha: zooming ? alpha : 1)
+            points.append(point)
+        }
+
+        return points
+    }
+
     func hidePosition() {
         self.selectedPath.path = nil
     }

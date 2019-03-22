@@ -17,6 +17,7 @@ class ViewsOverlayView: UIView {
     struct Item: Equatable {
         let text: String
         let position: CGFloat
+        let alpha: CGFloat
 
         static func == (lhs: Item, rhs: Item) -> Bool {
             return lhs.text == rhs.text
@@ -59,12 +60,25 @@ class ViewsOverlayView: UIView {
         itemsToDisapear.forEach({ self.disaper(item: $0) })
     }
 
+    func finishTransision() {
+        for item in self.allItems {
+            if item.label.alpha > 0.5 {
+                UIView.animate(withDuration: 0.25) {
+                    item.label.alpha = 1
+                }
+            } else {
+                self.disaper(item: item.item)
+            }
+        }
+    }
+
     func move(item: Item) {
         guard let index = self.allItems.firstIndex(where: { $0.item == item }) else {
             return
         }
         let visualItem = self.allItems[index]
         visualItem.label.center = CGPoint(x: item.position, y: visualItem.label.center.y)
+        visualItem.label.alpha = item.alpha
     }
 
     func show(items: [Item]) {
@@ -76,6 +90,7 @@ class ViewsOverlayView: UIView {
             label.font = UIFont.systemFont(ofSize: 12)
             label.textAlignment = .center
             label.textColor = config.titleColor
+            label.alpha = item.alpha
             self.addSubview(label)
             let visualItem = VisualItem(label: label, item: item)
             self.allItems.append(visualItem)
