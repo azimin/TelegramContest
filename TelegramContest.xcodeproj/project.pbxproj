@@ -7,11 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		9F20A4CB2244B9D400BE0210 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9F20A4CA2244B9D400BE0210 /* LaunchScreen.storyboard */; };
 		9F264225224004D300FEB2DD /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F264224224004D300FEB2DD /* AppDelegate.swift */; };
 		9F264227224004D400FEB2DD /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F264226224004D400FEB2DD /* ViewController.swift */; };
-		9F26422A224004D400FEB2DD /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9F264228224004D400FEB2DD /* Main.storyboard */; };
 		9F26422C224004D500FEB2DD /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9F26422B224004D500FEB2DD /* Assets.xcassets */; };
-		9F26422F224004D500FEB2DD /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9F26422D224004D500FEB2DD /* LaunchScreen.storyboard */; };
 		9F2642382240052D00FEB2DD /* GraphTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F2642372240052D00FEB2DD /* GraphTableViewCell.swift */; };
 		9F26423B2240054700FEB2DD /* GraphView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F26423A2240054700FEB2DD /* GraphView.swift */; };
 		9F26423D2240055500FEB2DD /* GraphControlView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F26423C2240055500FEB2DD /* GraphControlView.swift */; };
@@ -29,12 +28,11 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		9F20A4CA2244B9D400BE0210 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		9F264221224004D300FEB2DD /* TelegramContest.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TelegramContest.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9F264224224004D300FEB2DD /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		9F264226224004D400FEB2DD /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
-		9F264229224004D400FEB2DD /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		9F26422B224004D500FEB2DD /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		9F26422E224004D500FEB2DD /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		9F264230224004D500FEB2DD /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		9F2642372240052D00FEB2DD /* GraphTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GraphTableViewCell.swift; sourceTree = "<group>"; };
 		9F26423A2240054700FEB2DD /* GraphView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GraphView.swift; sourceTree = "<group>"; };
@@ -87,9 +85,8 @@
 				9F2642392240054200FEB2DD /* Graph */,
 				9F2642362240052400FEB2DD /* Cell */,
 				9F264226224004D400FEB2DD /* ViewController.swift */,
-				9F264228224004D400FEB2DD /* Main.storyboard */,
 				9F26422B224004D500FEB2DD /* Assets.xcassets */,
-				9F26422D224004D500FEB2DD /* LaunchScreen.storyboard */,
+				9F20A4CA2244B9D400BE0210 /* LaunchScreen.storyboard */,
 				9F264230224004D500FEB2DD /* Info.plist */,
 			);
 			path = TelegramContest;
@@ -180,10 +177,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9F26422F224004D500FEB2DD /* LaunchScreen.storyboard in Resources */,
+				9F20A4CB2244B9D400BE0210 /* LaunchScreen.storyboard in Resources */,
 				9F26422C224004D500FEB2DD /* Assets.xcassets in Resources */,
 				9F26424B224005CC00FEB2DD /* chart_data.json in Resources */,
-				9F26422A224004D400FEB2DD /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -213,25 +209,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
-
-/* Begin PBXVariantGroup section */
-		9F264228224004D400FEB2DD /* Main.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				9F264229224004D400FEB2DD /* Base */,
-			);
-			name = Main.storyboard;
-			sourceTree = "<group>";
-		};
-		9F26422D224004D500FEB2DD /* LaunchScreen.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				9F26422E224004D500FEB2DD /* Base */,
-			);
-			name = LaunchScreen.storyboard;
-			sourceTree = "<group>";
-		};
-/* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		9F264231224004D500FEB2DD /* Debug */ = {
