@@ -130,35 +130,14 @@ class SelectioTableViewCell: UITableViewCell {
 class ViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
 
     let tableView = UITableView(frame: .zero, style: .grouped)
-
-    var dataSource: GraphDataSource = {
-        var yRow1Values: [Int] = []
-        var yRow2Values: [Int] = []
-        var xRowValues: [Date] = []
-
-        let date = Date()
-        for i in 0..<100 {
-            yRow1Values.append(Int.random(in: 0..<(50 + i)))
-            yRow2Values.append(Int.random(in: 0..<(100 + i)))
-            xRowValues.append(date.addingTimeInterval(60 * 60 * 24 * Double(i)))
-        }
-
-        let yRow1 = GraphLineRow(color: UIColor.red, name: "First", values: yRow1Values)
-        let yRow2 = GraphLineRow(color: UIColor.blue, name: "Second", values: yRow2Values)
-
-        return GraphDataSource(
-            xRow: GraphXRow(dates: xRowValues),
-            yRows: [yRow1, yRow2]
-        )
-    }()
     var section: [Section] = []
-//    var dataSourcers: [GraphDataSource] = []
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
         let path = Bundle.main.path(forResource: "chart_data", ofType: "json")!
         let data = try! Data(contentsOf: URL(fileURLWithPath: path), options: .mappedIfSafe)
+
         let jsonResult = try! JSONSerialization.jsonObject(with: data, options: .mutableLeaves)
         if let jsonResult = jsonResult as? [Any] {
             for result in jsonResult {
