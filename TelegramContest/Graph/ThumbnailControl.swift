@@ -119,13 +119,13 @@ class ThumbnailControl: UIControl {
         switch self.gesture {
         case .increaseLeft:
             let delta = (location.x - preveousLocation.x) / self.frame.width
-            self.range = self.normalize(range: (self.range.lowerBound + delta)..<(self.range.upperBound), collapse: false)
+            self.range = self.normalize(range: (self.range.lowerBound + delta)..<(self.range.upperBound), collapse: false, movingRight: false)
         case .increaseRight:
             let delta = (location.x - preveousLocation.x) / self.frame.width
-            self.range = self.normalize(range: (self.range.lowerBound)..<(self.range.upperBound + delta), collapse: false)
+            self.range = self.normalize(range: (self.range.lowerBound)..<(self.range.upperBound + delta), collapse: false, movingRight: true)
         case .move:
             let delta = (location.x - preveousLocation.x) / self.frame.width
-            self.range = self.normalize(range: (self.range.lowerBound + delta)..<(self.range.upperBound + delta), collapse: true)
+            self.range = self.normalize(range: (self.range.lowerBound + delta)..<(self.range.upperBound + delta), collapse: true, movingRight: false)
         case .none:
             break
         }
@@ -141,16 +141,16 @@ class ThumbnailControl: UIControl {
         self.gesture = .none
     }
 
-    func normalize(range: Range<CGFloat>, collapse: Bool) -> Range<CGFloat> {
+    func normalize(range: Range<CGFloat>, collapse: Bool, movingRight: Bool) -> Range<CGFloat> {
         var collapseDelta: CGFloat = 0.2
         if collapse {
             collapseDelta = min((range.upperBound - range.lowerBound), 1)
         }
         var lower = min(max(range.lowerBound, 0), 1)
         var upper = min(max(range.upperBound, 0), 1)
-        if upper - lower <= collapseDelta {
+        if upper - lower < collapseDelta {
             let needToAdd = collapseDelta - (upper - lower)
-            if upper <= collapseDelta {
+            if upper <= collapseDelta || movingRight {
                 upper += needToAdd
             } else {
                 lower -= needToAdd

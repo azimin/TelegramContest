@@ -151,7 +151,7 @@ class GraphDrawLayerView: UIView {
 
         let fullWidth = round(self.availbleFrame.width / graphContext.interval)
         let offset = graphContext.range.lowerBound * fullWidth
-        let numberOfLabels = Int(ceil(5 / graphContext.interval))
+        let numberOfLabels = Int(ceil(4 / graphContext.interval))
         let stepOfLabel = (graphContext.values.count / numberOfLabels)
 
         let steps = graphContext.stepsBaseOn(width: fullWidth)
