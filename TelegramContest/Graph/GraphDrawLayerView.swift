@@ -192,7 +192,7 @@ class GraphDrawLayerView: UIView {
 
     typealias ReportLabelResult = (points: [LabelPosition], step: Int)
 
-    func reportLabelPoints(graphContext: GraphContext?, startingRange: Range<CGFloat>?, zooming: Bool, middleStep: Int?) -> ReportLabelResult {
+    func reportLabelPoints(graphContext: GraphContext?, startingRange: Range<CGFloat>?, zooming: Bool, zoomStep: Int?) -> ReportLabelResult {
         guard let graphContext = graphContext, self.availbleFrame.width > 0 else {
             return ([], 0)
         }
@@ -211,7 +211,7 @@ class GraphDrawLayerView: UIView {
                 currentPair = self.convert(range: graphContext.range, count: count, defineUpper: startingPair.upper)
             }
         } else {
-            currentPair = self.convert(range: graphContext.range, count: count, middleStep: middleStep)
+            currentPair = self.convert(range: graphContext.range, count: count, middleStep: zoomStep)
         }
 
         let lower = currentPair.lower

@@ -36,12 +36,14 @@ class GraphXRow {
 class Section {
     var dataSource: GraphDataSource
     var selectedRange: Range<CGFloat>
+    var zoomStep: Int?
     var enabledRows: [Int]
 
     init(dataSource: GraphDataSource, selectedRange: Range<CGFloat>, enabledRows: [Int]) {
         self.dataSource = dataSource
         self.selectedRange = selectedRange
         self.enabledRows = enabledRows
+        self.zoomStep = nil
     }
 }
 
@@ -203,6 +205,10 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
             cell.graphView.rangeUpdated = { value in
                 section.selectedRange = value
             }
+            cell.graphView.updatedZoomStep = { value in
+                section.zoomStep = value
+            }
+            cell.graphView.updateZoomStep(newValue: section.zoomStep)
             cell.graphView.selectedRange = section.selectedRange
             cell.graphView.updateEnabledRows(section.enabledRows, animated: false)
             return cell

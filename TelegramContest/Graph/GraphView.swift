@@ -43,8 +43,13 @@ class GraphView: UIView {
         self.graphContentView.updateEnabledRows(values, animated: animated)
     }
 
+    func updateZoomStep(newValue: Int?) {
+        self.graphContentView.updateZoomStep(newValue: newValue, override: false)
+    }
+
     private let graphContentView = GraphContentView()
     private let graphControlView = GraphControlView(dataSource: nil, selectedRange: 0..<1)
+    var updatedZoomStep: ((Int?) -> Void)?
 
     init() {
         self.selectedRange = 0..<1
@@ -70,6 +75,10 @@ class GraphView: UIView {
         self.graphControlView.control.addTarget(self, action: #selector(self.rangeUpdated(control:)), for: .valueChanged)
         self.graphControlView.control.addTarget(self, action: #selector(self.rangeUpdateEnded(control:)), for: .editingDidEnd)
         self.graphControlView.control.addTarget(self, action: #selector(self.rangeUpdateStated(control:)), for: .editingDidBegin)
+
+        self.graphContentView.updatedZoomStep = { value in
+            self.updatedZoomStep?(value)
+        }
     }
 
     @objc func rangeUpdated(control: ThumbnailControl) {

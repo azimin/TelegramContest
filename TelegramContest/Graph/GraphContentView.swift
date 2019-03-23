@@ -84,7 +84,15 @@ class GraphContentView: UIView {
     private var shadowImage = UIImageView(frame: .zero)
     private var shadowCachedSize: CGRect = .zero
 
-    private var middleStep: Int? = nil
+    var updatedZoomStep: ((Int?) -> Void)?
+
+    private var zoomStep: Int? = nil
+    func updateZoomStep(newValue: Int?, override: Bool) {
+        self.zoomStep = newValue
+        if override {
+            self.updatedZoomStep?(newValue)
+        }
+    }
 
     init(dataSource: GraphDataSource? = nil, selectedRange: Range<CGFloat> = 0..<1) {
         self.dataSource = dataSource
@@ -259,11 +267,11 @@ class GraphContentView: UIView {
             graphView.selectedPath.strokeColor = yRow.color.cgColor
 
             if anyPoints.isEmpty {
-                let pair = graphView.reportLabelPoints(graphContext: context, startingRange: self.cachedRange, zooming: self.isZoomingMode, middleStep: self.middleStep)
+                let pair = graphView.reportLabelPoints(graphContext: context, startingRange: self.cachedRange, zooming: self.isZoomingMode, zoomStep: self.zoomStep)
                 anyPoints = pair.points
                 
                 if self.isZoomingMode {
-                    self.middleStep = pair.step
+                    self.updateZoomStep(newValue: pair.step, override: true)
                 }
             }
 
