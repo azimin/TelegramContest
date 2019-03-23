@@ -144,31 +144,6 @@ class GraphDrawLayerView: UIView {
         return path
     }
 
-    func reportLabelPoints(graphContext: GraphContext?) -> [(Int, CGFloat)] {
-        guard let graphContext = graphContext, self.availbleFrame.width > 0 else {
-            return []
-        }
-
-        let fullWidth = round(self.availbleFrame.width / graphContext.interval)
-        let offset = graphContext.range.lowerBound * fullWidth
-        let numberOfLabels = Int(ceil(4 / graphContext.interval))
-        let stepOfLabel = (graphContext.values.count / numberOfLabels)
-
-        let steps = graphContext.stepsBaseOn(width: fullWidth)
-
-        var positivePoints: [(Int, CGFloat)] = []
-        for index in 0..<(graphContext.values.count / steps.points) {
-            if (index * steps.points) % stepOfLabel == 0 {
-                let x = round(steps.pixels * CGFloat(index)) - offset
-                if x > (-1.5 * self.availbleFrame.width) && x < (self.availbleFrame.width * 1.5) {
-                    positivePoints.append(((index * steps.points), x))
-                }
-            }
-        }
-
-        return positivePoints
-    }
-
     // MARK: Labels
 
     struct LabelPosition {
@@ -193,7 +168,8 @@ class GraphDrawLayerView: UIView {
     }
 
     typealias ConverResult = (lower: Int, upper: Int, step: CGFloat, progress: CGFloat)
-    private func convert(range: Range<CGFloat>, count: Int, defineLow: Int? = nil, defineUpper: Int? = nil) -> ConverResult {
+
+    private func convert(range: Range<CGFloat>, count: Int, defineLow: Int? = nil, defineUpper: Int? = nil, middleStep: Int? = nil) -> ConverResult {
         let maxValue = pow(2, CGFloat(Int(log2(CGFloat(count)))))
         let step = CGFloat(count) / CGFloat(maxValue)
 
@@ -201,18 +177,24 @@ class GraphDrawLayerView: UIView {
         var upper = Int((CGFloat(count) * range.upperBound) / step)
         let interval = upper - lower
 
-        let value = getValue(baseOn: interval)
+        let value = middleStep ?? getValue(baseOn: interval)
         let progress = ceil(log2(CGFloat(value))) - log2(CGFloat(interval))
 
         lower = defineLow ?? findNear(value: lower, step: 0, positive: false, devidedBy: value)
-        upper = defineUpper ?? findNear(value: upper, step: 0, positive: true, devidedBy: value)
+        if let middleStep = middleStep {
+            upper = lower + middleStep * 2
+        } else {
+            upper = defineUpper ?? findNear(value: upper, step: 0, positive: true, devidedBy: value)
+        }
 
         return (lower, upper, step, progress)
     }
 
-    func reportLabelPoints2(graphContext: GraphContext?, startingRange: Range<CGFloat>?, zooming: Bool) -> [LabelPosition] {
+    typealias ReportLabelResult = (points: [LabelPosition], step: Int)
+
+    func reportLabelPoints(graphContext: GraphContext?, startingRange: Range<CGFloat>?, zooming: Bool, middleStep: Int?) -> ReportLabelResult {
         guard let graphContext = graphContext, self.availbleFrame.width > 0 else {
-            return []
+            return ([], 0)
         }
 
         let fullWidth = round(self.availbleFrame.width / graphContext.interval)
@@ -229,7 +211,7 @@ class GraphDrawLayerView: UIView {
                 currentPair = self.convert(range: graphContext.range, count: count, defineUpper: startingPair.upper)
             }
         } else {
-            currentPair = self.convert(range: graphContext.range, count: count)
+            currentPair = self.convert(range: graphContext.range, count: count, middleStep: middleStep)
         }
 
         let lower = currentPair.lower
@@ -243,7 +225,7 @@ class GraphDrawLayerView: UIView {
         if zooming || currentPair.progress > 0.5 {
             newValues = [lower, lower + thirdLevel, lower + secondLevel, lower + secondLevel + thirdLevel, lower + center, lower + center + thirdLevel, lower + center + secondLevel, lower + center + thirdLevel + secondLevel, upper]
         } else {
-            newValues = [lower, lower + secondLevel, lower + center, lower + center + secondLevel, upper]
+            newValues = [lower, lower + secondLevel, lower + center, lower + center + secondLevel, upper, upper + secondLevel, upper + center]
         }
         let indexes = newValues.map({ Int(CGFloat($0) * currentPair.step) })
 
@@ -262,7 +244,7 @@ class GraphDrawLayerView: UIView {
             points.append(point)
         }
 
-        return points
+        return (points, currentPair.progress > 0.5 ? secondLevel : center)
     }
 
     func hidePosition() {
@@ -284,7 +266,7 @@ class GraphDrawLayerView: UIView {
         var cachedIndex = 0
 
         for index in 0..<(graphContext.values.count / steps.points) {
-            let value: Int = graphContext.values[index] // FIXME
+            let value: Int = graphContext.values[index] * steps.points
             let x = round(steps.pixels * CGFloat(index)) - offset
             let yPercent = CGFloat(value) / CGFloat(graphContext.maxValue)
 

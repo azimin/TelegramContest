@@ -136,7 +136,7 @@ class YAxisOverlayView: UIView {
                 oldPercent = CGFloat(i * step) / CGFloat(from)
             }
             let view = YAxisView(style: self.style)
-            view.label?.text = "\(step * i)"
+            view.label?.text = self.convertToText(value: step * i)
             view.frame = CGRect(x: 0, y: 0, width: self.frame.width, height: 26)
             view.alpha = 0
             view.center = CGPoint(x: view.center.x, y: self.frame.height * (1 - oldPercent) - view.frame.height / 2)
@@ -148,6 +148,21 @@ class YAxisOverlayView: UIView {
                 view.alpha = 1
                 view.center = CGPoint(x: view.center.x, y: self.frame.height * (1 - percent) - view.frame.height / 2)
             }, completion: nil)
+        }
+    }
+
+    private func convertToText(value: Int) -> String {
+        switch value {
+        case 0..<1_000:
+            return "\(value)"
+        case 1_000..<1_000_000:
+            let value = Float(value) / 1_000
+            let twoDecimalPlaces = String(format: "%.1f", value)
+            return "\(twoDecimalPlaces)k"
+        default:
+            let value = Float(value) / 1_000_000
+            let twoDecimalPlaces = String(format: "%.1f", value)
+            return "\(twoDecimalPlaces)m"
         }
     }
 }

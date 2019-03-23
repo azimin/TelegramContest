@@ -84,6 +84,8 @@ class GraphContentView: UIView {
     private var shadowImage = UIImageView(frame: .zero)
     private var shadowCachedSize: CGRect = .zero
 
+    private var middleStep: Int? = nil
+
     init(dataSource: GraphDataSource? = nil, selectedRange: Range<CGFloat> = 0..<1) {
         self.dataSource = dataSource
         self.selectedRange = selectedRange
@@ -257,7 +259,12 @@ class GraphContentView: UIView {
             graphView.selectedPath.strokeColor = yRow.color.cgColor
 
             if anyPoints.isEmpty {
-                anyPoints = graphView.reportLabelPoints2(graphContext: context, startingRange: self.cachedRange, zooming: self.isZoomingMode)
+                let pair = graphView.reportLabelPoints(graphContext: context, startingRange: self.cachedRange, zooming: self.isZoomingMode, middleStep: self.middleStep)
+                anyPoints = pair.points
+                
+                if self.isZoomingMode {
+                    self.middleStep = pair.step
+                }
             }
 
             if !graphView.isHidding {
@@ -268,7 +275,7 @@ class GraphContentView: UIView {
         var items: [ViewsOverlayView.Item] = []
         for point in anyPoints {
             let xRow = dataSource.xRow.dateStrings[point.index]
-            let item = ViewsOverlayView.Item(text: xRow, position: point.position, alpha: point.alpha)
+            let item = ViewsOverlayView.Item(text: "\(point.index)", position: point.position, alpha: point.alpha)
             items.append(item)
         }
         self.dateLabels.showItems(items: items)
