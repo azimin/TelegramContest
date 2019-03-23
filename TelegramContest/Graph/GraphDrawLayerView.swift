@@ -153,7 +153,7 @@ class GraphDrawLayerView: UIView {
     }
 
     private func getValue(baseOn value: Int) -> Int {
-        return Int(pow(2, CGFloat(Int(ceil(log2(CGFloat(value)))))))
+        return Int(pow(2, CGFloat(Int(round(log2(CGFloat(value)))))))
     }
 
     private func findNear(value: Int, step: Int, positive: Bool, devidedBy: Int) -> Int {
@@ -169,25 +169,40 @@ class GraphDrawLayerView: UIView {
 
     typealias ConverResult = (lower: Int, upper: Int, step: CGFloat, progress: CGFloat)
 
-    private func convert(range: Range<CGFloat>, count: Int, defineLow: Int? = nil, defineUpper: Int? = nil, middleStep: Int? = nil) -> ConverResult {
+    private func convert(range: Range<CGFloat>, count: Int, defineLow: Int? = nil, defineUpper: Int? = nil, defineStep: Int? = nil, middleStep: Int? = nil) -> ConverResult {
         let maxValue = pow(2, CGFloat(Int(log2(CGFloat(count)))))
         let step = CGFloat(count) / CGFloat(maxValue)
 
-        var lower = Int((CGFloat(count) * range.lowerBound) / step)
-        var upper = Int((CGFloat(count) * range.upperBound) / step)
+        let lower = Int((CGFloat(count) * range.lowerBound) / step)
+        let upper = Int((CGFloat(count) * range.upperBound) / step)
         let interval = upper - lower
 
         let value = middleStep ?? getValue(baseOn: interval)
-        let progress = ceil(log2(CGFloat(value))) - log2(CGFloat(interval))
+//        let progress = ceil(log2(CGFloat(value))) - log2(CGFloat(interval))
 
-        lower = defineLow ?? findNear(value: lower, step: 0, positive: false, devidedBy: value)
-        if let middleStep = middleStep {
-            upper = lower + middleStep * 2
-        } else {
-            upper = defineUpper ?? findNear(value: upper, step: 0, positive: true, devidedBy: value)
+        var newLower = findNear(value: lower, step: 0, positive: false, devidedBy: value)
+        if let defineLow = defineLow, let defineStep = defineStep {
+            var value: Int = defineLow
+            while newLower > value + defineStep {
+                value += defineStep
+            }
+            newLower = value
         }
 
-        return (lower, upper, step, progress)
+        let newUpper: Int
+        if let middleStep = middleStep {
+            newUpper = newLower + middleStep * 2
+        } else {
+            newUpper = defineUpper ?? findNear(value: upper, step: 0, positive: true, devidedBy: value)
+        }
+
+        let anotherProgress = CGFloat(newUpper - upper) / CGFloat(value)
+
+//        let progress = ceil(log2(CGFloat(upper - lower))) - log2(CGFloat(interval))]
+
+        print(newLower, newUpper, anotherProgress)
+
+        return (newLower, newUpper, step, anotherProgress)
     }
 
     typealias ReportLabelResult = (points: [LabelPosition], step: Int)
@@ -205,6 +220,7 @@ class GraphDrawLayerView: UIView {
         let currentPair: ConverResult
         if let startingRange = startingRange {
             let startingPair = self.convert(range: startingRange, count: count)
+            let step = (startingPair.upper - startingPair.lower) / 4
             if startingRange.lowerBound == graphContext.range.lowerBound {
                 currentPair = self.convert(range: graphContext.range, count: count, defineLow: startingPair.lower)
             } else {
@@ -222,7 +238,7 @@ class GraphDrawLayerView: UIView {
         let thirdLevel = secondLevel / 2
 
         let newValues: [Int]
-        if zooming || currentPair.progress > 0.5 {
+        if zooming {
             newValues = [lower, lower + thirdLevel, lower + secondLevel, lower + secondLevel + thirdLevel, lower + center, lower + center + thirdLevel, lower + center + secondLevel, lower + center + thirdLevel + secondLevel, upper]
         } else {
             newValues = [lower, lower + secondLevel, lower + center, lower + center + secondLevel, upper, upper + secondLevel, upper + center]
