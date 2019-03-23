@@ -153,7 +153,7 @@ class GraphDrawLayerView: UIView {
     }
 
     private func getValue(baseOn value: Int) -> Int {
-        return Int(pow(2, CGFloat(Int(round(log2(CGFloat(value)))))))
+        return Int(pow(2, CGFloat(Int(ceil(log2(CGFloat(value)))))))
     }
 
     private func findNear(value: Int, step: Int, positive: Bool, devidedBy: Int) -> Int {
@@ -205,6 +205,101 @@ class GraphDrawLayerView: UIView {
         return (newLower, newUpper, step, anotherProgress)
     }
 
+    private func convert2(range: Range<CGFloat>, count: Int, defineLow: Int? = nil, defineUpper: Int? = nil, middleStep: Int? = nil) -> ConverResult {
+        let maxValue = pow(2, CGFloat(Int(log2(CGFloat(count)))))
+        let step = CGFloat(count) / CGFloat(maxValue)
+
+        let lower = Int((CGFloat(count) * range.lowerBound) / step)
+        let upper = Int((CGFloat(count) * range.upperBound) / step)
+        let interval = upper - lower
+
+        let value = Int(pow(2, CGFloat(Int(ceil(log2(CGFloat(interval)))))))
+        //        let progress = ceil(log2(CGFloat(value))) - log2(CGFloat(interval))
+
+        var newLower = findNear(value: lower, step: 0, positive: false, devidedBy: value / 2)
+        let newUpper: Int
+        if let defineLow = defineLow {
+            let offset = newLower - defineLow
+            newUpper = defineUpper ?? findNear(value: upper, step: 0, positive: true, devidedBy: (value / 2) + offset)
+            newLower = defineLow
+        } else {
+            newUpper = defineUpper ?? findNear(value: upper, step: 0, positive: true, devidedBy: (value / 2))
+        }
+
+        let progress = (1 - CGFloat(interval) / CGFloat(newUpper - newLower)) * 2
+
+        //        let progress = ceil(log2(CGFloat(upper - lower))) - log2(CGFloat(interval))]
+
+        //     print(newLower, newUpper, upperProgress + lowerProgress)
+
+        return (newLower, newUpper, step, progress)
+    }
+
+    typealias ConverResult2 = (lower: Int, upper: Int, step: CGFloat, progress: CGFloat, zoom: Int)
+
+    private func convert3(range: Range<CGFloat>, count: Int, middleStep: Int? = nil) -> ConverResult2 {
+        let maxValue = pow(2, CGFloat(Int(log2(CGFloat(count)))))
+        let step = CGFloat(count) / CGFloat(maxValue)
+
+        let lower = Int((CGFloat(count) * range.lowerBound) / step)
+        let upper = Int((CGFloat(count) * range.upperBound) / step)
+        let interval = upper - lower
+
+        let value = Int(pow(2, CGFloat(Int(round(log2(CGFloat(interval)))))))
+
+        let newLower = findNear(value: lower, step: 0, positive: false, devidedBy: value)
+        let newUpper = findNear(value: upper, step: 0, positive: true, devidedBy: value)
+
+        let progress = (1 - CGFloat(interval) / CGFloat(newUpper - newLower)) * 2
+
+        //        let progress = ceil(log2(CGFloat(upper - lower))) - log2(CGFloat(interval))]
+
+        //     print(newLower, newUpper, upperProgress + lowerProgress)
+
+        var zoom = Int(maxValue / CGFloat(newUpper - newLower))
+        return (newLower, newUpper, step, progress, zoom)
+    }
+
+    func converRange(range: Range<CGFloat>, isRight: Bool) -> Range<CGFloat> {
+        if isRight {
+            let upper = (range.upperBound - range.lowerBound) / (1 - range.lowerBound)
+            return 0..<upper
+        } else {
+            let lower = range.lowerBound / range.upperBound
+            return lower..<1.0
+        }
+    }
+
+    func calculateMovement(startRange: Range<CGFloat>, range: Range<CGFloat>, count: Int, isRight: Bool) -> ConverResult {
+        let startingValues = convert3(range: startRange, count: count)
+        let lowerValue: Int
+        if isRight {
+            lowerValue = Int(CGFloat(startingValues.lower) / startingValues.step)
+        } else {
+            lowerValue = Int(CGFloat(startingValues.upper) / startingValues.step)
+        }
+
+        let newCount = count - lowerValue
+        let newRange = converRange(range: range, isRight: isRight)
+        let newValues = convert3(range: newRange, count: count)
+        if isRight {
+            let lower = newValues.lower + startingValues.lower
+            let upper = newValues.upper + startingValues.lower
+            return (lower, upper, startingValues.step, newValues.progress)
+        } else {
+            let lower, upper: Int
+            let progress = newValues.progress
+            var zoom = startingValues.zoom
+            if startingValues.progress > 0.5 && startingValues.zoom == 1 {
+                zoom += 1
+            }
+            lower = newValues.lower / startingValues.zoom
+            upper = newValues.upper / startingValues.zoom
+
+            return (lower, upper, startingValues.step, progress)
+        }
+    }
+
     typealias ReportLabelResult = (points: [LabelPosition], step: Int)
 
     func reportLabelPoints(graphContext: GraphContext?, startingRange: Range<CGFloat>?, zooming: Bool, zoomStep: Int?) -> ReportLabelResult {
@@ -219,15 +314,15 @@ class GraphDrawLayerView: UIView {
         let count = (graphContext.values.count / steps.points)
         let currentPair: ConverResult
         if let startingRange = startingRange {
-            let startingPair = self.convert(range: startingRange, count: count)
-            let step = (startingPair.upper - startingPair.lower) / 4
-            if startingRange.lowerBound == graphContext.range.lowerBound {
-                currentPair = self.convert(range: graphContext.range, count: count, defineLow: startingPair.lower)
-            } else {
-                currentPair = self.convert(range: graphContext.range, count: count, defineUpper: startingPair.upper)
-            }
+//            let startingPair = self.convert3(range: startingRange, count: count)
+//            if startingRange.lowerBound == graphContext.range.lowerBound {
+//                currentPair = self.convert3(range: graphContext.range, count: count, defineLow: startingPair.lower)
+//            } else {
+//                currentPair = self.convert3(range: graphContext.range, count: count, defineUpper: startingPair.upper)
+//            }
+            currentPair = self.calculateMovement(startRange: startingRange, range: graphContext.range, count: count, isRight: startingRange.lowerBound == graphContext.range.lowerBound)
         } else {
-            currentPair = self.convert(range: graphContext.range, count: count, middleStep: zoomStep)
+            currentPair = self.convert2(range: graphContext.range, count: count, middleStep: zoomStep)
         }
 
         let lower = currentPair.lower
