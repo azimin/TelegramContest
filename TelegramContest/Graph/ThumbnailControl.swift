@@ -125,19 +125,27 @@ class ThumbnailControl: UIControl {
         }
         let location = touch.location(in: self)
         let preveousLocation = touch.previousLocation(in: self)
+        let delta = (location.x - preveousLocation.x) / self.frame.width
         switch self.gesture {
         case .increaseLeft:
-            let delta = (location.x - preveousLocation.x) / self.frame.width
-            self.range = self.normalize(range: (self.range.lowerBound + delta)..<(self.range.upperBound), collapse: false, movingRight: false)
+            if range.lowerBound + delta < self.range.upperBound {
+                self.range = self.normalize(range: (self.range.lowerBound + delta)..<(self.range.upperBound), collapse: false, movingRight: false)
+            }
         case .increaseRight:
-            let delta = (location.x - preveousLocation.x) / self.frame.width
-            self.range = self.normalize(range: (self.range.lowerBound)..<(self.range.upperBound + delta), collapse: false, movingRight: true)
+            if self.range.lowerBound < self.range.upperBound + delta {
+                self.range = self.normalize(range: (self.range.lowerBound)..<(self.range.upperBound + delta), collapse: false, movingRight: true)
+            }
         case .move:
-            let delta = (location.x - preveousLocation.x) / self.frame.width
-            self.range = self.normalize(range: (self.range.lowerBound + delta)..<(self.range.upperBound + delta), collapse: true, movingRight: false)
+            if self.range.lowerBound + delta < self.range.upperBound + delta {
+                self.range = self.normalize(range: (self.range.lowerBound + delta)..<(self.range.upperBound + delta), collapse: true, movingRight: false)
+            }
         case .none:
             break
         }
+    }
+
+    func shouldMove(range: Range<CGFloat>, delta: CGFloat) -> Bool {
+        return range.lowerBound + delta < self.range.upperBound
     }
 
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {

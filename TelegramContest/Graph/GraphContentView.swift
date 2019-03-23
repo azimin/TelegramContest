@@ -283,7 +283,16 @@ class GraphContentView: UIView {
         var items: [ViewsOverlayView.Item] = []
         for point in anyPoints {
             let xRow = dataSource.xRow.dateStrings[point.index]
-            let item = ViewsOverlayView.Item(text: "\(point.index)", position: point.position, alpha: point.alpha)
+            let corner: ViewsOverlayView.Item.Corner
+            switch point.index {
+            case 0:
+                corner = .left
+            case dataSource.xRow.dateStrings.count - 1:
+                corner = .right
+            default:
+                corner = .none
+            }
+            let item = ViewsOverlayView.Item(text: xRow, position: point.position, alpha: point.alpha, corner: corner)
             items.append(item)
         }
         self.dateLabels.showItems(items: items)

@@ -227,7 +227,13 @@ class GraphDrawLayerView: UIView {
         } else {
             newValues = [lower, lower + secondLevel, lower + center, lower + center + secondLevel, upper, upper + secondLevel, upper + center]
         }
-        let indexes = newValues.map({ Int(CGFloat($0) * currentPair.step) })
+        var indexes = newValues.map({ Int(CGFloat($0) * currentPair.step) })
+
+        for (index, value) in indexes.enumerated() {
+            if value == graphContext.values.count {
+                indexes[index] = value - 1
+            }
+        }
 
         var positivePoints: [(Int, CGFloat)] = []
         for index in 0..<(graphContext.values.count / steps.points) {

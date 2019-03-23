@@ -15,9 +15,16 @@ class ViewsOverlayView: UIView {
     }
 
     struct Item: Equatable {
+        enum Corner {
+            case left
+            case right
+            case none
+        }
+
         let text: String
         let position: CGFloat
         let alpha: CGFloat
+        let corner: Corner
 
         static func == (lhs: Item, rhs: Item) -> Bool {
             return lhs.text == rhs.text
@@ -77,20 +84,32 @@ class ViewsOverlayView: UIView {
             return
         }
         let visualItem = self.allItems[index]
-        visualItem.label.center = CGPoint(x: item.position, y: visualItem.label.center.y)
-        visualItem.label.alpha = item.alpha
+        let label = visualItem.label
+        label.center = CGPoint(x: item.position, y: visualItem.label.center.y)
+        label.alpha = item.alpha
+
+        switch item.corner {
+        case .right:
+            label.center = CGPoint(x: item.position - visualItem.label.frame.width / 2, y: visualItem.label.center.y)
+        case .left:
+            label.center = CGPoint(x: item.position + visualItem.label.frame.width / 2, y: visualItem.label.center.y)
+        case .none:
+            label.center = CGPoint(x: item.position, y: visualItem.label.center.y)
+        }
     }
 
     func show(items: [Item]) {
         let config = self.theme.configuration
         for item in items {
-            let label = UILabel(frame: CGRect(x: 0, y: 0, width: 60, height: 26))
+            let label = UILabel(frame: .zero)
             label.center = CGPoint(x: item.position, y: label.center.y)
             label.text = item.text
             label.font = UIFont.systemFont(ofSize: 12)
             label.textAlignment = .center
             label.textColor = config.titleColor
             label.alpha = item.alpha
+            let size = label.sizeThatFits(CGSize(width: 10000, height: 50))
+            label.frame.size = size
             self.addSubview(label)
             let visualItem = VisualItem(label: label, item: item)
             self.allItems.append(visualItem)
