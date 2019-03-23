@@ -9,6 +9,8 @@
 import UIKit
 
 class ThresholdOptimization {
+    static var enabledForAllDevices: Bool = false
+
     enum MemorySize {
         case low, medium, high
 
@@ -23,6 +25,9 @@ class ThresholdOptimization {
         }
 
         var isImmidiate: Bool {
+            guard !ThresholdOptimization.enabledForAllDevices else {
+                return false
+            }
             return self == .high
         }
     }
@@ -43,7 +48,6 @@ class ThresholdOptimization {
             return
         }
 
-        print(ProcessInfo.processInfo.physicalMemory)
         self.action = {
             action()
             self.action = nil
@@ -62,13 +66,16 @@ class ThresholdOptimization {
     func displayLinkDidFire(_ displayLink: CADisplayLink) {
         let elapsed = CACurrentMediaTime() - self.startTime
         var elapsedSpeed = self.elapsedTime
-        switch self.memorySize {
-        case .low:
-            break
-        case .medium:
-            elapsedSpeed /= 2
-        case .high:
-            elapsedSpeed /= 4
+
+        if !ThresholdOptimization.enabledForAllDevices {
+            switch self.memorySize {
+            case .low:
+                break
+            case .medium:
+                elapsedSpeed /= 2
+            case .high:
+                elapsedSpeed /= 4
+            }
         }
 
         if elapsed > self.elapsedTime {

@@ -75,7 +75,7 @@ class YAxisOverlayView: UIView {
     var maxValue: Int = 0
     var items: [Item] = []
     var onRemoving: [YAxisView] = []
-    var thresholdOptimization = ThresholdOptimization(elapsedTime: 0.001)
+    var thresholdOptimization = ThresholdOptimization(elapsedTime: 0.02)
     let style: YAxisView.Style
 
     init(style: YAxisView.Style) {

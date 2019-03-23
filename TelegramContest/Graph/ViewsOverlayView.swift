@@ -41,7 +41,7 @@ class ViewsOverlayView: UIView {
 
     private var allItems: [VisualItem] = []
     private var onRemoving: [UILabel] = []
-    var thresholdOptimization = ThresholdOptimization(elapsedTime: 0.02)
+    var thresholdOptimization = ThresholdOptimization(elapsedTime: 0.1)
 
     func showItems(items: [Item]) {
         var newItems: [Item] = items

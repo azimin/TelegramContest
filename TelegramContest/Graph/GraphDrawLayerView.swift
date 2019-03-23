@@ -113,6 +113,7 @@ class GraphDrawLayerView: UIView {
             animation.timingFunction = CAMediaTimingFunction(name: .easeOut)
             self.pathLayer.add(animation, forKey: "path")
         }
+
         self.graphContext = graphContext
     }
 
