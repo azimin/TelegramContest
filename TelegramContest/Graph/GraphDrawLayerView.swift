@@ -152,10 +152,6 @@ class GraphDrawLayerView: UIView {
         var alpha: CGFloat
     }
 
-    private func getValue(baseOn value: Int) -> Int {
-        return Int(pow(2, CGFloat(Int(ceil(log2(CGFloat(value)))))))
-    }
-
     private func findNear(value: Int, step: Int, positive: Bool, devidedBy: Int) -> Int {
         if (value + step) % devidedBy == 0 {
             return value + step
@@ -167,43 +163,9 @@ class GraphDrawLayerView: UIView {
         }
     }
 
-    typealias ConverResult = (lower: Int, upper: Int, step: CGFloat, progress: CGFloat)
+    typealias ConverResult = (lower: Int, upper: Int, step: CGFloat, progress: CGFloat, maxValue: Int)
 
-    private func convert(range: Range<CGFloat>, count: Int, defineLow: Int? = nil, defineUpper: Int? = nil, defineStep: Int? = nil, middleStep: Int? = nil) -> ConverResult {
-        let maxValue = pow(2, CGFloat(Int(log2(CGFloat(count)))))
-        let step = CGFloat(count) / CGFloat(maxValue)
-
-        let lower = Int((CGFloat(count) * range.lowerBound) / step)
-        let upper = Int((CGFloat(count) * range.upperBound) / step)
-        let interval = upper - lower
-
-        let value = middleStep ?? getValue(baseOn: interval)
-//        let progress = ceil(log2(CGFloat(value))) - log2(CGFloat(interval))
-
-        var newLower = findNear(value: lower, step: 0, positive: false, devidedBy: value)
-        if let defineLow = defineLow, let defineStep = defineStep {
-            var value: Int = defineLow
-            while newLower > value + defineStep {
-                value += defineStep
-            }
-            newLower = value
-        }
-
-        let newUpper: Int
-        if let middleStep = middleStep {
-            newUpper = newLower + middleStep * 2
-        } else {
-            newUpper = defineUpper ?? findNear(value: upper, step: 0, positive: true, devidedBy: value)
-        }
-
-        let anotherProgress = CGFloat(newUpper - upper) / CGFloat(value)
-
-        return (newLower, newUpper, step, anotherProgress)
-    }
-
-    typealias ConverResult2 = (lower: Int, upper: Int, step: CGFloat, progress: CGFloat, maxValue: Int)
-
-    private func convert3(range: Range<CGFloat>, count: Int, middleStep: Int? = nil) -> ConverResult2 {
+    private func convert(range: Range<CGFloat>, count: Int, middleStep: Int? = nil) -> ConverResult {
         let maxValue = pow(2, CGFloat(Int(log2(CGFloat(count)))))
         let step = CGFloat(count) / maxValue
 
@@ -235,11 +197,9 @@ class GraphDrawLayerView: UIView {
         }
     }
 
-    typealias ConverResult3 = (lower: Int, upper: Int, step: CGFloat, progress: CGFloat)
-
-    func calculateMovement(startRange: Range<CGFloat>, range: Range<CGFloat>, count: Int, isRight: Bool) -> ConverResult2 {
+    func calculateMovement(startRange: Range<CGFloat>, range: Range<CGFloat>, count: Int, isRight: Bool) -> ConverResult {
         let newRange = converRange(range: range, isRight: isRight)
-        let newValues = convert3(range: newRange, count: count)
+        let newValues = convert(range: newRange, count: count)
         if isRight {
             let lower = newValues.lower
             let upper = newValues.upper
@@ -272,17 +232,11 @@ class GraphDrawLayerView: UIView {
         let offset = graphContext.range.lowerBound * fullWidth
 
         let count = (graphContext.values.count / steps.points)
-        let currentPair: ConverResult2
+        let currentPair: ConverResult
         if let startingRange = startingRange {
-//            let startingPair = self.convert3(range: startingRange, count: count)
-//            if startingRange.lowerBound == graphContext.range.lowerBound {
-//                currentPair = self.convert3(range: graphContext.range, count: count, defineLow: startingPair.lower)
-//            } else {
-//                currentPair = self.convert3(range: graphContext.range, count: count, defineUpper: startingPair.upper)
-//            }
             currentPair = self.calculateMovement(startRange: startingRange, range: graphContext.range, count: count, isRight: startingRange.lowerBound == graphContext.range.lowerBound)
         } else {
-            currentPair = self.convert3(range: graphContext.range, count: count, middleStep: zoomStep)
+            currentPair = self.convert(range: graphContext.range, count: count, middleStep: zoomStep)
         }
 
         let lower = currentPair.lower
