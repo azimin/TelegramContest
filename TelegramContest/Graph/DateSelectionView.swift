@@ -9,6 +9,10 @@
 import UIKit
 
 class DateSelectionView: UIView {
+    enum Constants {
+        static var spacing: CGFloat = 8
+    }
+
     enum Style {
         case plate
         case line
@@ -106,6 +110,7 @@ class DateSelectionView: UIView {
         self.selectedIndex = index
 
         var maxWidth: CGFloat = 0
+        var height: CGFloat = 0
         for row in enabledRows.sorted() {
             let rowValue = graph.yRows[row]
             let label = UILabel()
@@ -117,6 +122,7 @@ class DateSelectionView: UIView {
             let size = label.sizeThatFits(CGSize(width: 10000, height: 50))
             if size.width > maxWidth {
                 maxWidth = size.width
+                height = size.height
             }
 
             plate.contentView.addSubview(label)
@@ -124,12 +130,12 @@ class DateSelectionView: UIView {
             self.numberLabels.append(label)
         }
 
-        var y: CGFloat = 8
+        var y = Constants.spacing
         for label in self.numberLabels {
-            label.frame = CGRect(x: 63, y: y, width: maxWidth, height: 19)
-            y += (19)
+            label.frame = CGRect(x: 63, y: y, width: maxWidth, height: height)
+            y += height
         }
-        y += 8
+        y += Constants.spacing
 
         let date = graph.xRow.dates[index]
         let components = self.getDateComponents(date)
@@ -143,7 +149,7 @@ class DateSelectionView: UIView {
         myString.append(myString2)
         self.dateLabel.attributedText = myString
 
-        let plateWidth = maxWidth + 63 + 8
+        let plateWidth = maxWidth + 63 + Constants.spacing
         var platePosition = position
         plate.frame = CGRect(x: 0, y: 0, width: plateWidth, height: y)
         if platePosition - plateWidth / 2 < -1 {

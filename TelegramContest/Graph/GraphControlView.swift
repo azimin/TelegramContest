@@ -9,7 +9,7 @@
 import UIKit
 
 class GraphControlView: UIView {
-    enum Constants {
+    private enum Constants {
         static var aniamtionDuration: TimeInterval = 0.25
         static var offset: CGFloat = 16
         static var graphHeight: CGFloat = 38
@@ -63,7 +63,7 @@ class GraphControlView: UIView {
         }
     }
 
-    func updateFrame() {
+    private func updateFrame() {
         let topSpace = (self.frame.height - Constants.graphHeight) / 2
         self.graphDrawLayers.forEach({ $0.frame = CGRect(x: Constants.offset, y: topSpace, width: self.frame.width - Constants.offset * 2, height: Constants.graphHeight) })
         self.control.frame = CGRect(x: 0, y: 0, width: self.frame.width, height: self.frame.height)
@@ -73,7 +73,7 @@ class GraphControlView: UIView {
         self.addSubview(self.control)
     }
 
-    func update(animated: Bool) {
+    private func update(animated: Bool) {
         guard let dataSource = self.dataSource else {
             self.graphDrawLayers.forEach({ $0.isHidden = true })
             return

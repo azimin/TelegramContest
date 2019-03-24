@@ -9,7 +9,7 @@
 import UIKit
 
 class GraphContentView: UIView {
-    enum Constants {
+    private enum Constants {
         static var aniamtionDuration: TimeInterval = 0.2
         static var labelsHeight: CGFloat = 26
         static var offset: CGFloat = 16
@@ -45,7 +45,7 @@ class GraphContentView: UIView {
     }
     private var cachedRange: Range<CGFloat>?
 
-    func updateZoomingStatus() {
+    private func updateZoomingStatus() {
         if self.isZoomingMode {
             self.cachedRange = self.selectedRange
         } else {
@@ -55,10 +55,7 @@ class GraphContentView: UIView {
     }
 
     private var enabledRows: [Int] = []
-
-    var shouldCacheMax = false
-    var maxTarget: Int = 0
-    var currentMaxValue: Int = 0
+    private var currentMaxValue: Int = 0
 
     func updateEnabledRows(_ values: [Int], animated: Bool) {
         self.preveous = .zero
@@ -113,9 +110,9 @@ class GraphContentView: UIView {
         }
     }
 
-    var preveous: CGRect = .zero
+    private var preveous: CGRect = .zero
 
-    func updateFrame() {
+    private func updateFrame() {
         guard self.frame != preveous else {
             return
         }
@@ -145,7 +142,7 @@ class GraphContentView: UIView {
         }
     }
 
-    func updateShadow() {
+    private func updateShadow() {
         let shadowFrame = CGRect(x: 0, y: 0, width: self.frame.size.width, height: 20)
         guard self.shadowCachedSize != shadowFrame else {
             return
@@ -156,7 +153,7 @@ class GraphContentView: UIView {
         self.shadowImage.image = UIImage(size: shadowFrame.size, gradientColor: [config.backgroundColor, config.backgroundColor.withAlphaComponent(0)])
     }
 
-    func setup() {
+    private func setup() {
         self.yAxisOverlays.forEach({ $0.layer.masksToBounds = true })
         self.addSubview(self.dateLabels)
         self.addSubview(self.yAxisLineOverlay)
@@ -166,9 +163,8 @@ class GraphContentView: UIView {
         self.addSubview(self.selectionPlateView)
     }
 
-    func update(animated: Bool, force: Bool = false) {
+    private func update(animated: Bool, force: Bool = false) {
         guard let dataSource = self.dataSource else {
-            // We are not removing them for smother reusability if graph will be inside table view
             self.graphDrawLayers.forEach({ $0.isHidden = true })
             return
         }
@@ -299,7 +295,7 @@ class GraphContentView: UIView {
         self.updateFrame()
     }
 
-    func converValues(values: [Int], range: Range<CGFloat>) -> [Int] {
+    private func converValues(values: [Int], range: Range<CGFloat>) -> [Int] {
         let count = values.count
         let firstCount = Int(floor(range.lowerBound * CGFloat(count)))
         let endCount = Int(ceil(range.upperBound * CGFloat(count)))
@@ -332,7 +328,7 @@ class GraphContentView: UIView {
         }
     }
 
-    func hideSelection() {
+    private func hideSelection() {
         self.selectedLocation = nil
         self.selectionViews.forEach({ $0.hide() })
         for layer in self.graphDrawLayers {
@@ -340,9 +336,9 @@ class GraphContentView: UIView {
         }
     }
 
-    var selectedLocation: CGPoint?
+    private var selectedLocation: CGPoint?
 
-    func showSelection(location: CGPoint, animated: Bool, shouldRespectCahce: Bool) {
+    private func showSelection(location: CGPoint, animated: Bool, shouldRespectCahce: Bool) {
         guard let dataSource = self.dataSource else {
             return
         }

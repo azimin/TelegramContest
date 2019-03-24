@@ -33,7 +33,7 @@ class GraphView: UIView {
         }
     }
 
-    func updateTheme() {
+    private func updateTheme() {
         self.graphControlView.theme = theme
         self.graphContentView.theme = theme
     }
@@ -81,16 +81,16 @@ class GraphView: UIView {
         }
     }
 
-    @objc func rangeUpdated(control: ThumbnailControl) {
+    @objc private func rangeUpdated(control: ThumbnailControl) {
         self.selectedRange = control.range
         self.rangeUpdated?(control.range)
     }
 
-    @objc func rangeUpdateEnded(control: ThumbnailControl) {
+    @objc private func rangeUpdateEnded(control: ThumbnailControl) {
         self.graphContentView.isZoomingMode = false
     }
 
-    @objc func rangeUpdateStated(control: ThumbnailControl) {
+    @objc private func rangeUpdateStated(control: ThumbnailControl) {
         switch control.gesture {
         case .increaseLeft, .increaseRight:
             self.graphContentView.isZoomingMode = true

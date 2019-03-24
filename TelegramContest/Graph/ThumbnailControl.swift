@@ -9,7 +9,7 @@
 import UIKit
 
 class ThumbnailControl: UIControl {
-    enum Constants {
+    private enum Constants {
         static var graphHeight: CGFloat = 38
         static var offset: CGFloat = 16
     }
