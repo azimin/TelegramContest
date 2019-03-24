@@ -24,9 +24,9 @@ class ThumbnailControl: UIControl {
     private var beforeOverlay = UIView()
     private var endOverlay = UIView()
     private var controlImageView: UIImageView = {
-        let image = UIImage(named: "img_control_full")!
+        let image = ThumbnailImage.imageDraw()
         let insets = UIEdgeInsets(top: 16, left: 17, bottom: 16, right: 17)
-        let strechingImage = image.resizableImage(withCapInsets: insets, resizingMode: .stretch)
+        let strechingImage = image?.resizableImage(withCapInsets: insets, resizingMode: .stretch)
         return UIImageView(image: strechingImage)
     }()
 
