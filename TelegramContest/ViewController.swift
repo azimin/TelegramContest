@@ -117,6 +117,10 @@ class SelectioTableViewCell: UITableViewCell {
         self.textLabel?.backgroundColor = config.backgroundColor
         self.accessoryView?.backgroundColor = config.backgroundColor
         self.backgroundColor = config.backgroundColor
+
+        let view = UIView()
+        view.backgroundColor = config.selectionColor
+        self.selectedBackgroundView = view
     }
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {

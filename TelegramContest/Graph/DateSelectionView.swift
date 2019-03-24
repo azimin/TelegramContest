@@ -11,6 +11,7 @@ import UIKit
 class DateSelectionView: UIView {
     enum Constants {
         static var spacing: CGFloat = 8
+        static var minimalSpacing: CGFloat = 16
     }
 
     enum Style {
@@ -62,7 +63,6 @@ class DateSelectionView: UIView {
         plate.layer.masksToBounds = true
 
         self.dateLabel.frame = CGRect(x: 8, y: 0, width: 100, height: 30)
-        self.dateLabel.text = "Feb 12\n2019"
         self.dateLabel.textColor = UIColor.white
         self.dateLabel.numberOfLines = 0
         plate.contentView.addSubview(self.dateLabel)
@@ -130,12 +130,14 @@ class DateSelectionView: UIView {
             self.numberLabels.append(label)
         }
 
-        var y = Constants.spacing
+        let spacing = self.numberLabels.count > 1 ? Constants.spacing : Constants.minimalSpacing
+
+        var y = spacing
         for label in self.numberLabels {
             label.frame = CGRect(x: 63, y: y, width: maxWidth, height: height)
             y += height
         }
-        y += Constants.spacing
+        y += spacing
 
         let date = graph.xRow.dates[index]
         let components = self.getDateComponents(date)

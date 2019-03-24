@@ -21,6 +21,10 @@ class ButtonTableViewCell: UITableViewCell {
         let config = self.theme.configuration
         self.buttonLabel.text = theme == .light ? "Switch to Night Mode" : "Switch to Day Mode"
         self.backgroundColor = config.backgroundColor
+
+        let view = UIView()
+        view.backgroundColor = config.selectionColor
+        self.selectedBackgroundView = view
     }
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
