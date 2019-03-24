@@ -248,6 +248,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         guard indexPath.section > 0 else {
+            self.animateThemeSwitch()
             self.theme = self.theme == .light ? .dark : .light
             self.tableView.reloadData()
             return
@@ -279,6 +280,17 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
 
     override var preferredStatusBarStyle: UIStatusBarStyle {
         return self.theme == .light ? .default : .lightContent
+    }
+
+    func animateThemeSwitch() {
+        if let snapshotView = self.view.snapshotView(afterScreenUpdates: false) {
+            self.view.addSubview(snapshotView)
+            UIView.animate(withDuration: 0.25, animations: {
+                snapshotView.alpha = 0
+            }) { (_) in
+                snapshotView.removeFromSuperview()
+            }
+        }
     }
 }
 
