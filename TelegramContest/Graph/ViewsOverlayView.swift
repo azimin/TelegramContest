@@ -69,7 +69,7 @@ class ViewsOverlayView: UIView {
 
     func finishTransision() {
         for item in self.allItems {
-            if item.label.alpha > 0.5 {
+            if item.label.alpha > 0 {
                 UIView.animate(withDuration: 0.25) {
                     item.label.alpha = 1
                 }
@@ -86,7 +86,15 @@ class ViewsOverlayView: UIView {
         let visualItem = self.allItems[index]
         let label = visualItem.label
         label.center = CGPoint(x: item.position, y: visualItem.label.center.y)
-        label.alpha = item.alpha
+
+        let newAlpha = self.calculateAlpha(baseOn: item.alpha)
+        if abs(newAlpha - label.alpha) > 0.15 {
+            UIView.animate(withDuration: 0.25) {
+                label.alpha = newAlpha
+            }
+        } else {
+            label.alpha = newAlpha
+        }
 
         switch item.corner {
         case .right:
@@ -107,13 +115,17 @@ class ViewsOverlayView: UIView {
             label.font = UIFont.systemFont(ofSize: 12)
             label.textAlignment = .center
             label.textColor = config.titleColor
-            label.alpha = item.alpha
+            label.alpha = self.calculateAlpha(baseOn: item.alpha)
             let size = label.sizeThatFits(CGSize(width: 10000, height: 50))
             label.frame.size = size
             self.addSubview(label)
             let visualItem = VisualItem(label: label, item: item)
             self.allItems.append(visualItem)
         }
+    }
+
+    func calculateAlpha(baseOn alpha: CGFloat) -> CGFloat {
+        return alpha < 0.5 ? 0 : (alpha - 0.5) * 2
     }
 
     func disaper(item: Item) {
