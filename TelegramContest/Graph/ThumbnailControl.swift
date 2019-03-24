@@ -23,18 +23,18 @@ class ThumbnailControl: UIControl {
 
     private var beforeOverlay = UIView()
     private var endOverlay = UIView()
-    private var controlImageView: UIImageView = {
-        let image = ThumbnailImage.imageDraw()
-        let insets = UIEdgeInsets(top: 16, left: 17, bottom: 16, right: 17)
-        let strechingImage = image?.resizableImage(withCapInsets: insets, resizingMode: .stretch)
-        return UIImageView(image: strechingImage)
-    }()
+    private var controlImageView: UIImageView = UIImageView()
 
     var theme: Theme = .light {
         didSet {
             let config = theme.configuration
             self.beforeOverlay.backgroundColor = config.backgroundColor.withAlphaComponent(0.7)
             self.endOverlay.backgroundColor = config.backgroundColor.withAlphaComponent(0.7)
+
+            let image = ThumbnailImage.imageDraw(isLight: config.isLight)
+            let insets = UIEdgeInsets(top: 16, left: 17, bottom: 16, right: 17)
+            let strechingImage = image?.resizableImage(withCapInsets: insets, resizingMode: .stretch)
+            controlImageView.image = strechingImage
         }
     }
     private(set) var gesture: Gesture = .none {
