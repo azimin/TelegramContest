@@ -323,13 +323,14 @@ class GraphDrawLayerView: UIView {
     }
 
     private func findNear(value: Int, step: Int, positive: Bool, devidedBy: Int) -> Int {
-        if (value + step) % devidedBy == 0 {
-            return value + step
+        if value % devidedBy == 0 {
+            return value
         }
+
         if positive {
-            return findNear(value: value, step: step + 1, positive: positive, devidedBy: devidedBy)
+            return ((value + devidedBy) / devidedBy) * devidedBy
         } else {
-            return findNear(value: value, step: step - 1, positive: positive, devidedBy: devidedBy)
+            return (value / devidedBy) * devidedBy
         }
     }
 
