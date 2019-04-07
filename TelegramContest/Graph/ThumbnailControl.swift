@@ -78,6 +78,9 @@ class ThumbnailControl: UIControl {
         self.beforeOverlay.backgroundColor = UIColor.black.withAlphaComponent(0.3)
         self.endOverlay.backgroundColor = UIColor.black.withAlphaComponent(0.3)
 
+        self.beforeOverlay.layer.cornerRadius = 6
+        self.endOverlay.layer.cornerRadius = 6
+
         self.addSubview(self.beforeOverlay)
         self.addSubview(self.endOverlay)
         self.addSubview(self.controlImageView)
@@ -100,9 +103,9 @@ class ThumbnailControl: UIControl {
         self.beforeOverlay.frame = CGRect(x: offset, y: topSpace, width: self.range.lowerBound * width + 10, height: Constants.graphHeight)
 
         let lastWidth = width - self.range.upperBound * width
-        self.endOverlay.frame = CGRect(x: offset + self.range.upperBound * width, y: topSpace, width: lastWidth, height: Constants.graphHeight)
+        self.endOverlay.frame = CGRect(x: offset + self.range.upperBound * width - 10, y: topSpace, width: lastWidth + 10, height: Constants.graphHeight)
 
-        self.controlImageView.frame = CGRect(x: offset + self.beforeOverlay.frame.width - 10, y: 0, width: self.endOverlay.frame.minX - self.beforeOverlay.frame.width - offset + 10, height: height)
+        self.controlImageView.frame = CGRect(x: offset + self.beforeOverlay.frame.width - 10, y: 0, width: self.endOverlay.frame.minX - self.beforeOverlay.frame.width - offset + 20, height: height)
     }
 
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {

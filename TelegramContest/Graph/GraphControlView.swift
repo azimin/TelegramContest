@@ -87,6 +87,7 @@ class GraphControlView: UIView {
 
         while graphDrawLayers.count < dataSource.yRows.count {
             let graphView = GraphDrawLayerView()
+            graphView.layer.cornerRadius = 6
             graphView.layer.masksToBounds = true
             graphView.lineWidth = 1
             graphView.frame = CGRect(x: 0, y: 0, width: self.frame.width, height: self.frame.height)
