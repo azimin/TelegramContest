@@ -20,15 +20,16 @@ struct GraphContext {
     }
 
     func stepsBaseOn(width: CGFloat) -> (pixels: CGFloat, points: Int) {
-        let point: Int
-        let count = self.values.count
-        if count > Int(width) {
-            point = (count / Int(width)) + 1
-        } else {
-            point = 1
-        }
-        let pixels = width / CGFloat(((count) / point) - 1)
-        return (pixels, point)
+        return (width / CGFloat(self.values.count), 1)
+//        let point: Int
+//        let count = self.values.count
+//        if count > Int(width) {
+//            point = (count / Int(width)) + 1
+//        } else {
+//            point = 1
+//        }
+//        let pixels = width / CGFloat(((count) / point) - 1)
+//        return (pixels, point)
     }
 }
 
@@ -131,7 +132,7 @@ class GraphDrawLayerView: UIView {
 
         for index in 0..<(graphContext.values.count / steps.points) {
             let value: Int = graphContext.values[index] // FIXME
-            let x = round(steps.pixels * CGFloat(index)) - offset
+            let x = steps.pixels * CGFloat(index) - offset
             let yPercent = CGFloat(value) / CGFloat(graphContext.maxValue)
             if x > (-1.1 * self.availbleFrame.width) && x < (self.availbleFrame.width * 1.1) {
                 if !isMoved {
