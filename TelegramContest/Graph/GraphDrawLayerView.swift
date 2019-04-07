@@ -322,18 +322,6 @@ class GraphDrawLayerView: UIView {
         var alpha: CGFloat
     }
 
-    private func findNear(value: Int, step: Int, positive: Bool, devidedBy: Int) -> Int {
-        if value % devidedBy == 0 {
-            return value
-        }
-
-        if positive {
-            return ((value + devidedBy) / devidedBy) * devidedBy
-        } else {
-            return (value / devidedBy) * devidedBy
-        }
-    }
-
     typealias ConverResult = (lower: Int, upper: Int, step: CGFloat, progress: CGFloat, maxValue: Int)
 
     private func convert(range: Range<CGFloat>, count: Int, middleStep: Int? = nil) -> ConverResult {
@@ -346,12 +334,12 @@ class GraphDrawLayerView: UIView {
 
         let value = middleStep ?? Int(pow(2, CGFloat(Int(round(log2(CGFloat(interval)))))))
 
-        let newLower = findNear(value: lower, step: 0, positive: false, devidedBy: value)
+        let newLower = findNear(value: lower, positive: false, devidedBy: value)
         let newUpper: Int
         if let middleStep = middleStep {
             newUpper = newLower + middleStep * 2
         } else {
-            newUpper = findNear(value: upper, step: 0, positive: true, devidedBy: value)
+            newUpper = findNear(value: upper, positive: true, devidedBy: value)
         }
 
         let progress = (1 - CGFloat(interval) / CGFloat(newUpper - newLower)) * 2
@@ -376,7 +364,7 @@ class GraphDrawLayerView: UIView {
             let upper = newValues.upper
 
             let space = range.lowerBound * CGFloat(newValues.maxValue)
-            let offset = findNear(value: Int(space), step: 0, positive: false, devidedBy: (upper - lower) / 4)
+            let offset = findNear(value: Int(space), positive: false, devidedBy: (upper - lower) / 4)
 
             return (lower + offset, upper + offset, newValues.step, newValues.progress, newValues.maxValue)
         } else {
@@ -385,7 +373,7 @@ class GraphDrawLayerView: UIView {
             let progress = newValues.progress
 
             let space = (1 - range.upperBound) * CGFloat(newValues.maxValue)
-            let offset = findNear(value: Int(space), step: 0, positive: false, devidedBy: (upper - lower) / 4)
+            let offset = findNear(value: Int(space), positive: false, devidedBy: (upper - lower) / 4)
 
             return (lower - offset, upper - offset, newValues.step, progress, newValues.maxValue)
         }
@@ -506,5 +494,17 @@ class GraphDrawLayerView: UIView {
 extension Range where Bound: FloatingPoint {
     var interval: Bound {
         return self.upperBound - self.lowerBound
+    }
+}
+
+func findNear(value: Int, positive: Bool, devidedBy: Int) -> Int {
+    if value % devidedBy == 0 {
+        return value
+    }
+
+    if positive {
+        return ((value + devidedBy) / devidedBy) * devidedBy
+    } else {
+        return (value / devidedBy) * devidedBy
     }
 }

@@ -49,6 +49,7 @@ class ThumbnailControl: UIControl {
     }
 
     private(set) var range: Range<CGFloat> = 0..<1
+    var pagingDelta: CGFloat?
 
     func update(range: Range<CGFloat>, animated: Bool) {
         guard self.range != range else {
@@ -178,12 +179,47 @@ class ThumbnailControl: UIControl {
 
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
         super.touchesEnded(touches, with: event)
+        self.finishTransition()
         self.gesture = .none
     }
 
     override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
         super.touchesCancelled(touches, with: event)
+        self.finishTransition()
         self.gesture = .none
+    }
+
+    func finishTransition() {
+        guard let paging = self.pagingDelta else {
+            return
+        }
+
+        let lower = self.range.lowerBound
+        let interval = self.range.interval
+
+        let lowerInt = Int(lower * 1000)
+        let intervalInt = Int(interval * 1000)
+        let pagingInt = Int(paging * 1000)
+
+        let lowerFit = CGFloat(findNearAdvanced(value: lowerInt, devidedBy: pagingInt, negativeRestricted: false)) / 1000
+        let intervalFit = CGFloat(findNearAdvanced(value: intervalInt, devidedBy: pagingInt, negativeRestricted: true)) / 1000
+
+        let range = self.normalize(range: lowerFit..<(lowerFit + intervalFit), collapse: false, movingRight: false)
+        self.update(range: range, animated: true)
+    }
+
+    private func findNearAdvanced(value: Int, devidedBy: Int, negativeRestricted: Bool) -> Int {
+        let fitPos = findNear(value: value, positive: true, devidedBy: devidedBy)
+        let fitNeg = findNear(value: value, positive: false, devidedBy: devidedBy)
+
+        let fit: Int
+        if abs(fitPos - value) > abs(value - fitNeg) && (!negativeRestricted || fitNeg > 0) {
+            fit = fitNeg
+        } else {
+            fit = fitPos
+        }
+
+        return fit
     }
 
     func normalize(range: Range<CGFloat>, collapse: Bool, movingRight: Bool) -> Range<CGFloat> {
