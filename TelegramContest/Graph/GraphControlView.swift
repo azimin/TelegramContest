@@ -15,18 +15,19 @@ class GraphControlView: UIView {
         static var graphHeight: CGFloat = 38
     }
 
-    var dataSource: GraphDataSource? {
-        didSet {
-            if let dataSource = dataSource {
-                self.enabledRows = Array(0..<dataSource.yRows.count)
-            } else {
-                self.enabledRows = []
-            }
-            self.update(animated: false)
-        }
-    }
+    private(set) var dataSource: GraphDataSource?
 
     private var enabledRows: [Int] = []
+
+    func updateDataSouce(_ dataSource: GraphDataSource?, animated: Bool) {
+        self.dataSource = dataSource
+        if let dataSource = dataSource {
+            self.enabledRows = Array(0..<dataSource.yRows.count)
+        } else {
+            self.enabledRows = []
+        }
+        self.update(animated: animated)
+    }
 
     func updateEnabledRows(_ values: [Int], animated: Bool) {
         self.enabledRows = values

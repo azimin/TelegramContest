@@ -13,15 +13,15 @@ class GraphView: UIView {
 
     var dataSource: GraphDataSource? {
         didSet {
-            self.graphControlView.dataSource = dataSource
-            self.graphContentView.dataSource = dataSource
+            self.graphControlView.updateDataSouce(dataSource, animated: false)
+            self.graphContentView.updateDataSouce(dataSource, animated: false)
         }
     }
 
     var selectedRange: Range<CGFloat> {
         didSet {
             self.graphControlView.control.update(range: self.selectedRange, animated: false)
-            self.graphContentView.selectedRange = self.selectedRange
+            self.graphContentView.updateSelectedRange(self.selectedRange, shouldDraw: true)
         }
     }
 
@@ -48,8 +48,16 @@ class GraphView: UIView {
         self.graphContentView.updateZoomStep(newValue: newValue, override: false)
     }
 
+    private var shouldUpdateRange: Bool = true
     func transform(to dataSource: GraphDataSource, range: Range<CGFloat>) {
+        self.graphContentView.updateSelectedRange(range, shouldDraw: false)
+        self.graphContentView.updateDataSouce(dataSource, animated: true)
+
+        self.graphControlView.updateDataSouce(dataSource, animated: true)
+        
+        shouldUpdateRange = false
         self.graphControlView.control.update(range: range, animated: true)
+        shouldUpdateRange = true
     }
 
     private let graphContentView = GraphContentView()
@@ -112,6 +120,10 @@ class GraphView: UIView {
     }
 
     @objc private func rangeUpdated(control: ThumbnailControl) {
+        guard shouldUpdateRange else {
+            return
+        }
+
         self.selectedRange = control.range
         self.rangeUpdated?(control.range)
     }

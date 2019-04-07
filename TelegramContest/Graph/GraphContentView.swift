@@ -15,23 +15,27 @@ class GraphContentView: UIView {
         static var offset: CGFloat = 16
     }
 
-    var dataSource: GraphDataSource? {
-        didSet {
-            self.preveous = .zero
-            self.currentMaxValue = 0
-            if let dataSource = dataSource {
-                self.enabledRows = Array(0..<dataSource.yRows.count)
-            } else {
-                self.enabledRows = []
-            }
-            self.hideSelection()
-            self.update(animated: false)
+    private(set) var dataSource: GraphDataSource?
+
+    func updateDataSouce(_ dataSource: GraphDataSource?, animated: Bool) {
+        self.dataSource = dataSource
+        self.preveous = .zero
+        self.currentMaxValue = 0
+        if let dataSource = dataSource {
+            self.enabledRows = Array(0..<dataSource.yRows.count)
+        } else {
+            self.enabledRows = []
         }
+        self.hideSelection()
+        self.update(animated: animated)
     }
 
-    var selectedRange: Range<CGFloat> {
-        didSet {
-            self.hideSelection()
+    private(set) var selectedRange: Range<CGFloat>
+
+    func updateSelectedRange(_ selectedRange: Range<CGFloat>, shouldDraw: Bool) {
+        self.selectedRange = selectedRange
+        self.hideSelection()
+        if shouldDraw {
             self.update(animated: false)
         }
     }
