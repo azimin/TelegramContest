@@ -20,7 +20,7 @@ class GraphView: UIView {
 
     var selectedRange: Range<CGFloat> {
         didSet {
-            self.graphControlView.control.range = self.selectedRange
+            self.graphControlView.control.update(range: self.selectedRange, animated: false)
             self.graphContentView.selectedRange = self.selectedRange
         }
     }
@@ -46,6 +46,10 @@ class GraphView: UIView {
 
     func updateZoomStep(newValue: Int?) {
         self.graphContentView.updateZoomStep(newValue: newValue, override: false)
+    }
+
+    func transform(to dataSource: GraphDataSource, range: Range<CGFloat>) {
+        self.graphControlView.control.update(range: range, animated: true)
     }
 
     private let graphContentView = GraphContentView()

@@ -96,14 +96,15 @@ class ViewsOverlayView: UIView {
             label.alpha = newAlpha
         }
 
-        switch item.corner {
-        case .right:
-            label.center = CGPoint(x: item.position - visualItem.label.frame.width / 2, y: visualItem.label.center.y)
-        case .left:
-            label.center = CGPoint(x: item.position + visualItem.label.frame.width / 2, y: visualItem.label.center.y)
-        case .none:
-            label.center = CGPoint(x: item.position, y: visualItem.label.center.y)
-        }
+        label.center = CGPoint(x: item.position, y: visualItem.label.center.y)
+//        switch item.corner {
+//        case .right:
+//            label.center = CGPoint(x: item.position - visualItem.label.frame.width / 2, y: visualItem.label.center.y)
+//        case .left:
+//            label.center = CGPoint(x: item.position + visualItem.label.frame.width / 2, y: visualItem.label.center.y)
+//        case .none:
+//            label.center = CGPoint(x: item.position, y: visualItem.label.center.y)
+//        }
     }
 
     func show(items: [Item]) {
@@ -140,6 +141,39 @@ class ViewsOverlayView: UIView {
             visualItem.label.alpha = 0
         }) { (success) in
             visualItem.label.removeFromSuperview()
+        }
+    }
+
+    func animateForceZoom(position: CGFloat) {
+        let allItems = self.allItems
+        UIView.animate(withDuration: 0.25, animations: {
+            self.animateForceZoomLogic(position: position)
+            self.allItems = []
+        }) { (_) in
+            allItems.forEach({ $0.label.removeFromSuperview() })
+        }
+    }
+
+    private func animateForceZoomLogic(position: CGFloat) {
+        var selectedIndex: Int = 0
+        var distance: CGFloat = 1000
+
+        for (index, item) in self.allItems.enumerated() {
+            let itemDistance = abs(item.label.center.x - position)
+            if itemDistance < distance {
+                distance = itemDistance
+                selectedIndex = index
+            }
+        }
+
+        for (index, item) in self.allItems.enumerated() {
+            let distance = (abs(CGFloat(selectedIndex - index) / 3) + 1)
+            if index < selectedIndex {
+                item.label.center.x -= distance * self.frame.width
+            } else if index > selectedIndex {
+                item.label.center.x += distance * self.frame.width
+            }
+            item.label.alpha = 0
         }
     }
 }

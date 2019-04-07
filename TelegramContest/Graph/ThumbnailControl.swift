@@ -48,13 +48,21 @@ class ThumbnailControl: UIControl {
         }
     }
 
-    var range: Range<CGFloat> = 0..<1 {
-        didSet {
-            self.update()
-            if oldValue != range {
-                self.sendActions(for: .valueChanged)
-            }
+    private(set) var range: Range<CGFloat> = 0..<1
+
+    func update(range: Range<CGFloat>, animated: Bool) {
+        guard self.range != range else {
+            return
         }
+        self.range = range
+        if animated {
+            UIView.animate(withDuration: 0.25) {
+                self.update()
+            }
+        } else {
+            self.update()
+        }
+        self.sendActions(for: .valueChanged)
     }
 
     override init(frame: CGRect) {
@@ -143,15 +151,18 @@ class ThumbnailControl: UIControl {
         switch self.gesture {
         case .increaseLeft:
             if range.lowerBound + delta < self.range.upperBound {
-                self.range = self.normalize(range: (self.range.lowerBound + delta)..<(self.range.upperBound), collapse: false, movingRight: false)
+                let range = self.normalize(range: (self.range.lowerBound + delta)..<(self.range.upperBound), collapse: false, movingRight: false)
+                self.update(range: range, animated: false)
             }
         case .increaseRight:
             if self.range.lowerBound < self.range.upperBound + delta {
-                self.range = self.normalize(range: (self.range.lowerBound)..<(self.range.upperBound + delta), collapse: false, movingRight: true)
+                let range = self.normalize(range: (self.range.lowerBound)..<(self.range.upperBound + delta), collapse: false, movingRight: true)
+                self.update(range: range, animated: false)
             }
         case .move:
             if self.range.lowerBound + delta < self.range.upperBound + delta {
-                self.range = self.normalize(range: (self.range.lowerBound + delta)..<(self.range.upperBound + delta), collapse: true, movingRight: false)
+                let range = self.normalize(range: (self.range.lowerBound + delta)..<(self.range.upperBound + delta), collapse: true, movingRight: false)
+                self.update(range: range, animated: false)
             }
         case .none:
             break

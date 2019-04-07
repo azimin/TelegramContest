@@ -25,11 +25,14 @@ class DateSelectionView: UIView {
 
     private var dateLabel: UILabel!
     private var arrowImageView: UIImageView!
+    private var button: UIButton!
     private var numberLabels: [UILabel] = []
     private var namesLabels: [UILabel] = []
 
     var selectedIndex: Int?
     private let style: Style
+
+    var tapAction: VoidBlock?
 
     init(style: Style) {
         self.style = style
@@ -73,7 +76,17 @@ class DateSelectionView: UIView {
         self.arrowImageView = UIImageView(image: UIImage(named: "img_action_arrow")!.withRenderingMode(.alwaysTemplate))
         plate.addSubview(self.arrowImageView)
 
+        self.button = UIButton()
+        self.button.isExclusiveTouch = true
+        self.button.addTarget(self, action: #selector(self.didTap), for: .touchUpInside)
+        plate.addSubview(self.button)
+
         self.plate = plate
+    }
+
+    @objc
+    func didTap() {
+        self.tapAction?()
     }
 
     var theme: Theme = .light {
@@ -195,6 +208,7 @@ class DateSelectionView: UIView {
             platePosition += (self.frame.width + 1 - platePosition - plateWidth / 2)
         }
         plate.center = CGPoint(x: platePosition, y: y / 2)
+        self.button.frame = plate.bounds
     }
 
     private func getDateComponents(_ date: Date) -> String {
