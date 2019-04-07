@@ -16,11 +16,15 @@ class GraphControlView: UIView {
     }
 
     private(set) var dataSource: GraphDataSource?
+    private var transformedValues: [[Int]] = []
 
     private var enabledRows: [Int] = []
 
+    var style: GraphStyle = .basic
+
     func updateDataSouce(_ dataSource: GraphDataSource?, animated: Bool) {
         self.dataSource = dataSource
+        self.transformedValues = Transformer(rows: dataSource?.yRows.map({ $0.values }) ?? [], style: style.transformerStyle).values
         if let dataSource = dataSource {
             self.enabledRows = Array(0..<dataSource.yRows.count)
         } else {
@@ -99,9 +103,8 @@ class GraphControlView: UIView {
 
         for index in 0..<self.graphDrawLayers.count {
             if enabledRows.contains(index) {
-                let yRow = dataSource.yRows[index]
-                let max = yRow.values.max() ?? 0
-                let min = yRow.values.min() ?? 0
+                let max = self.transformedValues[index].max() ?? 0
+                let min = self.transformedValues[index].min() ?? 0
 
                 if max > maxValue {
                     maxValue = max
@@ -132,9 +135,10 @@ class GraphControlView: UIView {
                 let yRow = dataSource.yRows[index]
                 let context = GraphContext(
                     range: 0..<1,
-                    values: yRow.values,
+                    values: self.transformedValues[index],
                     maxValue: maxValue,
-                    minValue: minValue
+                    minValue: minValue,
+                    style: self.style.drawStyle
                 )
                 graphView.update(graphContext: context, animationDuration: animated ? Constants.aniamtionDuration : 0)
                 graphView.color = yRow.color

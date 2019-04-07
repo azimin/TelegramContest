@@ -106,8 +106,8 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
                     }
                     let graphCell = tableView.cellForRow(at: IndexPath(row: 0, section: indexPath.section)) as! GraphTableViewCell
                     let graphView = graphCell.graphView
-//                    graphView.updateEnabledRows(section.enabledRows, animated: true)
-                    graphView.transform(to: self.section[indexPath.section].dataSource, range: 0.4..<0.6)
+                    graphView.updateEnabledRows(section.enabledRows, animated: true)
+//                    graphView.transform(to: self.section[indexPath.section].dataSource, range: 0.4..<0.6)
                 }
                 rows.append(row)
             }

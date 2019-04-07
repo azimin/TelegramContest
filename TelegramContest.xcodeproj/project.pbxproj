@@ -29,6 +29,7 @@
 		9FB94A1E2259ED28004476AF /* GraphStateTransformView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FB94A1D2259ED28004476AF /* GraphStateTransformView.swift */; };
 		9FB94A212259FD56004476AF /* FiltersTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FB94A202259FD56004476AF /* FiltersTableViewCell.swift */; };
 		9FB94A242259FD6C004476AF /* GraphDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FB94A232259FD6C004476AF /* GraphDataSource.swift */; };
+		9FB94A26225A42BF004476AF /* Graph.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FB94A25225A42BF004476AF /* Graph.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -56,6 +57,7 @@
 		9FB94A1D2259ED28004476AF /* GraphStateTransformView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GraphStateTransformView.swift; sourceTree = "<group>"; };
 		9FB94A202259FD56004476AF /* FiltersTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FiltersTableViewCell.swift; sourceTree = "<group>"; };
 		9FB94A232259FD6C004476AF /* GraphDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GraphDataSource.swift; sourceTree = "<group>"; };
+		9FB94A25225A42BF004476AF /* Graph.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Graph.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -90,6 +92,7 @@
 			children = (
 				9F264224224004D300FEB2DD /* AppDelegate.swift */,
 				9F26424E2240E30300FEB2DD /* Theme.swift */,
+				9FB94A25225A42BF004476AF /* Graph.swift */,
 				9FB94A222259FD66004476AF /* DataSoource */,
 				9FB94A1F2259ED30004476AF /* V2 */,
 				9F2642392240054200FEB2DD /* Graph */,
@@ -223,6 +226,7 @@
 				9F26424D22400E3800FEB2DD /* DateSelectionView.swift in Sources */,
 				9F2642452240059F00FEB2DD /* YAxisOverlayView.swift in Sources */,
 				9FB94A242259FD6C004476AF /* GraphDataSource.swift in Sources */,
+				9FB94A26225A42BF004476AF /* Graph.swift in Sources */,
 				9F26423F2240056400FEB2DD /* GraphContentView.swift in Sources */,
 				9F26424F2240E30300FEB2DD /* Theme.swift in Sources */,
 				9F2642512240ECB000FEB2DD /* ButtonTableViewCell.swift in Sources */,
@@ -374,7 +378,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "com.alex.telegram-context.TelegramContest";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
 			};

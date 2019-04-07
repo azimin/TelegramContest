@@ -12,6 +12,7 @@ class GraphContext {
     enum Style {
         case graph
         case stack
+        case overlay
     }
 
     let range: Range<CGFloat>
@@ -20,7 +21,7 @@ class GraphContext {
     let minValue: Int
     let style: Style
 
-    init(range: Range<CGFloat>, values: [Int], maxValue: Int, minValue: Int, style: Style = .graph) {
+    init(range: Range<CGFloat>, values: [Int], maxValue: Int, minValue: Int, style: Style = .overlay) {
         self.range = range
         self.values = values
         self.maxValue = maxValue
@@ -170,6 +171,11 @@ class GraphDrawLayerView: UIView {
             self.selectedPath.strokeColor = color.cgColor
             self.pathLayer.fillColor = color.cgColor
             self.pathLayer.lineJoin = CAShapeLayerLineJoin.miter
+        case .overlay:
+            self.pathLayer.lineWidth = 0
+            self.selectedPath.strokeColor = color.cgColor
+            self.pathLayer.fillColor = color.cgColor
+            self.pathLayer.lineJoin = CAShapeLayerLineJoin.bevel
         }
     }
 
@@ -179,6 +185,8 @@ class GraphDrawLayerView: UIView {
             return self.generatePathGraph(graphContext: graphContext)
         case .stack:
             return self.generatePathStack(graphContext: graphContext)
+        case .overlay:
+            return self.generatePathOverlay(graphContext: graphContext)
         }
     }
 
@@ -256,9 +264,6 @@ class GraphDrawLayerView: UIView {
         for index in 0..<(graphContext.values.count / steps.points) {
             let value: Int = graphContext.values[index]
             let x = steps.pixels * CGFloat(index) - offset - (steps.pixels / 2)
-            if index == 5 {
-                print(self, offset, steps.pixels, x)
-            }
             let yPercent = CGFloat(value) / CGFloat(graphContext.maxValue)
             let y = round((1 - yPercent) * self.availbleFrame.height)
             if x > (-1.1 * self.availbleFrame.width) && x < (self.availbleFrame.width * 1.1) {
@@ -268,6 +273,38 @@ class GraphDrawLayerView: UIView {
                 }
                 path.addLine(to: CGPoint(x: x, y: y))
                 path.addLine(to: CGPoint(x: x + steps.pixels, y: y))
+            }
+        }
+
+        path.addLine(to: CGPoint(x: 400, y: self.availbleFrame.height))
+        path.addLine(to: CGPoint(x: 0, y: self.availbleFrame.height))
+
+        return path
+    }
+
+    func generatePathOverlay(graphContext: GraphContext?) -> CGPath {
+        guard let graphContext = graphContext, self.availbleFrame.width > 0 else {
+            return CGMutablePath()
+        }
+
+        let fullWidth = round(self.availbleFrame.width / graphContext.interval)
+        let offset = graphContext.range.lowerBound * fullWidth
+
+        let steps = graphContext.stepsBaseOn(width: fullWidth)
+        let path = CGMutablePath()
+        var isMoved: Bool = false
+
+        for index in 0..<(graphContext.values.count / steps.points) {
+            let value: Int = graphContext.values[index]
+            let x = steps.pixels * CGFloat(index) - offset
+            let yPercent = CGFloat(value) / CGFloat(graphContext.maxValue)
+            let y = round((1 - yPercent) * self.availbleFrame.height)
+            if x > (-1.1 * self.availbleFrame.width) && x < (self.availbleFrame.width * 1.1) {
+                if !isMoved {
+                    path.move(to: CGPoint(x: x, y: y))
+                    isMoved = true
+                }
+                path.addLine(to: CGPoint(x: x, y: y))
             }
         }
 

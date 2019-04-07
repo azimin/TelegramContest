@@ -16,9 +16,13 @@ class GraphContentView: UIView {
     }
 
     private(set) var dataSource: GraphDataSource?
+    private var transformedValues: [[Int]] = []
+
+    var style: GraphStyle = .basic
 
     func updateDataSouce(_ dataSource: GraphDataSource?, animated: Bool, zoomingForThisStep: Bool) {
         self.dataSource = dataSource
+        self.transformedValues = Transformer(rows: dataSource?.yRows.map({ $0.values }) ?? [], style: style.transformerStyle).values
         self.preveous = .zero
         self.currentMaxValue = 0
         if let dataSource = dataSource {
@@ -177,7 +181,11 @@ class GraphContentView: UIView {
             let graphView = GraphDrawLayerView()
             graphView.layer.masksToBounds = true
             graphView.frame = CGRect(x: 0, y: 0, width: self.frame.width, height: self.frame.height - Constants.labelsHeight)
-            self.insertSubview(graphView, belowSubview: self.yAxisLabelOverlay)
+            if let lates = self.graphDrawLayers.last {
+                self.insertSubview(graphView, belowSubview: lates)
+            } else {
+                self.insertSubview(graphView, belowSubview: self.yAxisLabelOverlay)
+            }
             self.graphDrawLayers.append(graphView)
         }
 
@@ -191,8 +199,7 @@ class GraphContentView: UIView {
 
         for index in 0..<self.graphDrawLayers.count {
             if enabledRows.contains(index) {
-                let yRow = dataSource.yRows[index]
-                let values = self.converValues(values: yRow.values, range: self.selectedRange)
+                let values = self.converValues(values: self.transformedValues[index], range: self.selectedRange)
                 let max = values.max() ?? 0
                 let min = values.min() ?? 0
 
@@ -258,9 +265,10 @@ class GraphContentView: UIView {
             let yRow = dataSource.yRows[index]
             let context = GraphContext(
                 range: self.selectedRange,
-                values: yRow.values,
+                values: self.transformedValues[index],
                 maxValue: self.currentMaxValue,
-                minValue: minValue
+                minValue: minValue,
+                style: self.style.drawStyle
             )
             graphView.update(graphContext: context, animationDuration: animated ? Constants.aniamtionDuration : 0)
             graphView.color = yRow.color

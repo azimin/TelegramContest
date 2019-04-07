@@ -8,10 +8,95 @@
 
 import UIKit
 
+class Transformer {
+    enum Style {
+        case none
+        case multiplyer
+        case append
+        case appendPercent
+    }
+
+//    private var rows: [GraphLineRow] = []
+//    private let style: Style
+    var values: [[Int]] = []
+
+    init(rows: [[Int]], style: Style) {
+        switch style {
+        case .none:
+            self.setupNone(rows: rows)
+        case .multiplyer:
+            self.setupMultiplyer(rows: rows)
+        case .append:
+            self.setupAppend(rows: rows)
+        case .appendPercent:
+            self.setupAppendPercent(rows: rows)
+        }
+    }
+
+    func setupNone(rows: [[Int]]) {
+        self.values = rows.map({ $0 })
+    }
+
+    func setupMultiplyer(rows: [[Int]]) {
+        var max: Int = 0
+        for row in rows {
+            let newMax = row.max() ?? 0
+            if newMax > max {
+                max = newMax
+            }
+        }
+
+        for row in rows {
+            let newMax = row.max() ?? 0
+            let percent = CGFloat(max) / CGFloat(newMax)
+            self.values.append(row.map({ Int(CGFloat($0) * percent) }))
+        }
+    }
+
+    func setupAppend(rows: [[Int]]) {
+        guard rows.count > 0 else {
+            return
+        }
+
+        self.values = (0..<rows.count).map({ _ in [] })
+        for index in 0..<rows[0].count {
+            var offset = 0
+            for (rowIndex, row) in rows.enumerated() {
+                offset += row[index]
+                self.values[rowIndex].append(offset)
+            }
+        }
+    }
+
+    func setupAppendPercent(rows: [[Int]]) {
+        guard rows.count > 0 else {
+            return
+        }
+
+        self.values = (0..<rows.count).map({ _ in [] })
+        for index in 0..<rows[0].count {
+            var sum: Int = 0
+            for row in rows {
+                sum += row[index]
+            }
+
+            var preverousValue: CGFloat = 0
+            for (rowIndex, row) in rows.enumerated() {
+                let value = row[index]
+                let percent = CGFloat(value) / CGFloat(sum) * 100
+                let newValue = preverousValue + percent
+                preverousValue += percent
+                self.values[rowIndex].append(Int(min(round(newValue), 100)))
+            }
+        }
+    }
+}
+
 class GraphLineRow {
     var color: UIColor
     var name: String
     var values: [Int]
+    var transformedValues: [Int] = []
 
     init(color: UIColor, name: String, values: [Int]) {
         self.color = color

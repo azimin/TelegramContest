@@ -33,6 +33,13 @@ class GraphView: UIView {
         }
     }
 
+    var style: GraphStyle = .basic {
+        didSet {
+            self.graphControlView.style = style
+            self.graphContentView.style = style
+        }
+    }
+
     private func updateTheme() {
         self.graphControlView.theme = theme
         self.graphContentView.theme = theme
@@ -117,6 +124,8 @@ class GraphView: UIView {
         self.graphContentView.updatedZoomStep = { value in
             self.updatedZoomStep?(value)
         }
+
+        self.style = .percentStackedBar
     }
 
     @objc private func rangeUpdated(control: ThumbnailControl) {
