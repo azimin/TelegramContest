@@ -49,3 +49,28 @@ enum Theme {
         }
     }
 }
+
+extension UIFont {
+    enum Wight {
+        case light
+        case regular
+        case medium
+        case bold
+        case heavy
+    }
+
+    static func font(with wight: Wight, size: CGFloat) -> UIFont {
+        switch wight {
+        case .bold:
+            return UIFont.systemFont(ofSize: size, weight: .bold)
+        case .regular:
+            return UIFont.systemFont(ofSize: size, weight: .regular)
+        case .medium:
+            return UIFont.systemFont(ofSize: size, weight: .medium)
+        case .light:
+            return UIFont.systemFont(ofSize: size, weight: .thin)
+        case .heavy:
+            return UIFont.systemFont(ofSize: size, weight: .heavy)
+        }
+    }
+}

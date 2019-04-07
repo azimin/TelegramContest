@@ -16,6 +16,12 @@ class AnimationCounter {
     private var progress: CGFloat = 0
     private var block: ((Int) -> Void)?
 
+    func reset() {
+        self.cachedFrom = 0
+        self.cachedTo = 0
+        self.progress = 0
+    }
+
     func animate(from: Int, to: Int, block: @escaping (Int) -> Void) {
         guard to != self.cachedTo, (from - to) != 0 else {
             return

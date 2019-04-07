@@ -125,6 +125,25 @@ class GraphDrawLayerView: UIView {
         self.pathLayer.path = self.generatePath(graphContext: self.graphContext)
     }
 
+//    var counter = AnimationCounter()
+//    func transformFrom(point: Int) {
+//        guard let graphContext = self.graphContext else {
+//            return
+//        }
+//        let maxValue = 30
+//        counter.reset()
+//        counter.animate(from: 1, to: maxValue) { (value) in
+//            let range = graphContext.range
+//            let progress = CGFloat(value) / CGFloat(maxValue)
+//            let newInterval = range.interval * (1 - progress)
+//            let newRange: Range<CGFloat> = range.lowerBound + (newInterval / 2)..<range.upperBound - (newInterval / 2)
+//            let newGraphContext = GraphContext(range: newRange, values: graphContext.values, maxValue: graphContext.maxValue, minValue: graphContext.minValue)
+//            self.update(graphContext: newGraphContext, animationDuration: 0)
+//        }
+////        self.pathLayer.path = self.generatePointGraph(graphContext: self.graphContext, point: point)
+////        self.update(graphContext: self.graphContext, animationDuration: 0.5)
+//    }
+
     func update(graphContext: GraphContext?, animationDuration: TimeInterval) {
         if animationDuration > 0 {
             let animation = CABasicAnimation(keyPath: "path")
@@ -161,6 +180,37 @@ class GraphDrawLayerView: UIView {
         case .stack:
             return self.generatePathStack(graphContext: graphContext)
         }
+    }
+
+    func generatePointGraph(graphContext: GraphContext?, point: Int) -> CGPath {
+        guard let graphContext = graphContext, self.availbleFrame.width > 0 else {
+            return CGMutablePath()
+        }
+
+        let fullWidth = round(self.availbleFrame.width / graphContext.interval)
+        let offset = graphContext.range.lowerBound * fullWidth
+
+        let steps = graphContext.stepsBaseOn(width: fullWidth)
+        let path = CGMutablePath()
+        var isMoved: Bool = false
+
+        for index in 0..<(graphContext.values.count / steps.points) {
+            let value: Int = graphContext.values[index]
+            let x = steps.pixels * CGFloat(index) - offset
+            let yPercent = CGFloat(value) / CGFloat(graphContext.maxValue)
+            if x > (-1.1 * self.availbleFrame.width) && x < (self.availbleFrame.width * 1.1) {
+                let newValue = graphContext.values[point]
+                let newX = steps.pixels * CGFloat(point) - offset
+                let newYPercent = CGFloat(newValue) / CGFloat(graphContext.maxValue)
+                if !isMoved {
+                    path.move(to: CGPoint(x: x, y: (1 - yPercent) * self.availbleFrame.height))
+                    isMoved = true
+                }
+                path.addLine(to: CGPoint(x: newX, y: (1 - newYPercent) * self.availbleFrame.height))
+            }
+        }
+
+        return path
     }
 
     func generatePathGraph(graphContext: GraphContext?) -> CGPath {
@@ -415,3 +465,8 @@ class GraphDrawLayerView: UIView {
     }
 }
 
+extension Range where Bound: FloatingPoint {
+    var interval: Bound {
+        return self.upperBound - self.lowerBound
+    }
+}

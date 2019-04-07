@@ -8,131 +8,6 @@
 
 import UIKit
 
-class GraphLineRow {
-    var color: UIColor
-    var name: String
-    var values: [Int]
-
-    init(color: UIColor, name: String, values: [Int]) {
-        self.color = color
-        self.name = name
-        self.values = values
-    }
-}
-
-class GraphXRow {
-    var dates: [Date]
-    var dateStrings: [String]
-
-    init(dates: [Date]) {
-        self.dates = dates
-
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "MMM d"
-        self.dateStrings = dates.map({ dateFormatter.string(from: $0) })
-    }
-}
-
-class Section {
-    var dataSource: GraphDataSource
-    var selectedRange: Range<CGFloat>
-    var zoomStep: Int?
-    var enabledRows: [Int]
-
-    init(dataSource: GraphDataSource, selectedRange: Range<CGFloat>, enabledRows: [Int]) {
-        self.dataSource = dataSource
-        self.selectedRange = selectedRange
-        self.enabledRows = enabledRows
-        self.zoomStep = nil
-    }
-}
-
-class GraphDataSource {
-    let xRow: GraphXRow
-    let yRows: [GraphLineRow]
-
-    init(xRow: GraphXRow, yRows: [GraphLineRow]) {
-        self.xRow = xRow
-        self.yRows = yRows
-    }
-
-    init?(json: [String: Any]) {
-        var lineRows: [GraphLineRow] = []
-        var types: [String: String] =  (json["types"] as? [String: String]) ?? [:]
-        var names: [String: String] = (json["names"] as? [String: String]) ?? [:]
-        var colors: [String: UIColor] =  ((json["colors"] as? [String: String]) ?? [:]).mapValues({ return UIColor(hex: $0 )})
-
-        var xRow: GraphXRow?
-
-        if let columns = json["columns"] as? [[AnyObject]] {
-            for column in columns {
-                var name: String?
-                var values: [Int64] = []
-                for row in column {
-                    if let nameValue = row as? String {
-                        name = nameValue
-                    } else if let value = row as? Int64 {
-                        values.append(value)
-                    }
-                }
-                if let name = name {
-                    if let type = types[name] {
-                        switch type {
-                        case "line":
-                            if let color = colors[name], let realName = names[name] {
-                                let lineRow = GraphLineRow(color: color, name: realName, values: values.map({ Int($0) }))
-                                lineRows.append(lineRow)
-                            }
-                        case "x":
-                            let dates = values.map({ Date(timeIntervalSince1970: TimeInterval($0 / 1000)) })
-                            xRow = GraphXRow(dates: dates)
-                        default:
-                            break
-                        }
-                    }
-                }
-            }
-        }
-
-        if let xRow = xRow, xRow.dates.count > 0, lineRows.count > 0 {
-            self.xRow = xRow
-            self.yRows = lineRows
-        } else {
-            return nil
-        }
-    }
-}
-
-class SelectioTableViewCell: UITableViewCell {
-    var theme: Theme = .light {
-        didSet {
-            self.updateTheme()
-        }
-    }
-
-    func updateTheme() {
-        let config = self.theme.configuration
-        self.textLabel?.textColor = config.nameColor
-        self.contentView.backgroundColor = config.backgroundColor
-        self.textLabel?.backgroundColor = config.backgroundColor
-        self.accessoryView?.backgroundColor = config.backgroundColor
-        self.backgroundColor = config.backgroundColor
-
-        let view = UIView()
-        view.backgroundColor = config.selectionColor
-        self.selectedBackgroundView = view
-    }
-    
-    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
-        super.init(style: style, reuseIdentifier: reuseIdentifier)
-        self.updateTheme()
-    }
-
-    required init?(coder aDecoder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-}
-
 class ViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
 
     let tableView = UITableView(frame: .zero, style: .grouped)
@@ -166,7 +41,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         self.tableView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor).isActive = true
         self.tableView.register(GraphTableViewCell.self, forCellReuseIdentifier: "GraphTableViewCell")
         self.tableView.register(ButtonTableViewCell.self, forCellReuseIdentifier: "ButtonTableViewCell")
-        self.tableView.register(SelectioTableViewCell.self, forCellReuseIdentifier: "SelectionUITableViewCell")
+        self.tableView.register(FiltersTableViewCell.self, forCellReuseIdentifier: "FiltersTableViewCell")
     }
 
     var theme: Theme = Theme.light {
@@ -188,7 +63,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         if section == 0 {
             return 1
         } else {
-            return self.section[section - 1].dataSource.yRows.count + 1
+            return 2
         }
     }
 
@@ -217,14 +92,29 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
             cell.graphView.updateEnabledRows(section.enabledRows, animated: false)
             return cell
         default:
-            let cell = tableView.dequeueReusableCell(withIdentifier: "SelectionUITableViewCell", for: indexPath) as! SelectioTableViewCell
-            cell.theme = self.theme
-            let index = indexPath.row - 1
-            let row = dataSource.yRows[index]
-            cell.imageView?.image = image(from: row.color)?.roundedImage
-            cell.textLabel?.text = row.name
-            cell.textLabel?.font = UIFont.systemFont(ofSize: 17)
-            cell.accessoryType = section.enabledRows.contains(indexPath.row - 1) ? .checkmark : .none
+            let cell = tableView.dequeueReusableCell(withIdentifier: "FiltersTableViewCell", for: indexPath) as! FiltersTableViewCell
+            let yRows = dataSource.yRows
+            let section = self.section[indexPath.section - 1]
+            var rows: [Row] = []
+
+            for (index, yRow) in yRows.enumerated() {
+                let row = Row(name: yRow.name, color: yRow.color, isSelected: section.enabledRows.contains(index)) {
+                    if section.enabledRows.contains(index) {
+                        section.enabledRows.removeAll(where: { $0 == index })
+                    } else {
+                        section.enabledRows.append(index)
+                    }
+                    let graphCell = tableView.cellForRow(at: IndexPath(row: 0, section: indexPath.section)) as! GraphTableViewCell
+                    let graphView = graphCell.graphView
+                    graphView.updateEnabledRows(section.enabledRows, animated: true)
+                }
+                rows.append(row)
+            }
+
+            let config = theme.configuration
+            cell.contentView.backgroundColor = config.backgroundColor
+            cell.backgroundColor = config.backgroundColor
+            cell.rows = rows
             return cell
         }
     }
@@ -245,7 +135,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         case 0:
             return 390
         default:
-            return 65
+            return UITableView.automaticDimension
         }
     }
 
@@ -258,28 +148,24 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
             return
         }
 
-        guard indexPath.row > 0 else {
-            return
-        }
-
-        let section = self.section[indexPath.section - 1]
-        let cell = tableView.cellForRow(at: indexPath)
-
-        let row = indexPath.row - 1
-        let shouldSelect: Bool
-        if section.enabledRows.contains(row) {
-            section.enabledRows.removeAll(where: { $0 == row })
-            shouldSelect = false
-        } else {
-            section.enabledRows.append(row)
-            shouldSelect = true
-        }
-
-        let graphCell = tableView.cellForRow(at: IndexPath(row: 0, section: indexPath.section)) as! GraphTableViewCell
-        let graphView = graphCell.graphView
-        graphView.updateEnabledRows(section.enabledRows, animated: true)
-
-        cell?.accessoryType = shouldSelect ? .checkmark : .none
+//        let section = self.section[indexPath.section - 1]
+//        let cell = tableView.cellForRow(at: indexPath)
+//
+//        let row = indexPath.row - 1
+//        let shouldSelect: Bool
+//        if section.enabledRows.contains(row) {
+//            section.enabledRows.removeAll(where: { $0 == row })
+//            shouldSelect = false
+//        } else {
+//            section.enabledRows.append(row)
+//            shouldSelect = true
+//        }
+//
+//        let graphCell = tableView.cellForRow(at: IndexPath(row: 0, section: indexPath.section)) as! GraphTableViewCell
+//        let graphView = graphCell.graphView
+//        graphView.updateEnabledRows(section.enabledRows, animated: true)
+//
+//        cell?.accessoryType = shouldSelect ? .checkmark : .none
     }
 
     override var preferredStatusBarStyle: UIStatusBarStyle {
