@@ -212,9 +212,9 @@ class DateSelectionView: UIView {
             let range = (platePosition - plateWidth / 2)..<(platePosition + plateWidth / 2)
             if range.contains(position) {
                 if position > self.frame.width / 2 {
-                    platePosition = position - plateWidth / 2 - smallOffset
+                    platePosition = position - plateWidth / 2 - offset
                 } else {
-                    platePosition = position + plateWidth / 2 + smallOffset
+                    platePosition = position + plateWidth / 2 + offset
                 }
             }
         }

@@ -162,13 +162,16 @@ class GraphDrawLayerView: UIView {
         switch self.graphContext?.style ?? .graph {
         case .graph:
             self.pathLayer.lineWidth = self.lineWidth
+            self.selectedPath.lineWidth = self.lineWidth
             self.pathLayer.strokeColor = color.cgColor
             self.selectedPath.strokeColor = color.cgColor
             self.pathLayer.fillColor = UIColor.clear.cgColor
             self.pathLayer.lineJoin = CAShapeLayerLineJoin.bevel
         case .stack:
+            self.selectedPath.lineWidth = 0
             self.pathLayer.lineWidth = 0
-            self.selectedPath.strokeColor = color.cgColor
+            self.selectedPath.fillColor = color.cgColor
+            self.selectedPath.lineJoin = CAShapeLayerLineJoin.miter
             self.pathLayer.fillColor = color.cgColor
             self.pathLayer.lineJoin = CAShapeLayerLineJoin.miter
         case .overlay:
@@ -443,14 +446,77 @@ class GraphDrawLayerView: UIView {
         self.selectedPath.path = nil
     }
 
-    typealias Selection = (position: CGFloat, index: Int, height: CGFloat)
-//    func selectSquare(graphContext: GraphContext?, position: CGFloat, animationDuration: TimeInterval) -> (CGFloat, Int) {
-//
-//    }
-
     func selectPosition(graphContext: GraphContext?, position: CGFloat, animationDuration: TimeInterval) -> Selection {
+        switch self.graphContext?.style ?? .graph {
+        case .graph, .overlay:
+            return self.selectLine(graphContext: graphContext, position: position, animationDuration: animationDuration)
+        case .stack:
+            return self.selectSquare(graphContext: graphContext, position: position, animationDuration: animationDuration)
+        }
+    }
+
+    typealias Selection = (position: CGFloat, index: Int, height: CGFloat, rect: CGRect?)
+
+    func selectSquare(graphContext: GraphContext?, position: CGFloat, animationDuration: TimeInterval) -> Selection {
         guard let graphContext = graphContext, self.availbleFrame.width > 0 else {
-            return (0, 0, 0)
+            return (0, 0, 0, nil)
+        }
+
+        let fullWidth = round(self.availbleFrame.width / graphContext.interval)
+        let offset = graphContext.range.lowerBound * fullWidth
+        let steps = graphContext.stepsBaseOn(width: fullWidth)
+
+        var delta: CGFloat = 10000
+        var cachedPosition: CGFloat = 0
+        var cachedHeight: CGFloat = 0
+        var cachedYPosition: CGFloat = 0
+        var cachedIndex = 0
+
+        for index in 0..<(graphContext.values.count / steps.points) {
+            let value: Int = graphContext.values[index] * steps.points
+            let x = round(steps.pixels * CGFloat(index)) - offset
+            let yPercent = CGFloat(value) / CGFloat(graphContext.maxValue)
+
+            if abs(x - position) < delta {
+                delta = abs(x - position)
+                cachedPosition = x
+                cachedHeight = yPercent * self.availbleFrame.height
+                cachedYPosition = (1 - yPercent) * self.availbleFrame.height
+                cachedIndex = index * steps.points
+            }
+        }
+
+//        let path = CGMutablePath()
+        let value: Int = graphContext.values[cachedIndex]
+        let x = steps.pixels * CGFloat(cachedIndex) - offset - (steps.pixels / 2)
+        let yPercent = CGFloat(value) / CGFloat(graphContext.maxValue)
+        let y = round((1 - yPercent) * self.availbleFrame.height)
+        let height = (self.availbleFrame.height - y)
+
+        let rect = CGRect(x: x, y: self.availbleFrame.height - height + self.offset, width: steps.pixels, height: height)
+
+//        path.move(to: CGPoint(x: x, y: y))
+//        path.addLine(to: CGPoint(x: x, y: y))
+//        path.addLine(to: CGPoint(x: x + steps.pixels, y: y))
+//        path.addLine(to: CGPoint(x: x + steps.pixels, y: self.availbleFrame.height)) // FIXME
+//        path.addLine(to: CGPoint(x: x, y: self.availbleFrame.height))
+
+//        if animationDuration > 0, selectedPath.path != nil {
+//            let animation = CABasicAnimation(keyPath: "path")
+//            animation.fromValue = self.selectedPath.path
+//            animation.toValue = path
+//            animation.duration = animationDuration
+//            animation.timingFunction = CAMediaTimingFunction(name: .easeOut)
+//            self.selectedPath.add(animation, forKey: "path")
+//        }
+//        self.selectedPath.path = path
+
+        return (cachedPosition, cachedIndex, cachedHeight, rect)
+    }
+
+    func selectLine(graphContext: GraphContext?, position: CGFloat, animationDuration: TimeInterval) -> Selection {
+        guard let graphContext = graphContext, self.availbleFrame.width > 0 else {
+            return (0, 0, 0, nil)
         }
 
         let fullWidth = round(self.availbleFrame.width / graphContext.interval)
@@ -494,7 +560,7 @@ class GraphDrawLayerView: UIView {
         }
         self.selectedPath.path = newPath
 
-        return (cachedPosition, cachedIndex, cachedHeight)
+        return (cachedPosition, cachedIndex, cachedHeight, nil)
     }
 }
 
@@ -513,5 +579,37 @@ func findNear(value: Int, positive: Bool, devidedBy: Int) -> Int {
         return ((value + devidedBy) / devidedBy) * devidedBy
     } else {
         return (value / devidedBy) * devidedBy
+    }
+}
+
+extension UIColor {
+    public var tapButtonChangeColor: UIColor {
+        var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
+        if getRed(&red, green: &green, blue: &blue, alpha: &alpha) {
+            // Special formula
+            if (red * 300 + green * 590 + blue * 115) / 1000 < 0.3 {
+                return self.lighterColorForColor()
+            }
+        }
+        return self.darkerColorForColor()
+    }
+
+    private func darkerColorForColor() -> UIColor {
+        return self.changeColor(value: -0.2)
+    }
+
+    private func lighterColorForColor() -> UIColor {
+        return self.changeColor(value: 0.2)
+    }
+
+    private func changeColor(value: CGFloat) -> UIColor {
+        var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
+        if getRed(&red, green: &green, blue: &blue, alpha: &alpha) {
+            return UIColor(red: min(red + value, 1.0),
+                           green: min(green + value, 1.0),
+                           blue: min(blue + value, 1.0),
+                           alpha: alpha)
+        }
+        return self
     }
 }

@@ -102,6 +102,7 @@ class GraphContentView: UIView {
     private var lastVisible: GraphDrawLayerView?
     private var shadowImage = UIImageView(frame: .zero)
     private var shadowCachedSize: CGRect = .zero
+    private var graphSelectionOverlayView: GraphSelectionOverlayView = GraphSelectionOverlayView()
 
     var updatedZoomStep: ((Int?) -> Void)?
 
@@ -144,6 +145,7 @@ class GraphContentView: UIView {
         let topFrame = CGRect(x: Constants.offset, y: 20, width: self.frame.size.width - Constants.offset * 2, height: graphHeight)
         let graphFrame = CGRect(x: Constants.offset, y: 0, width: self.frame.size.width - Constants.offset * 2, height: graphHeight + 20)
         self.graphDrawLayers.forEach({ $0.frame = graphFrame })
+        self.graphSelectionOverlayView.frame = graphFrame
         self.yAxisOverlays.forEach({ $0.frame = topFrame })
         self.dateLabels.frame = CGRect(x: Constants.offset, y: graphHeight + 20, width: self.frame.size.width - Constants.offset * 2, height: Constants.labelsHeight)
         self.selectionViews.forEach({ $0.frame = CGRect(x: Constants.offset, y: 6, width: self.frame.size.width - Constants.offset * 2, height: graphHeight + 8) })
@@ -161,6 +163,7 @@ class GraphContentView: UIView {
             self.dateLabels.theme = theme
             self.shadowCachedSize = .zero
             self.updateShadow()
+            self.graphSelectionOverlayView.overlayerLayer.backgroundColor = config.backgroundColor.withAlphaComponent(0.4).cgColor
         }
     }
 
@@ -182,6 +185,7 @@ class GraphContentView: UIView {
         self.addSubview(self.selectionLineView)
         self.addSubview(self.yAxisLabelOverlay)
         self.addSubview(self.shadowImage)
+        self.addSubview(self.graphSelectionOverlayView)
         self.addSubview(self.selectionPlateView)
     }
 
@@ -360,6 +364,7 @@ class GraphContentView: UIView {
         for layer in self.graphDrawLayers {
             layer.hidePosition()
         }
+        self.graphSelectionOverlayView.hide(animated: true)
     }
 
     private var selectedLocation: CGPoint?
@@ -378,6 +383,7 @@ class GraphContentView: UIView {
 
         self.selectedLocation = location
         var selection: GraphDrawLayerView.Selection?
+        var overlays: [SelectOverlay] = []
 
         for layer in layers {
             guard let context = layer.graphContext else {
@@ -389,6 +395,10 @@ class GraphContentView: UIView {
                 position: location.x,
                 animationDuration: animated ? Constants.aniamtionDuration : 0
             )
+
+            if let frame = newSelection.rect {
+                overlays.append(SelectOverlay(color: layer.color, rect: frame))
+            }
 
             if (selection?.height ?? 0) < newSelection.height {
                 selection = newSelection
@@ -409,6 +419,10 @@ class GraphContentView: UIView {
                                                   enabledRows: self.enabledRows,
                                                   index: selection.index,
                                                   height: height) })
+        }
+
+        if overlays.count > 0 {
+            self.graphSelectionOverlayView.show(overlays: overlays)
         }
     }
 }

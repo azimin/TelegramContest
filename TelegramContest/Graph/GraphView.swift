@@ -125,7 +125,7 @@ class GraphView: UIView {
             self.updatedZoomStep?(value)
         }
 
-        self.style = .basic
+        self.style = .stackedBar
     }
 
     @objc private func rangeUpdated(control: ThumbnailControl) {
