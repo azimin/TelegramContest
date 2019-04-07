@@ -136,7 +136,7 @@ class GraphControlView: UIView {
                     minValue: minValue
                 )
                 graphView.update(graphContext: context, animationDuration: animated ? Constants.aniamtionDuration : 0)
-                graphView.pathLayer.strokeColor = yRow.color.cgColor
+                graphView.color = yRow.color
             }
         }
 

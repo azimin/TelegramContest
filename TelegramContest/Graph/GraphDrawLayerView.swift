@@ -8,11 +8,25 @@
 
 import UIKit
 
-struct GraphContext {
-    var range: Range<CGFloat>
-    var values: [Int]
-    var maxValue: Int
-    var minValue: Int
+class GraphContext {
+    enum Style {
+        case graph
+        case stack
+    }
+
+    let range: Range<CGFloat>
+    let values: [Int]
+    let maxValue: Int
+    let minValue: Int
+    let style: Style
+
+    init(range: Range<CGFloat>, values: [Int], maxValue: Int, minValue: Int, style: Style = .graph) {
+        self.range = range
+        self.values = values
+        self.maxValue = maxValue
+        self.minValue = minValue
+        self.style = style
+    }
 
     var interval: CGFloat {
         let interval = range.upperBound - range.lowerBound
@@ -44,6 +58,12 @@ class GraphDrawLayerView: UIView {
     var pathLayer: CAShapeLayer = CAShapeLayer()
     var selectedPath: CAShapeLayer = CAShapeLayer()
 
+    var color: UIColor = .red {
+        didSet {
+            self.updateStyle()
+        }
+    }
+
     var theme: Theme = .light {
         didSet {
             let config = theme.configuration
@@ -53,7 +73,7 @@ class GraphDrawLayerView: UIView {
 
     var lineWidth: CGFloat = 2 {
         didSet {
-            self.pathLayer.lineWidth = self.lineWidth
+            self.updateStyle()
         }
     }
 
@@ -114,11 +134,36 @@ class GraphDrawLayerView: UIView {
             animation.timingFunction = CAMediaTimingFunction(name: .easeOut)
             self.pathLayer.add(animation, forKey: "path")
         }
-
         self.graphContext = graphContext
+        self.updateStyle()
+    }
+
+    func updateStyle() {
+        switch self.graphContext?.style ?? .graph {
+        case .graph:
+            self.pathLayer.lineWidth = self.lineWidth
+            self.pathLayer.strokeColor = color.cgColor
+            self.selectedPath.strokeColor = color.cgColor
+            self.pathLayer.fillColor = UIColor.clear.cgColor
+            self.pathLayer.lineJoin = CAShapeLayerLineJoin.bevel
+        case .stack:
+            self.pathLayer.lineWidth = 0
+            self.selectedPath.strokeColor = color.cgColor
+            self.pathLayer.fillColor = color.cgColor
+            self.pathLayer.lineJoin = CAShapeLayerLineJoin.miter
+        }
     }
 
     func generatePath(graphContext: GraphContext?) -> CGPath {
+        switch self.graphContext?.style ?? .graph {
+        case .graph:
+            return self.generatePathGraph(graphContext: graphContext)
+        case .stack:
+            return self.generatePathStack(graphContext: graphContext)
+        }
+    }
+
+    func generatePathGraph(graphContext: GraphContext?) -> CGPath {
         guard let graphContext = graphContext, self.availbleFrame.width > 0 else {
             return CGMutablePath()
         }
@@ -131,7 +176,7 @@ class GraphDrawLayerView: UIView {
         var isMoved: Bool = false
 
         for index in 0..<(graphContext.values.count / steps.points) {
-            let value: Int = graphContext.values[index] // FIXME
+            let value: Int = graphContext.values[index]
             let x = steps.pixels * CGFloat(index) - offset
             let yPercent = CGFloat(value) / CGFloat(graphContext.maxValue)
             if x > (-1.1 * self.availbleFrame.width) && x < (self.availbleFrame.width * 1.1) {
@@ -142,6 +187,42 @@ class GraphDrawLayerView: UIView {
                 path.addLine(to: CGPoint(x: x, y: (1 - yPercent) * self.availbleFrame.height))
             }
         }
+
+        return path
+    }
+
+    func generatePathStack(graphContext: GraphContext?) -> CGPath {
+        guard let graphContext = graphContext, self.availbleFrame.width > 0 else {
+            return CGMutablePath()
+        }
+
+        let fullWidth = round(self.availbleFrame.width / graphContext.interval)
+        let offset = graphContext.range.lowerBound * fullWidth
+
+        let steps = graphContext.stepsBaseOn(width: fullWidth)
+        let path = CGMutablePath()
+        var isMoved: Bool = false
+
+        for index in 0..<(graphContext.values.count / steps.points) {
+            let value: Int = graphContext.values[index]
+            let x = steps.pixels * CGFloat(index) - offset - (steps.pixels / 2)
+            if index == 5 {
+                print(self, offset, steps.pixels, x)
+            }
+            let yPercent = CGFloat(value) / CGFloat(graphContext.maxValue)
+            let y = round((1 - yPercent) * self.availbleFrame.height)
+            if x > (-1.1 * self.availbleFrame.width) && x < (self.availbleFrame.width * 1.1) {
+                if !isMoved {
+                    path.move(to: CGPoint(x: x, y: y))
+                    isMoved = true
+                }
+                path.addLine(to: CGPoint(x: x, y: y))
+                path.addLine(to: CGPoint(x: x + steps.pixels, y: y))
+            }
+        }
+
+        path.addLine(to: CGPoint(x: 400, y: self.availbleFrame.height))
+        path.addLine(to: CGPoint(x: 0, y: self.availbleFrame.height))
 
         return path
     }
@@ -190,7 +271,7 @@ class GraphDrawLayerView: UIView {
         return (newLower, newUpper, step, progress, Int(maxValue))
     }
 
-    func converRange(range: Range<CGFloat>, isRight: Bool) -> Range<CGFloat> {
+    private func converRange(range: Range<CGFloat>, isRight: Bool) -> Range<CGFloat> {
         if isRight {
             return 0..<range.upperBound - range.lowerBound
         } else {
@@ -199,7 +280,7 @@ class GraphDrawLayerView: UIView {
         }
     }
 
-    func calculateMovement(startRange: Range<CGFloat>, range: Range<CGFloat>, count: Int, isRight: Bool) -> ConverResult {
+    private func calculateMovement(startRange: Range<CGFloat>, range: Range<CGFloat>, count: Int, isRight: Bool) -> ConverResult {
         let newRange = converRange(range: range, isRight: isRight)
         let newValues = convert(range: newRange, count: count)
         if isRight {
@@ -279,6 +360,8 @@ class GraphDrawLayerView: UIView {
 
         return (points, currentPair.progress > 0.5 ? secondLevel : center)
     }
+
+    // MARK: - Position
 
     func hidePosition() {
         self.selectedPath.path = nil

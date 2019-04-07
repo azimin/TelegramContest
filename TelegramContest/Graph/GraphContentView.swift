@@ -259,8 +259,7 @@ class GraphContentView: UIView {
                 minValue: minValue
             )
             graphView.update(graphContext: context, animationDuration: animated ? Constants.aniamtionDuration : 0)
-            graphView.pathLayer.strokeColor = yRow.color.cgColor
-            graphView.selectedPath.strokeColor = yRow.color.cgColor
+            graphView.color = yRow.color
 
             if anyPoints.isEmpty {
                 let pair = graphView.reportLabelPoints(graphContext: context, startingRange: self.cachedRange, zooming: self.isZoomingMode, zoomStep: self.zoomStep)

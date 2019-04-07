@@ -36,6 +36,7 @@ class GraphView: UIView {
     private func updateTheme() {
         self.graphControlView.theme = theme
         self.graphContentView.theme = theme
+        self.titleLabel.textColor = theme.configuration.nameColor
     }
 
     func updateEnabledRows(_ values: [Int], animated: Bool) {
@@ -49,6 +50,10 @@ class GraphView: UIView {
 
     private let graphContentView = GraphContentView()
     private let graphControlView = GraphControlView(dataSource: nil, selectedRange: 0..<1)
+
+    private let titleLabel = UILabel()
+    private let zoomOutButton = UIButton(type: .system)
+
     var updatedZoomStep: ((Int?) -> Void)?
 
     init() {
@@ -64,14 +69,35 @@ class GraphView: UIView {
 
     override var frame: CGRect {
         didSet {
-            self.graphContentView.frame = CGRect(x: 0, y: 0, width: self.frame.width, height: 320)
-            self.graphControlView.frame = CGRect(x: 0, y: 320, width: self.frame.width, height: 42)
+            self.updateFrame()
         }
+    }
+
+    func updateFrame() {
+        let labelHeight: CGFloat = 16
+        let zoomButtonWidth = self.zoomOutButton.sizeThatFits(CGSize(width: 10000, height: 20)).width
+        self.zoomOutButton.frame = CGRect(x: 23, y: 12, width: zoomButtonWidth, height: labelHeight)
+
+        let labelOffset = 23 + zoomButtonWidth
+        self.titleLabel.frame = CGRect(x: labelOffset, y: 12, width: self.frame.width - labelOffset * 2, height: labelHeight)
+
+        self.graphContentView.frame = CGRect(x: 0, y: 12 + labelHeight, width: self.frame.width, height: 320)
+        self.graphControlView.frame = CGRect(x: 0, y: self.graphContentView.frame.maxY, width: self.frame.width, height: 42)
     }
 
     private func setup() {
         self.addSubview(self.graphControlView)
         self.addSubview(self.graphContentView)
+        self.addSubview(self.titleLabel)
+        self.addSubview(self.zoomOutButton)
+
+        self.titleLabel.font = UIFont.systemFont(ofSize: 13)
+        self.titleLabel.textAlignment = .center
+        self.titleLabel.text = "Swag"
+
+        self.zoomOutButton.setTitle("⤶ Zoom out", for: .normal)
+        self.zoomOutButton.titleLabel?.font = UIFont.systemFont(ofSize: 13)
+
         self.graphControlView.control.addTarget(self, action: #selector(self.rangeUpdated(control:)), for: .valueChanged)
         self.graphControlView.control.addTarget(self, action: #selector(self.rangeUpdateEnded(control:)), for: .editingDidEnd)
         self.graphControlView.control.addTarget(self, action: #selector(self.rangeUpdateStated(control:)), for: .editingDidBegin)
