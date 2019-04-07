@@ -20,24 +20,24 @@ class Transformer {
 //    private let style: Style
     var values: [[Int]] = []
 
-    init(rows: [[Int]], style: Style) {
+    init(rows: [[Int]], visibleRows: [Int], style: Style) {
         switch style {
         case .none:
-            self.setupNone(rows: rows)
+            self.setupNone(rows: rows, visibleRows: visibleRows)
         case .multiplyer:
-            self.setupMultiplyer(rows: rows)
+            self.setupMultiplyer(rows: rows, visibleRows: visibleRows)
         case .append:
-            self.setupAppend(rows: rows)
+            self.setupAppend(rows: rows, visibleRows: visibleRows)
         case .appendPercent:
-            self.setupAppendPercent(rows: rows)
+            self.setupAppendPercent(rows: rows, visibleRows: visibleRows)
         }
     }
 
-    func setupNone(rows: [[Int]]) {
+    func setupNone(rows: [[Int]], visibleRows: [Int]) {
         self.values = rows.map({ $0 })
     }
 
-    func setupMultiplyer(rows: [[Int]]) {
+    func setupMultiplyer(rows: [[Int]], visibleRows: [Int]) {
         var max: Int = 0
         for row in rows {
             let newMax = row.max() ?? 0
@@ -53,7 +53,7 @@ class Transformer {
         }
     }
 
-    func setupAppend(rows: [[Int]]) {
+    func setupAppend(rows: [[Int]], visibleRows: [Int]) {
         guard rows.count > 0 else {
             return
         }
@@ -62,13 +62,17 @@ class Transformer {
         for index in 0..<rows[0].count {
             var offset = 0
             for (rowIndex, row) in rows.enumerated() {
-                offset += row[index]
-                self.values[rowIndex].append(offset)
+                if visibleRows.contains(rowIndex) {
+                    offset += row[index]
+                    self.values[rowIndex].append(offset)
+                } else {
+                    self.values[rowIndex].append(1)
+                }
             }
         }
     }
 
-    func setupAppendPercent(rows: [[Int]]) {
+    func setupAppendPercent(rows: [[Int]], visibleRows: [Int]) {
         guard rows.count > 0 else {
             return
         }
@@ -76,8 +80,10 @@ class Transformer {
         self.values = (0..<rows.count).map({ _ in [] })
         for index in 0..<rows[0].count {
             var sum: Int = 0
-            for row in rows {
-                sum += row[index]
+            for (rowIndex, row) in rows.enumerated() {
+                if visibleRows.contains(rowIndex) {
+                    sum += row[index]
+                }
             }
 
             var preverousValue: CGFloat = 0
@@ -85,8 +91,12 @@ class Transformer {
                 let value = row[index]
                 let percent = CGFloat(value) / CGFloat(sum) * 100
                 let newValue = preverousValue + percent
-                preverousValue += percent
-                self.values[rowIndex].append(Int(min(round(newValue), 100)))
+                if visibleRows.contains(rowIndex) {
+                    preverousValue += percent
+                    self.values[rowIndex].append(Int(min(round(newValue), 100)))
+                } else {
+                    self.values[rowIndex].append(0)
+                }
             }
         }
     }

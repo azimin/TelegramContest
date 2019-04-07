@@ -20,9 +20,21 @@ class GraphContentView: UIView {
 
     var style: GraphStyle = .basic
 
+    func visibleRowValues(dataSource: GraphDataSource?, values: [Int]) -> [[Int]] {
+        guard let dataSource = dataSource else {
+            return []
+        }
+        var newValues: [[Int]] = []
+        for (index, row) in dataSource.yRows.enumerated() {
+            if values.contains(index) {
+                newValues.append(row.values)
+            }
+        }
+        return newValues
+    }
+
     func updateDataSouce(_ dataSource: GraphDataSource?, animated: Bool, zoomingForThisStep: Bool) {
         self.dataSource = dataSource
-        self.transformedValues = Transformer(rows: dataSource?.yRows.map({ $0.values }) ?? [], style: style.transformerStyle).values
         self.preveous = .zero
         self.currentMaxValue = 0
         if let dataSource = dataSource {
@@ -30,6 +42,7 @@ class GraphContentView: UIView {
         } else {
             self.enabledRows = []
         }
+        self.transformedValues = Transformer(rows: dataSource?.yRows.map({ $0.values }) ?? [], visibleRows: self.enabledRows, style: style.transformerStyle).values
         self.hideSelection()
         self.update(animated: animated, zoomingForThisStep: animated)
     }
@@ -69,6 +82,7 @@ class GraphContentView: UIView {
         self.preveous = .zero
         self.enabledRows = values
 
+        self.transformedValues = Transformer(rows: dataSource?.yRows.map({ $0.values }) ?? [], visibleRows: values, style: style.transformerStyle).values
         self.update(animated: animated, force: true)
 
         if let selection = self.selectedLocation {

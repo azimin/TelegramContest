@@ -276,7 +276,7 @@ class GraphDrawLayerView: UIView {
             }
         }
 
-        path.addLine(to: CGPoint(x: 400, y: self.availbleFrame.height))
+        path.addLine(to: CGPoint(x: 400, y: self.availbleFrame.height)) // FIXME
         path.addLine(to: CGPoint(x: 0, y: self.availbleFrame.height))
 
         return path
@@ -308,7 +308,7 @@ class GraphDrawLayerView: UIView {
             }
         }
 
-        path.addLine(to: CGPoint(x: 400, y: self.availbleFrame.height))
+        path.addLine(to: CGPoint(x: 400, y: self.availbleFrame.height)) // FIXME
         path.addLine(to: CGPoint(x: 0, y: self.availbleFrame.height))
 
         return path

@@ -24,17 +24,18 @@ class GraphControlView: UIView {
 
     func updateDataSouce(_ dataSource: GraphDataSource?, animated: Bool) {
         self.dataSource = dataSource
-        self.transformedValues = Transformer(rows: dataSource?.yRows.map({ $0.values }) ?? [], style: style.transformerStyle).values
         if let dataSource = dataSource {
             self.enabledRows = Array(0..<dataSource.yRows.count)
         } else {
             self.enabledRows = []
         }
+        self.transformedValues = Transformer(rows: dataSource?.yRows.map({ $0.values }) ?? [], visibleRows: self.enabledRows, style: style.transformerStyle).values
         self.update(animated: animated)
     }
 
     func updateEnabledRows(_ values: [Int], animated: Bool) {
         self.enabledRows = values
+        self.transformedValues = Transformer(rows: dataSource?.yRows.map({ $0.values }) ?? [], visibleRows: self.enabledRows, style: style.transformerStyle).values
         self.update(animated: animated)
     }
 
@@ -89,7 +90,11 @@ class GraphControlView: UIView {
             graphView.layer.masksToBounds = true
             graphView.lineWidth = 1
             graphView.frame = CGRect(x: 0, y: 0, width: self.frame.width, height: self.frame.height)
-            self.insertSubview(graphView, belowSubview: self.control)
+            if let lates = self.graphDrawLayers.last {
+                self.insertSubview(graphView, belowSubview: lates)
+            } else {
+                self.insertSubview(graphView, belowSubview: self.control)
+            }
             self.graphDrawLayers.append(graphView)
         }
 
