@@ -66,7 +66,7 @@ class Transformer {
                     offset += row[index]
                     self.values[rowIndex].append(offset)
                 } else {
-                    self.values[rowIndex].append(1)
+                    self.values[rowIndex].append(offset)
                 }
             }
         }
@@ -91,11 +91,12 @@ class Transformer {
                 let value = row[index]
                 let percent = CGFloat(value) / CGFloat(sum) * 100
                 let newValue = preverousValue + percent
+                let result = Int(min(round(newValue), 100))
                 if visibleRows.contains(rowIndex) {
                     preverousValue += percent
-                    self.values[rowIndex].append(Int(min(round(newValue), 100)))
+                    self.values[rowIndex].append(result)
                 } else {
-                    self.values[rowIndex].append(0)
+                    self.values[rowIndex].append(Int(preverousValue))
                 }
             }
         }
