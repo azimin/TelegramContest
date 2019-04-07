@@ -154,6 +154,7 @@
 				TargetAttributes = {
 					9F264220224004D300FEB2DD = {
 						CreatedOnToolsVersion = 10.1;
+						LastSwiftMigration = 1020;
 					};
 				};
 			};
@@ -346,7 +347,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.alex.telegram-context.TelegramContest";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Osize";
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
@@ -366,7 +367,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.alex.telegram-context.TelegramContest";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Osize";
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
