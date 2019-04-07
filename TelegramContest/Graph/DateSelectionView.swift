@@ -99,12 +99,12 @@ class DateSelectionView: UIView {
         }
     }
 
-    func show(position: CGFloat, graph: GraphDataSource, enabledRows: [Int], index: Int) {
+    func show(position: CGFloat, graph: GraphDataSource, enabledRows: [Int], index: Int, height: CGFloat) {
         switch self.style {
         case .line:
             self.showLine(position: position)
         case .plate:
-            self.showPlate(position: position, graph: graph, enabledRows: enabledRows, index: index)
+            self.showPlate(position: position, graph: graph, enabledRows: enabledRows, index: index, availableHeight: height)
         }
     }
 
@@ -118,7 +118,7 @@ class DateSelectionView: UIView {
         line.center = CGPoint(x: position, y: self.center.y)
     }
 
-    private func showPlate(position: CGFloat, graph: GraphDataSource, enabledRows: [Int], index: Int) {
+    private func showPlate(position: CGFloat, graph: GraphDataSource, enabledRows: [Int], index: Int, availableHeight: CGFloat) {
         guard let plate = self.plate else {
             return
         }
@@ -207,6 +207,18 @@ class DateSelectionView: UIView {
         } else if platePosition + plateWidth / 2 > (self.frame.width + 1) {
             platePosition += (self.frame.width + 1 - platePosition - plateWidth / 2)
         }
+
+        if availableHeight + offset * 2 > (self.frame.height - y) {
+            let range = (platePosition - plateWidth / 2)..<(platePosition + plateWidth / 2)
+            if range.contains(position) {
+                if position > self.frame.width / 2 {
+                    platePosition = position - plateWidth / 2 - smallOffset
+                } else {
+                    platePosition = position + plateWidth / 2 + smallOffset
+                }
+            }
+        }
+
         plate.center = CGPoint(x: platePosition, y: y / 2)
         self.button.frame = plate.bounds
     }

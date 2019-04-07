@@ -443,9 +443,14 @@ class GraphDrawLayerView: UIView {
         self.selectedPath.path = nil
     }
 
-    func selectPosition(graphContext: GraphContext?, position: CGFloat, animationDuration: TimeInterval) -> (CGFloat, Int) {
+    typealias Selection = (position: CGFloat, index: Int, height: CGFloat)
+//    func selectSquare(graphContext: GraphContext?, position: CGFloat, animationDuration: TimeInterval) -> (CGFloat, Int) {
+//
+//    }
+
+    func selectPosition(graphContext: GraphContext?, position: CGFloat, animationDuration: TimeInterval) -> Selection {
         guard let graphContext = graphContext, self.availbleFrame.width > 0 else {
-            return (0, 0)
+            return (0, 0, 0)
         }
 
         let fullWidth = round(self.availbleFrame.width / graphContext.interval)
@@ -454,6 +459,7 @@ class GraphDrawLayerView: UIView {
 
         var delta: CGFloat = 10000
         var cachedPosition: CGFloat = 0
+        var cachedHeight: CGFloat = 0
         var cachedYPosition: CGFloat = 0
         var cachedIndex = 0
 
@@ -465,6 +471,7 @@ class GraphDrawLayerView: UIView {
             if abs(x - position) < delta {
                 delta = abs(x - position)
                 cachedPosition = x
+                cachedHeight = yPercent * self.availbleFrame.height
                 cachedYPosition = (1 - yPercent) * self.availbleFrame.height
                 cachedIndex = index * steps.points
             }
@@ -487,7 +494,7 @@ class GraphDrawLayerView: UIView {
         }
         self.selectedPath.path = newPath
 
-        return (cachedPosition, cachedIndex)
+        return (cachedPosition, cachedIndex, cachedHeight)
     }
 }
 

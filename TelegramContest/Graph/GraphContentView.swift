@@ -377,31 +377,38 @@ class GraphContentView: UIView {
         }
 
         self.selectedLocation = location
-
-        var isShowed: Bool = false
+        var selection: GraphDrawLayerView.Selection?
 
         for layer in layers {
             guard let context = layer.graphContext else {
                 continue
             }
 
-            let position = layer.selectPosition(
+            let newSelection = layer.selectPosition(
                 graphContext: context,
                 position: location.x,
                 animationDuration: animated ? Constants.aniamtionDuration : 0
             )
 
-            if !isShowed {
-                if shouldRespectCahce && self.selectionPlateView.selectedIndex == position.1 {
-                    continue
-                }
-
-                self.selectionViews.forEach({ $0.show(position: position.0,
-                                                      graph: dataSource,
-                                                      enabledRows: self.enabledRows,
-                                                      index: position.1) })
-                isShowed = true
+            if (selection?.height ?? 0) < newSelection.height {
+                selection = newSelection
             }
+        }
+
+        if let selection = selection {
+            if shouldRespectCahce && self.selectionPlateView.selectedIndex == selection.index {
+                return
+            }
+
+            let bottomOffset = ((self.graphDrawLayers.first?.frame.maxY ?? 0) - selectionPlateView.frame.maxY)
+            let topOffset = ((self.graphDrawLayers.first?.frame.minY ?? 0) - selectionPlateView.frame.minY)
+            let height = selection.height - bottomOffset + topOffset
+
+            self.selectionViews.forEach({ $0.show(position: selection.position,
+                                                  graph: dataSource,
+                                                  enabledRows: self.enabledRows,
+                                                  index: selection.index,
+                                                  height: height) })
         }
     }
 }
