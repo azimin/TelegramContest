@@ -12,6 +12,7 @@ class DateSelectionView: UIView {
     enum Constants {
         static var spacing: CGFloat = 8
         static var minimalSpacing: CGFloat = 16
+        static var arrowSize: CGSize = CGSize(width: 5, height: 10)
     }
 
     enum Style {
@@ -20,10 +21,12 @@ class DateSelectionView: UIView {
     }
 
     private var line: UIView?
-    private var plate: UIVisualEffectView?
+    private var plate: UIView?
 
-    private let dateLabel = UILabel()
+    private var dateLabel: UILabel!
+    private var arrowImageView: UIImageView!
     private var numberLabels: [UILabel] = []
+    private var namesLabels: [UILabel] = []
 
     var selectedIndex: Int?
     private let style: Style
@@ -56,17 +59,19 @@ class DateSelectionView: UIView {
     }
 
     private func setupPlate() {
-        let plate = UIVisualEffectView(effect: UIBlurEffect(style: .dark))
+        let plate = UIView()
         self.addSubview(plate)
 
-        plate.layer.cornerRadius = 8
-        plate.layer.masksToBounds = true
+        plate.layer.cornerRadius = 6
 
-        self.dateLabel.frame = CGRect(x: 8, y: 0, width: 100, height: 30)
+        self.dateLabel = UILabel()
+        self.dateLabel.frame = CGRect(x: 8, y: 0, width: 100, height: 15)
         self.dateLabel.textColor = UIColor.white
-        self.dateLabel.numberOfLines = 0
-        plate.contentView.addSubview(self.dateLabel)
+        plate.addSubview(self.dateLabel)
         self.dateLabel.font = UIFont.boldSystemFont(ofSize: 12)
+
+        self.arrowImageView = UIImageView(image: UIImage(named: "img_action_arrow")!.withRenderingMode(.alwaysTemplate))
+        plate.addSubview(self.arrowImageView)
 
         self.plate = plate
     }
@@ -74,8 +79,9 @@ class DateSelectionView: UIView {
     var theme: Theme = .light {
         didSet {
             let config = theme.configuration
-            self.dateLabel.textColor = config.isLight ? UIColor(hex: "6D6D72") : UIColor.white
-            self.plate?.effect = config.isLight ? UIBlurEffect(style: .light) : UIBlurEffect(style: .dark)
+            self.dateLabel?.textColor = config.isLight ? UIColor(hex: "6D6D72") : UIColor.white
+            self.arrowImageView?.tintColor = config.isLight ? UIColor(hex: "C5C7CC") : UIColor(hex: "4E545F")
+            self.plate?.backgroundColor = config.mainBackgroundColor
             self.line?.backgroundColor = config.lineColor
         }
     }
@@ -106,52 +112,81 @@ class DateSelectionView: UIView {
 
         plate.isHidden = false
         self.numberLabels.forEach({ $0.removeFromSuperview() })
+        self.namesLabels.forEach({ $0.removeFromSuperview() })
         self.numberLabels = []
+        self.namesLabels = []
+
         self.selectedIndex = index
 
-        var maxWidth: CGFloat = 0
+        var maxNameWidth: CGFloat = 0
+        var maxValueWidth: CGFloat = 0
+
         var height: CGFloat = 0
+
         for row in enabledRows.sorted() {
             let rowValue = graph.yRows[row]
-            let label = UILabel()
-            label.textAlignment = .left
-            label.font = UIFont.boldSystemFont(ofSize: 12)
-            label.textColor = rowValue.color
-            label.text = "\(rowValue.values[index])"
 
-            let size = label.sizeThatFits(CGSize(width: 10000, height: 50))
-            if size.width > maxWidth {
-                maxWidth = size.width
-                height = size.height
+            let valueLabel = UILabel()
+            valueLabel.textAlignment = .right
+            valueLabel.font = UIFont.font(with: .medium, size: 12)
+            valueLabel.textColor = rowValue.color
+            valueLabel.text = "\(rowValue.values[index])"
+            let valueSize = valueLabel.sizeThatFits(CGSize(width: 10000, height: 50))
+            if valueSize.width > maxValueWidth {
+                maxValueWidth = valueSize.width
             }
+            if height < valueSize.height {
+                height = valueSize.height
+            }
+            plate.addSubview(valueLabel)
+            self.numberLabels.append(valueLabel)
 
-            plate.contentView.addSubview(label)
-
-            self.numberLabels.append(label)
+            let nameLabel = UILabel()
+            nameLabel.textAlignment = .left
+            nameLabel.font = UIFont.font(with: .regular, size: 12)
+            nameLabel.textColor = self.theme.configuration.isLight ? UIColor(hex: "6D6D72") : UIColor.white
+            nameLabel.text = rowValue.name
+            let nameSize = nameLabel.sizeThatFits(CGSize(width: 10000, height: 50))
+            if nameSize.width > maxNameWidth {
+                maxNameWidth = nameSize.width
+            }
+            if height < nameSize.height {
+                height = nameSize.height
+            }
+            plate.addSubview(nameLabel)
+            self.namesLabels.append(nameLabel)
         }
 
-        let spacing = self.numberLabels.count > 1 ? Constants.spacing : Constants.minimalSpacing
-
-        var y = spacing
-        for label in self.numberLabels {
-            label.frame = CGRect(x: 63, y: y, width: maxWidth, height: height)
-            y += height
-        }
-        y += spacing
+        let offset: CGFloat = 12
+        let smallOffset: CGFloat = 8
 
         let date = graph.xRow.dates[index]
-        let components = self.getDateComponents(date)
+        let dateString = self.getDateComponents(date)
+        self.dateLabel.text = dateString
+        let dateSize = self.dateLabel.sizeThatFits(CGSize(width: 10000, height: 50))
+        self.dateLabel.frame = CGRect(x: offset, y: 6, width: dateSize.width, height: 15)
+        let dateArrowWidth = dateSize.width + Constants.arrowSize.width + smallOffset
+        let leftWidth = max(dateArrowWidth, maxNameWidth + maxValueWidth + smallOffset)
 
-        let myAttribute = [ NSAttributedString.Key.font: UIFont.boldSystemFont(ofSize: 12) ]
-        let myString = NSMutableAttributedString(string: "\(components.0)\n", attributes: myAttribute )
+        self.arrowImageView.frame = CGRect(
+            x: offset + dateSize.width + smallOffset,
+            y: 0,
+            width: Constants.arrowSize.width,
+            height: Constants.arrowSize.height
+        )
+        self.arrowImageView.center.y = self.dateLabel.center.y
 
-        let myAttribute2 = [ NSAttributedString.Key.font: UIFont.systemFont(ofSize: 12) ]
-        let myString2 = NSMutableAttributedString(string: components.1, attributes: myAttribute2 )
+        var y = dateSize.height + 9
+        for (index, valueLabel) in self.numberLabels.enumerated() {
+            let nameLabel = self.namesLabels[index]
 
-        myString.append(myString2)
-        self.dateLabel.attributedText = myString
+            nameLabel.frame = CGRect(x: offset, y: y, width: maxNameWidth, height: height)
+            valueLabel.frame = CGRect(x: offset + maxNameWidth + smallOffset, y: y, width: leftWidth - maxNameWidth - smallOffset, height: height)
+            y += height + 3
+        }
+        y += 3
 
-        let plateWidth = maxWidth + 63 + Constants.spacing
+        let plateWidth = offset * 2 + leftWidth
         var platePosition = position
         plate.frame = CGRect(x: 0, y: 0, width: plateWidth, height: y)
         if platePosition - plateWidth / 2 < -1 {
@@ -160,18 +195,12 @@ class DateSelectionView: UIView {
             platePosition += (self.frame.width + 1 - platePosition - plateWidth / 2)
         }
         plate.center = CGPoint(x: platePosition, y: y / 2)
-
-        self.dateLabel.center = CGPoint(x: self.dateLabel.center.x, y: plate.frame.height / 2)
     }
 
-    private func getDateComponents(_ date: Date) -> (String, String) {
+    private func getDateComponents(_ date: Date) -> String {
         let dateFormatter1 = DateFormatter()
-        dateFormatter1.dateFormat = "MMM d"
-
-        let dateFormatter2 = DateFormatter()
-        dateFormatter2.dateFormat = "yyyy"
-
-        return (dateFormatter1.string(from: date), dateFormatter2.string(from: date))
+        dateFormatter1.dateFormat = "EEE, d MMM yyyy"
+        return dateFormatter1.string(from: date)
     }
 
     func hide() {
