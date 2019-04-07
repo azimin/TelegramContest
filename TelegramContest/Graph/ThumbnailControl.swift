@@ -28,8 +28,8 @@ class ThumbnailControl: UIControl {
     var theme: Theme = .light {
         didSet {
             let config = theme.configuration
-            self.beforeOverlay.backgroundColor = config.backgroundColor.withAlphaComponent(0.7)
-            self.endOverlay.backgroundColor = config.backgroundColor.withAlphaComponent(0.7)
+            self.beforeOverlay.backgroundColor = config.controlOverlayColor
+            self.endOverlay.backgroundColor = config.controlOverlayColor
 
             let image = ThumbnailImage.imageDraw(isLight: config.isLight)
             let insets = UIEdgeInsets(top: 16, left: 17, bottom: 16, right: 17)
@@ -89,12 +89,12 @@ class ThumbnailControl: UIControl {
         let height = self.frame.height
         let topSpace = (self.frame.height - Constants.graphHeight) / 2
 
-        self.beforeOverlay.frame = CGRect(x: offset, y: topSpace, width: self.range.lowerBound * width, height: Constants.graphHeight)
+        self.beforeOverlay.frame = CGRect(x: offset, y: topSpace, width: self.range.lowerBound * width + 10, height: Constants.graphHeight)
 
         let lastWidth = width - self.range.upperBound * width
         self.endOverlay.frame = CGRect(x: offset + self.range.upperBound * width, y: topSpace, width: lastWidth, height: Constants.graphHeight)
 
-        self.controlImageView.frame = CGRect(x: offset + self.beforeOverlay.frame.width, y: 0, width: self.endOverlay.frame.minX - self.beforeOverlay.frame.width - offset, height: height)
+        self.controlImageView.frame = CGRect(x: offset + self.beforeOverlay.frame.width - 10, y: 0, width: self.endOverlay.frame.minX - self.beforeOverlay.frame.width - offset + 10, height: height)
     }
 
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -103,9 +103,18 @@ class ThumbnailControl: UIControl {
             return
         }
         let locationX = touch.location(in: self).x
-        let increaseLeftRange = (self.controlImageView.frame.minX - 16)..<(self.controlImageView.frame.minX + 20)
-        let increaseMoveRange = (self.controlImageView.frame.minX + 20)..<(self.controlImageView.frame.maxX - 20)
-        let increaseRightRange = (self.controlImageView.frame.maxX - 20)..<(self.controlImageView.frame.maxX + 16)
+        let increaseLeftRange = self.normalizeRange(
+            start: self.controlImageView.frame.minX - 16,
+            finish: self.controlImageView.frame.minX + 20
+        )
+        let increaseMoveRange = self.normalizeRange(
+            start: self.controlImageView.frame.minX + 20,
+            finish: self.controlImageView.frame.maxX - 20
+        )
+        let increaseRightRange = self.normalizeRange(
+            start: self.controlImageView.frame.maxX - 20,
+            finish: self.controlImageView.frame.maxX + 16
+        )
 
         if increaseLeftRange.contains(locationX) {
             self.gesture = .increaseLeft
@@ -116,6 +125,11 @@ class ThumbnailControl: UIControl {
         } else {
             self.gesture = .none
         }
+    }
+
+    private func normalizeRange(start: CGFloat, finish: CGFloat) -> Range<CGFloat> {
+        let newFinish = max(start + 1, finish)
+        return start..<newFinish
     }
 
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -159,7 +173,7 @@ class ThumbnailControl: UIControl {
     }
 
     func normalize(range: Range<CGFloat>, collapse: Bool, movingRight: Bool) -> Range<CGFloat> {
-        var collapseDelta: CGFloat = 0.2
+        var collapseDelta: CGFloat = 0.1
         if collapse {
             collapseDelta = min((range.upperBound - range.lowerBound), 1)
         }

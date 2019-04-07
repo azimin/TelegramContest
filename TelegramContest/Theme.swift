@@ -16,6 +16,7 @@ struct ThemeConfiguration {
     var nameColor: UIColor
     var titleColor: UIColor
     var lineColor: UIColor
+    var controlOverlayColor: UIColor
 }
 
 enum Theme {
@@ -31,7 +32,8 @@ enum Theme {
                 selectionColor: UIColor(hex: "161C26"),
                 nameColor: UIColor(hex: "FEFEFE"),
                 titleColor: UIColor(hex: "5F6B7F"),
-                lineColor: UIColor(hex: "171D24")
+                lineColor: UIColor(hex: "171D24"),
+                controlOverlayColor: UIColor(hex: "171E29").withAlphaComponent(0.6)
             )
         case .light:
             return ThemeConfiguration(
@@ -41,7 +43,8 @@ enum Theme {
                 selectionColor: UIColor(hex: "D9D9D9"),
                 nameColor: UIColor(hex: "000000"),
                 titleColor: UIColor(hex: "6C6C71"),
-                lineColor: UIColor(hex: "D1D3D4")
+                lineColor: UIColor(hex: "D1D3D4"),
+                controlOverlayColor: UIColor(hex: "E1E9F3").withAlphaComponent(0.6)
             )
         }
     }
