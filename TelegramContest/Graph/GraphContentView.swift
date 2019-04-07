@@ -17,7 +17,7 @@ class GraphContentView: UIView {
 
     private(set) var dataSource: GraphDataSource?
 
-    func updateDataSouce(_ dataSource: GraphDataSource?, animated: Bool) {
+    func updateDataSouce(_ dataSource: GraphDataSource?, animated: Bool, zoomingForThisStep: Bool) {
         self.dataSource = dataSource
         self.preveous = .zero
         self.currentMaxValue = 0
@@ -27,7 +27,7 @@ class GraphContentView: UIView {
             self.enabledRows = []
         }
         self.hideSelection()
-        self.update(animated: animated)
+        self.update(animated: animated, zoomingForThisStep: animated)
     }
 
     private(set) var selectedRange: Range<CGFloat>
@@ -167,7 +167,7 @@ class GraphContentView: UIView {
         self.addSubview(self.selectionPlateView)
     }
 
-    private func update(animated: Bool, force: Bool = false) {
+    private func update(animated: Bool, force: Bool = false, zoomingForThisStep: Bool = false) {
         guard let dataSource = self.dataSource else {
             self.graphDrawLayers.forEach({ $0.isHidden = true })
             return
@@ -266,10 +266,11 @@ class GraphContentView: UIView {
             graphView.color = yRow.color
 
             if anyPoints.isEmpty {
-                let pair = graphView.reportLabelPoints(graphContext: context, startingRange: self.cachedRange, zooming: self.isZoomingMode, zoomStep: self.zoomStep)
+                let zooming = zoomingForThisStep || self.isZoomingMode
+                let pair = graphView.reportLabelPoints(graphContext: context, startingRange: self.cachedRange, zooming: zooming, zoomStep: self.zoomStep)
                 anyPoints = pair.points
                 
-                if self.isZoomingMode {
+                if zooming {
                     self.updateZoomStep(newValue: pair.step, override: true)
                 }
             }

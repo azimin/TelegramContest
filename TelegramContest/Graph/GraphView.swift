@@ -14,7 +14,7 @@ class GraphView: UIView {
     var dataSource: GraphDataSource? {
         didSet {
             self.graphControlView.updateDataSouce(dataSource, animated: false)
-            self.graphContentView.updateDataSouce(dataSource, animated: false)
+            self.graphContentView.updateDataSouce(dataSource, animated: false, zoomingForThisStep: false)
         }
     }
 
@@ -51,7 +51,7 @@ class GraphView: UIView {
     private var shouldUpdateRange: Bool = true
     func transform(to dataSource: GraphDataSource, range: Range<CGFloat>) {
         self.graphContentView.updateSelectedRange(range, shouldDraw: false)
-        self.graphContentView.updateDataSouce(dataSource, animated: true)
+        self.graphContentView.updateDataSouce(dataSource, animated: true, zoomingForThisStep: false)
 
         self.graphControlView.updateDataSouce(dataSource, animated: true)
         
