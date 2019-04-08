@@ -20,6 +20,12 @@ class DateSelectionView: UIView {
         case line
     }
 
+    enum DateStyle {
+        case date
+        case time
+        case fullTime
+    }
+
     private var line: UIView?
     private var plate: UIView?
 
@@ -36,6 +42,7 @@ class DateSelectionView: UIView {
     private let style: Style
 
     var tapAction: SelectIndexAction?
+    var closeAction: VoidBlock?
 
     init(style: Style) {
         self.style = style
@@ -91,6 +98,8 @@ class DateSelectionView: UIView {
     func didTap() {
         if canZoom {
             self.tapAction?(self.currentIndex)
+        } else {
+            self.closeAction?()
         }
     }
 
@@ -104,14 +113,14 @@ class DateSelectionView: UIView {
         }
     }
 
-    func show(position: CGFloat, graph: GraphDataSource, enabledRows: [Int], index: Int, height: CGFloat, canZoom: Bool) {
+    func show(position: CGFloat, graph: GraphDataSource, enabledRows: [Int], index: Int, height: CGFloat, canZoom: Bool, dateStyle: DateStyle) {
         self.canZoom = canZoom
         self.currentIndex = index
         switch self.style {
         case .line:
             self.showLine(position: position)
         case .plate:
-            self.showPlate(position: position, graph: graph, enabledRows: enabledRows, index: index, availableHeight: height, canZoom: canZoom)
+            self.showPlate(position: position, graph: graph, enabledRows: enabledRows, index: index, availableHeight: height, canZoom: canZoom, dateStyle: dateStyle)
         }
     }
 
@@ -125,7 +134,7 @@ class DateSelectionView: UIView {
         line.center = CGPoint(x: position, y: self.center.y)
     }
 
-    private func showPlate(position: CGFloat, graph: GraphDataSource, enabledRows: [Int], index: Int, availableHeight: CGFloat, canZoom: Bool) {
+    private func showPlate(position: CGFloat, graph: GraphDataSource, enabledRows: [Int], index: Int, availableHeight: CGFloat, canZoom: Bool, dateStyle: DateStyle) {
         guard let plate = self.plate else {
             return
         }
@@ -181,7 +190,7 @@ class DateSelectionView: UIView {
         let smallOffset: CGFloat = 8
 
         let date = graph.xRow.dates[index]
-        let dateString = self.getDateComponents(date)
+        let dateString = self.getDateComponents(date, dateStyle: dateStyle)
         self.dateLabel.text = dateString
         let dateSize = self.dateLabel.sizeThatFits(CGSize(width: 10000, height: 50))
         self.dateLabel.frame = CGRect(x: offset, y: 6, width: dateSize.width, height: 15)
@@ -231,9 +240,16 @@ class DateSelectionView: UIView {
         self.button.frame = plate.bounds
     }
 
-    private func getDateComponents(_ date: Date) -> String {
+    private func getDateComponents(_ date: Date, dateStyle: DateStyle) -> String {
         let dateFormatter1 = DateFormatter()
-        dateFormatter1.dateFormat = "EEE, d MMM yyyy"
+        switch dateStyle {
+        case .date:
+            dateFormatter1.dateFormat = "EEE, d MMM yyyy"
+        case .time:
+            dateFormatter1.dateFormat = "HH:mm"
+        case .fullTime:
+            dateFormatter1.dateFormat = "d MMM, HH:mm"
+        }
         return dateFormatter1.string(from: date)
     }
 

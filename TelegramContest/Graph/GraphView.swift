@@ -76,8 +76,10 @@ class GraphView: UIView {
         if let firstDate = dates.first, let lastDate = dates.last {
             if firstDate == lastDate {
                 self.titleLabel.text = firstDate
+                self.graphContentView.oneDayInterval = true
             } else {
                 self.titleLabel.text = "\(firstDate) - \(lastDate)"
+                self.graphContentView.oneDayInterval = false
             }
         }
     }

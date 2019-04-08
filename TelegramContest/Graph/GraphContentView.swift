@@ -23,6 +23,8 @@ class GraphContentView: UIView {
 
     var style: GraphStyle = .basic
     var zoomed: Bool = false
+    var oneDayInterval: Bool = false
+
     var zoomAction: SelectIndexAction? {
         didSet {
             self.selectionPlateView.tapAction = self.zoomAction
@@ -217,6 +219,7 @@ class GraphContentView: UIView {
 
     private func setup() {
         self.yAxisOverlays.forEach({ $0.layer.masksToBounds = true })
+        self.secondYAxisLabelOverlay.layer.masksToBounds = true
         self.addSubview(self.dateLabels)
         self.addSubview(self.yAxisLineOverlay)
         self.addSubview(self.selectionLineView)
@@ -224,6 +227,10 @@ class GraphContentView: UIView {
         self.addSubview(self.shadowImage)
         self.addSubview(self.graphSelectionOverlayView)
         self.addSubview(self.selectionPlateView)
+
+        self.selectionPlateView.closeAction = {
+            self.hideSelection()
+        }
     }
 
     var linePositionAbove = false
@@ -319,6 +326,11 @@ class GraphContentView: UIView {
             updateYAxis(maxValue, true)
         }
 
+//        if zoomingForThisStep && animated {
+//            let image = self.takeScreenshot()
+//            self.animateZoom(snapshotImage: image)
+//        }
+
         var anyPoints: [GraphDrawLayerView.LabelPosition] = []
         for index in 0..<self.graphDrawLayers.count {
             let graphView = self.graphDrawLayers[index]
@@ -404,6 +416,19 @@ class GraphContentView: UIView {
                     self.secondYAxisLabelOverlay.isHidden = true
                 }
             }
+        }
+    }
+
+    func animateZoom(snapshotImage: UIImage) {
+        let snapshotImageView = UIImageView(image: snapshotImage)
+        self.addSubview(snapshotImageView)
+        snapshotImageView.frame = self.bounds
+        snapshotImageView.backgroundColor = UIColor.white
+        UIView.animate(withDuration: 5, animations: {
+            snapshotImageView.alpha = 0
+            snapshotImageView.transform = CGAffineTransform.init(scaleX: 3, y: 1)
+        }) { (_) in
+            snapshotImageView.removeFromSuperview()
         }
     }
 
@@ -496,12 +521,20 @@ class GraphContentView: UIView {
             let topOffset = ((self.graphDrawLayers.first?.frame.minY ?? 0) - selectionPlateView.frame.minY)
             let height = selection.height - bottomOffset + topOffset
 
+            let dateStyle: DateSelectionView.DateStyle
+            if self.zoomed {
+                dateStyle = self.oneDayInterval ? .time : .fullTime
+            } else {
+                dateStyle = .date
+            }
+
             self.selectionViews.forEach({ $0.show(position: selection.position,
                                                   graph: dataSource,
                                                   enabledRows: self.enabledRows,
                                                   index: selection.index,
                                                   height: height,
-                                                  canZoom: !self.zoomed) })
+                                                  canZoom: !self.zoomed,
+                                                  dateStyle: dateStyle) })
         }
 
         if overlays.count > 0 {

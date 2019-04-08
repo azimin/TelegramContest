@@ -126,6 +126,23 @@ class GraphDrawLayerView: UIView {
         self.pathLayer.path = self.generatePath(graphContext: self.graphContext)
     }
 
+//    var zoomView = UIView()
+
+    func animateZoom() {
+//        let snapshotImage = self.takeScreenshot()
+//        let snapshotImageView = UIImageView(image: snapshotImage)
+//        self.addSubview(snapshotImageView)
+//        snapshotImageView.frame = self.bounds
+//        snapshotImageView.backgroundColor = UIColor.white
+//        UIView.animate(withDuration: 0.25, animations: {
+//            snapshotImageView.alpha = 0
+//            snapshotImageView.transform = CGAffineTransform.init(scaleX: 3, y: 1)
+//        }) { (_) in
+//            snapshotImageView.removeFromSuperview()
+//        }
+    }
+
+
 //    var counter = AnimationCounter()
 //    func transformFrom(point: Int) {
 //        guard let graphContext = self.graphContext else {
@@ -264,6 +281,8 @@ class GraphDrawLayerView: UIView {
         let path = CGMutablePath()
         var isMoved: Bool = false
 
+        var firstPoint: CGPoint = .zero
+        var lastPoint: CGPoint = .zero
         for index in 0..<(graphContext.values.count / steps.points) {
             let value: Int = graphContext.values[index]
             let x = steps.pixels * CGFloat(index) - offset - (steps.pixels / 2)
@@ -272,15 +291,17 @@ class GraphDrawLayerView: UIView {
             if x > (-1.1 * self.availbleFrame.width) && x < (self.availbleFrame.width * 1.1) {
                 if !isMoved {
                     path.move(to: CGPoint(x: x, y: y))
+                    firstPoint = CGPoint(x: x, y: y)
                     isMoved = true
                 }
                 path.addLine(to: CGPoint(x: x, y: y))
                 path.addLine(to: CGPoint(x: x + steps.pixels, y: y))
+                lastPoint = CGPoint(x: x + steps.pixels, y: y)
             }
         }
 
-        path.addLine(to: CGPoint(x: 400, y: self.availbleFrame.height)) // FIXME
-        path.addLine(to: CGPoint(x: 0, y: self.availbleFrame.height))
+        path.addLine(to: CGPoint(x: lastPoint.x, y: self.availbleFrame.height)) // FIXME
+        path.addLine(to: CGPoint(x: firstPoint.x, y: self.availbleFrame.height))
 
         return path
     }
@@ -594,5 +615,28 @@ extension UIColor {
                            alpha: alpha)
         }
         return self
+    }
+}
+
+
+extension UIView {
+
+    func takeScreenshot() -> UIImage {
+
+        // Begin context
+        UIGraphicsBeginImageContextWithOptions(self.bounds.size, false, UIScreen.main.scale)
+
+        // Draw view in that context
+        drawHierarchy(in: self.bounds, afterScreenUpdates: true)
+
+        // And finally, get image
+        let image = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+
+        if (image != nil)
+        {
+            return image!
+        }
+        return UIImage()
     }
 }

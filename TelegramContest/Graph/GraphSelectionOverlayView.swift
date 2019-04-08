@@ -72,5 +72,4 @@ class GraphSelectionOverlayView: UIView {
             self.alpha = 0
         }
     }
-
 }
