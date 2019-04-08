@@ -89,7 +89,7 @@ class DateSelectionView: UIView {
         self.tapAction?()
     }
 
-    var theme: Theme = .light {
+    var theme: Theme = .default {
         didSet {
             let config = theme.configuration
             self.dateLabel?.textColor = config.isLight ? UIColor(hex: "6D6D72") : UIColor.white

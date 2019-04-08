@@ -65,7 +65,7 @@ class GraphDrawLayerView: UIView {
         }
     }
 
-    var theme: Theme = .light {
+    var theme: Theme = .default {
         didSet {
             let config = theme.configuration
             self.selectedPath.fillColor = config.backgroundColor.cgColor

@@ -19,11 +19,25 @@ struct ThemeConfiguration {
     var controlOverlayColor: UIColor
 }
 
-enum Theme {
-    case light, dark
+class Theme: Equatable {
+    enum Style {
+        case light, dark
+    }
 
-    var configuration: ThemeConfiguration {
-        switch self {
+    let configuration: ThemeConfiguration
+    let style: Style
+
+    init(style: Style) {
+        self.style = style
+        self.configuration = Theme.setupConfiguration(style: style)
+    }
+
+    static var `default`: Theme {
+        return Theme(style: .light)
+    }
+
+    static func setupConfiguration(style: Style) -> ThemeConfiguration {
+        switch style {
         case .dark:
             return ThemeConfiguration(
                 isLight: false,
@@ -47,6 +61,10 @@ enum Theme {
                 controlOverlayColor: UIColor(hex: "E1E9F3").withAlphaComponent(0.6)
             )
         }
+    }
+
+    static func == (lhs: Theme, rhs: Theme) -> Bool {
+        return lhs.style == rhs.style
     }
 }
 

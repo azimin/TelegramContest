@@ -25,7 +25,7 @@ class ThumbnailControl: UIControl {
     private var endOverlay = UIView()
     private var controlImageView: UIImageView = UIImageView()
 
-    var theme: Theme = .light {
+    var theme: Theme = .default {
         didSet {
             let config = theme.configuration
             self.beforeOverlay.backgroundColor = config.controlOverlayColor

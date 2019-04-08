@@ -44,7 +44,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         self.tableView.register(FiltersTableViewCell.self, forCellReuseIdentifier: "FiltersTableViewCell")
     }
 
-    var theme: Theme = Theme.light {
+    var theme: Theme = .default {
         didSet {
             let config = theme.configuration
             self.tableView.separatorColor = config.lineColor
@@ -144,7 +144,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         tableView.deselectRow(at: indexPath, animated: true)
         guard indexPath.section > 0 else {
             self.animateThemeSwitch()
-            self.theme = self.theme == .light ? .dark : .light
+            self.theme = self.theme.configuration.isLight ? Theme(style: .dark) : Theme(style: .light)
             self.tableView.reloadData()
             return
         }
@@ -170,7 +170,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     }
 
     override var preferredStatusBarStyle: UIStatusBarStyle {
-        return self.theme == .light ? .default : .lightContent
+        return self.theme.configuration.isLight ? .default : .lightContent
     }
 
     func animateThemeSwitch() {

@@ -11,7 +11,7 @@ import UIKit
 class ButtonTableViewCell: UITableViewCell {
     var buttonLabel = UILabel()
 
-    var theme: Theme = .light {
+    var theme: Theme = .default {
         didSet {
             self.updateTheme()
         }
@@ -19,7 +19,7 @@ class ButtonTableViewCell: UITableViewCell {
 
     func updateTheme() {
         let config = self.theme.configuration
-        self.buttonLabel.text = theme == .light ? "Switch to Night Mode" : "Switch to Day Mode"
+        self.buttonLabel.text = theme.configuration.isLight ? "Switch to Night Mode" : "Switch to Day Mode"
         self.backgroundColor = config.backgroundColor
 
         let view = UIView()

@@ -48,7 +48,7 @@ class GraphControlView: UIView {
         self.setup()
     }
 
-    var theme: Theme = .light {
+    var theme: Theme = .default {
         didSet {
             let config = theme.configuration
             self.backgroundColor = config.backgroundColor

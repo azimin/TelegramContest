@@ -18,7 +18,7 @@ class YAxisView: UIView {
     var line: UIView?
     let style: Style
 
-    var theme: Theme = .light {
+    var theme: Theme = .default {
         didSet {
             let config = theme.configuration
             self.label?.textColor = config.titleColor
@@ -87,7 +87,7 @@ class YAxisOverlayView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
 
-    var theme: Theme = .light {
+    var theme: Theme = .default {
         didSet {
             self.items.forEach({ $0.view.theme = theme })
         }
