@@ -190,16 +190,21 @@ class GraphContentView: UIView {
         self.addSubview(self.selectionPlateView)
     }
 
-    func updateHierarhy() {
-        let linesOboveGraphics = true
-        if linesOboveGraphics {
-            self.yAxisLineOverlay.bringSubviewToFront(self.yAxisLabelOverlay)
-            self.selectionLineView.bringSubviewToFront(self.yAxisLabelOverlay)
-        } else {
-            self.yAxisLineOverlay.sendSubviewToBack(self.dateLabels)
-            self.selectionLineView.sendSubviewToBack(self.dateLabels)
-        }
+    var linePositionAbove = false
 
+    func updateHierarhy() {
+        let newLinePositionAbove = (self.style == .percentStackedBar || self.style == .stackedBar)
+        guard newLinePositionAbove != self.linePositionAbove else {
+            return
+        }
+        self.linePositionAbove = newLinePositionAbove
+        if newLinePositionAbove {
+            self.insertSubview(self.yAxisLineOverlay, aboveSubview: self.yAxisLabelOverlay)
+            self.insertSubview(self.selectionLineView, aboveSubview: self.yAxisLabelOverlay)
+        } else {
+            self.insertSubview(self.yAxisLineOverlay, belowSubview: self.dateLabels)
+            self.insertSubview(self.selectionLineView, aboveSubview: self.dateLabels)
+        }
     }
 
     private func update(animated: Bool, force: Bool = false, zoomingForThisStep: Bool = false) {

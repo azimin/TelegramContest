@@ -469,7 +469,6 @@ class GraphDrawLayerView: UIView {
         var delta: CGFloat = 10000
         var cachedPosition: CGFloat = 0
         var cachedHeight: CGFloat = 0
-        var cachedYPosition: CGFloat = 0
         var cachedIndex = 0
 
         for index in 0..<(graphContext.values.count / steps.points) {
@@ -481,12 +480,10 @@ class GraphDrawLayerView: UIView {
                 delta = abs(x - position)
                 cachedPosition = x
                 cachedHeight = yPercent * self.availbleFrame.height
-                cachedYPosition = (1 - yPercent) * self.availbleFrame.height
                 cachedIndex = index * steps.points
             }
         }
 
-//        let path = CGMutablePath()
         let value: Int = graphContext.values[cachedIndex]
         let x = steps.pixels * CGFloat(cachedIndex) - offset - (steps.pixels / 2)
         let yPercent = CGFloat(value) / CGFloat(graphContext.maxValue)
@@ -494,22 +491,6 @@ class GraphDrawLayerView: UIView {
         let height = (self.availbleFrame.height - y)
 
         let rect = CGRect(x: x, y: self.availbleFrame.height - height + self.offset, width: steps.pixels, height: height)
-
-//        path.move(to: CGPoint(x: x, y: y))
-//        path.addLine(to: CGPoint(x: x, y: y))
-//        path.addLine(to: CGPoint(x: x + steps.pixels, y: y))
-//        path.addLine(to: CGPoint(x: x + steps.pixels, y: self.availbleFrame.height)) // FIXME
-//        path.addLine(to: CGPoint(x: x, y: self.availbleFrame.height))
-
-//        if animationDuration > 0, selectedPath.path != nil {
-//            let animation = CABasicAnimation(keyPath: "path")
-//            animation.fromValue = self.selectedPath.path
-//            animation.toValue = path
-//            animation.duration = animationDuration
-//            animation.timingFunction = CAMediaTimingFunction(name: .easeOut)
-//            self.selectedPath.add(animation, forKey: "path")
-//        }
-//        self.selectedPath.path = path
 
         return (cachedPosition, cachedIndex, cachedHeight, rect)
     }
@@ -543,22 +524,24 @@ class GraphDrawLayerView: UIView {
             }
         }
 
-        let newPath = UIBezierPath(ovalIn:
-            CGRect(x: cachedPosition - 4,
-                   y: cachedYPosition - 4,
-                   width: 8,
-                   height: 8)
-            ).cgPath
+        if graphContext.style == .graph {
+            let newPath = UIBezierPath(ovalIn:
+                CGRect(x: cachedPosition - 4,
+                       y: cachedYPosition - 4,
+                       width: 8,
+                       height: 8)
+                ).cgPath
 
-        if animationDuration > 0, selectedPath.path != nil {
-            let animation = CABasicAnimation(keyPath: "path")
-            animation.fromValue = self.selectedPath.path
-            animation.toValue = newPath
-            animation.duration = animationDuration
-            animation.timingFunction = CAMediaTimingFunction(name: .easeOut)
-            self.selectedPath.add(animation, forKey: "path")
+            if animationDuration > 0, selectedPath.path != nil {
+                let animation = CABasicAnimation(keyPath: "path")
+                animation.fromValue = self.selectedPath.path
+                animation.toValue = newPath
+                animation.duration = animationDuration
+                animation.timingFunction = CAMediaTimingFunction(name: .easeOut)
+                self.selectedPath.add(animation, forKey: "path")
+            }
+            self.selectedPath.path = newPath
         }
-        self.selectedPath.path = newPath
 
         return (cachedPosition, cachedIndex, cachedHeight, nil)
     }
