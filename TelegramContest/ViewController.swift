@@ -51,7 +51,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
 
             let jsonResult = try! JSONSerialization.jsonObject(with: data, options: .mutableLeaves)
             if let jsonResult = jsonResult as? [String: Any], let dataSource = GraphDataSource(json: jsonResult) {
-                self.section.append(Section(dataSource: dataSource, selectedRange: 0..<1, enabledRows: Array(0..<dataSource.yRows.count)))
+                self.section.append(Section(dataSource: dataSource, selectedRange: 0.0..<1.0, enabledRows: Array(0..<dataSource.yRows.count)))
             }
         }
 

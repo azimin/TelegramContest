@@ -17,6 +17,7 @@ class GraphContentView: UIView {
 
     private(set) var dataSource: GraphDataSource?
     private var transformedValues: [[Int]] = []
+    private var coeficent: CGFloat?
 
     var style: GraphStyle = .basic
 
@@ -42,9 +43,26 @@ class GraphContentView: UIView {
         } else {
             self.enabledRows = []
         }
-        self.transformedValues = Transformer(rows: dataSource?.yRows.map({ $0.values }) ?? [], visibleRows: self.enabledRows, style: style.transformerStyle).values
+        if (self.dataSource?.style ?? .basic) == .doubleCompare {
+            self.insertSubview(self.secondYAxisLabelOverlay, aboveSubview: self.yAxisLabelOverlay)
+            self.yAxisOverlays.append(self.secondYAxisLabelOverlay)
+        } else {
+            self.yAxisLabelOverlay.isHidden = false
+            if let index = self.yAxisOverlays.firstIndex(of: self.secondYAxisLabelOverlay) {
+                self.secondYAxisLabelOverlay.isHidden = true
+                self.yAxisOverlays.remove(at: index)
+            }
+        }
+
+        self.updateTansformer()
         self.hideSelection()
         self.update(animated: animated, zoomingForThisStep: animated)
+    }
+
+    func updateTansformer() {
+        let transformer = Transformer(rows: dataSource?.yRows.map({ $0.values }) ?? [], visibleRows: self.enabledRows, style: style.transformerStyle)
+        self.transformedValues = transformer.values
+        self.coeficent = transformer.coeficent
     }
 
     private(set) var selectedRange: Range<CGFloat>
@@ -82,7 +100,7 @@ class GraphContentView: UIView {
         self.preveous = .zero
         self.enabledRows = values
 
-        self.transformedValues = Transformer(rows: dataSource?.yRows.map({ $0.values }) ?? [], visibleRows: values, style: style.transformerStyle).values
+        self.updateTansformer()
         self.update(animated: animated, force: true)
 
         if let selection = self.selectedLocation {
@@ -95,6 +113,7 @@ class GraphContentView: UIView {
     private var dateLabels = ViewsOverlayView()
     private var yAxisLineOverlay = YAxisOverlayView(style: .line)
     private var yAxisLabelOverlay = YAxisOverlayView(style: .label)
+    private var secondYAxisLabelOverlay = YAxisOverlayView(style: .labelRight)
     private lazy var yAxisOverlays = [yAxisLineOverlay, yAxisLabelOverlay]
     private var selectionPlateView = DateSelectionView(style: .plate)
     private var selectionLineView = DateSelectionView(style: .line)
@@ -147,6 +166,7 @@ class GraphContentView: UIView {
         self.graphDrawLayers.forEach({ $0.frame = graphFrame })
         self.graphSelectionOverlayView.frame = graphFrame
         self.yAxisOverlays.forEach({ $0.frame = topFrame })
+        self.secondYAxisLabelOverlay.frame = topFrame
         self.dateLabels.frame = CGRect(x: Constants.offset, y: graphHeight + 20, width: self.frame.size.width - Constants.offset * 2, height: Constants.labelsHeight)
         self.selectionViews.forEach({ $0.frame = CGRect(x: Constants.offset, y: 6, width: self.frame.size.width - Constants.offset * 2, height: graphHeight + 8) })
         self.graphDrawLayers.forEach({ $0.offset = 20 })
@@ -256,20 +276,31 @@ class GraphContentView: UIView {
             }
         }
 
+        let updateYAxis: (_ maxValue: Int, _ animated: Bool) -> Void = { (maxValue, animated) in
+            for yAxis in self.yAxisOverlays {
+                switch yAxis.style {
+                case .label, .line:
+                    yAxis.update(value: maxValue, animated: animated)
+                case .labelRight:
+                    yAxis.update(value: Int(CGFloat(maxValue) / (self.coeficent ?? 1)), animated: animated)
+                }
+            }
+        }
+
         if force {
             self.currentMaxValue = maxValue
-            self.yAxisOverlays.forEach({ $0.update(value: maxValue, animated: animated) })
+            updateYAxis(maxValue, animated)
         }
 
         if self.currentMaxValue == 0 || animated {
             self.currentMaxValue = maxValue
-            self.yAxisOverlays.forEach({ $0.update(value: maxValue, animated: animated) })
+            updateYAxis(maxValue, animated)
         } else {
             self.counter.animate(from: self.currentMaxValue, to: maxValue) { (value) in
                 self.currentMaxValue = value
                 self.update(animated: false)
             }
-            self.yAxisOverlays.forEach({ $0.update(value: maxValue, animated: true) })
+            updateYAxis(maxValue, true)
         }
 
         var anyPoints: [GraphDrawLayerView.LabelPosition] = []
@@ -341,6 +372,22 @@ class GraphContentView: UIView {
         }
         self.dateLabels.showItems(items: items)
         self.updateFrame()
+
+        if self.style == .doubleCompare {
+            if dataSource.yRows.count == 2 {
+                if self.enabledRows.contains(0) {
+                    self.yAxisLabelOverlay.isHidden = false
+                } else {
+                    self.yAxisLabelOverlay.isHidden = true
+                }
+
+                if self.enabledRows.contains(1) {
+                    self.secondYAxisLabelOverlay.isHidden = false
+                } else {
+                    self.secondYAxisLabelOverlay.isHidden = true
+                }
+            }
+        }
     }
 
     private func converValues(values: [Int], range: Range<CGFloat>) -> [Int] {

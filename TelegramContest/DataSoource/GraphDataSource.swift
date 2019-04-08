@@ -19,6 +19,7 @@ class Transformer {
 //    private var rows: [GraphLineRow] = []
 //    private let style: Style
     var values: [[Int]] = []
+    var coeficent: CGFloat?
 
     init(rows: [[Int]], visibleRows: [Int], style: Style) {
         switch style {
@@ -49,6 +50,9 @@ class Transformer {
         for row in rows {
             let newMax = row.max() ?? 0
             let percent = CGFloat(max) / CGFloat(newMax)
+            if max != newMax {
+                self.coeficent = percent
+            }
             self.values.append(row.map({ Int(CGFloat($0) * percent) }))
         }
     }

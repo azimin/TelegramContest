@@ -12,16 +12,18 @@ class YAxisView: UIView {
     enum Style {
         case line
         case label
+        case labelRight
     }
 
     var label: UILabel?
     var line: UIView?
     let style: Style
 
+    var labelOverrideColor: UIColor?
     var theme: Theme = .default {
         didSet {
             let config = theme.configuration
-            self.label?.textColor = config.axisTextColor
+            self.label?.textColor = self.labelOverrideColor ?? config.axisTextColor
             self.line?.backgroundColor = config.gridLines
         }
     }
@@ -39,6 +41,9 @@ class YAxisView: UIView {
     override var frame: CGRect {
         didSet {
             self.line?.frame = CGRect(x: 0, y: 25, width: self.frame.width, height: 0.5)
+            if self.style == .labelRight {
+                self.label?.frame = CGRect(x: self.frame.width - 60, y: 0, width: 60, height: 26)
+            }
         }
     }
 
@@ -46,16 +51,18 @@ class YAxisView: UIView {
         switch self.style {
         case .label:
             self.label = UILabel()
+            self.label?.textAlignment = .left
+            self.label?.frame = CGRect(x: 0, y: 0, width: 60, height: 26)
+        case .labelRight:
+            self.label = UILabel()
+            self.label?.textAlignment = .right
+            self.label?.frame = CGRect(x: self.frame.width - 60, y: 0, width: 60, height: 26)
         case .line:
             self.line = UIView()
         }
 
         self.label?.font = UIFont.systemFont(ofSize: 12)
-        self.label?.textAlignment = .left
-        self.label?.frame = CGRect(x: 0, y: 0, width: 60, height: 26)
-
         self.line?.frame = CGRect(x: 0, y: 25, width: self.frame.width, height: 0.5)
-        self.line?.backgroundColor = UIColor.black.withAlphaComponent(0.3)
 
         if let label = self.label {
             self.addSubview(label)
@@ -75,6 +82,7 @@ class YAxisOverlayView: UIView {
     var maxValue: Int = 0
     var items: [Item] = []
     var onRemoving: [YAxisView] = []
+    var labelOverrideColor: UIColor?
     var thresholdOptimization = ThresholdOptimization(elapsedTime: 0.02)
     let style: YAxisView.Style
 
@@ -136,6 +144,7 @@ class YAxisOverlayView: UIView {
                 oldPercent = CGFloat(i * step) / CGFloat(from)
             }
             let view = YAxisView(style: self.style)
+            view.labelOverrideColor = self.labelOverrideColor
             view.label?.text = self.convertToText(value: step * i)
             view.frame = CGRect(x: 0, y: 0, width: self.frame.width, height: 26)
             view.alpha = 0
