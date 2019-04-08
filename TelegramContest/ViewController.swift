@@ -129,7 +129,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
             var rows: [Row] = []
 
             for (index, yRow) in yRows.enumerated() {
-                let row = Row(name: yRow.name, color: yRow.color, isSelected: section.enabledRows.contains(index)) {
+                let row = Row(name: yRow.name, color: yRow.color, isSelected: section.enabledRows.contains(index), selectedAction: {
                     if section.enabledRows.contains(index) {
                         section.enabledRows.removeAll(where: { $0 == index })
                     } else {
@@ -138,7 +138,12 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
                     let graphCell = tableView.cellForRow(at: IndexPath(row: 0, section: indexPath.section)) as! GraphTableViewCell
                     let graphView = graphCell.graphView
                     graphView.updateEnabledRows(section.enabledRows, animated: true)
-//                    graphView.transform(to: self.section[indexPath.section].dataSource, range: 0.4..<0.6)
+                    }
+                ) {
+                    section.enabledRows = [index]
+                    let graphCell = tableView.cellForRow(at: IndexPath(row: 0, section: indexPath.section)) as! GraphTableViewCell
+                    let graphView = graphCell.graphView
+                    graphView.updateEnabledRows(section.enabledRows, animated: true)
                 }
                 rows.append(row)
             }
