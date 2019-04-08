@@ -22,6 +22,7 @@ class GraphView: UIView {
         didSet {
             self.graphControlView.control.update(range: self.selectedRange, animated: false)
             self.graphContentView.updateSelectedRange(self.selectedRange, shouldDraw: true)
+            self.updateLabel()
         }
     }
 
@@ -54,6 +55,24 @@ class GraphView: UIView {
 
     func updateZoomStep(newValue: Int?) {
         self.graphContentView.updateZoomStep(newValue: newValue, override: false)
+    }
+
+    func updateLabel() {
+        guard let dataSource = self.dataSource else {
+            return
+        }
+
+        let dates = self.converValues(values: dataSource.xRow.fullDateStrings, range: self.selectedRange)
+        if let firstDate = dates.first, let lastDate = dates.last {
+            self.titleLabel.text = "\(firstDate) - \(lastDate)"
+        }
+    }
+
+    private func converValues(values: [String], range: Range<CGFloat>) -> [String] {
+        let count = values.count
+        let firstCount = Int(floor(range.lowerBound * CGFloat(count)))
+        let endCount = Int(ceil(range.upperBound * CGFloat(count)))
+        return Array(values[max(firstCount, 0)..<min(endCount, count)])
     }
 
     private var shouldUpdateRange: Bool = true
@@ -113,7 +132,7 @@ class GraphView: UIView {
 
         self.titleLabel.font = UIFont.systemFont(ofSize: 13)
         self.titleLabel.textAlignment = .center
-        self.titleLabel.text = "Swag"
+        self.titleLabel.adjustsFontSizeToFitWidth = true
 
         self.zoomOutButton.setTitle("⤶ Zoom out", for: .normal)
         self.zoomOutButton.titleLabel?.font = UIFont.systemFont(ofSize: 13)

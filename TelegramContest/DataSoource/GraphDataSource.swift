@@ -125,6 +125,7 @@ class GraphLineRow {
 class GraphXRow {
     var dates: [Date]
     var dateStrings: [String]
+    var fullDateStrings: [String]
 
     init(dates: [Date]) {
         self.dates = dates
@@ -132,6 +133,9 @@ class GraphXRow {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "MMM d"
         self.dateStrings = dates.map({ dateFormatter.string(from: $0) })
+
+        dateFormatter.dateFormat = "d MMM yyyy"
+        self.fullDateStrings = dates.map({ dateFormatter.string(from: $0) })
     }
 }
 

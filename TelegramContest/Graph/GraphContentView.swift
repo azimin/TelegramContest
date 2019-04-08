@@ -35,6 +35,7 @@ class GraphContentView: UIView {
     }
 
     func updateDataSouce(_ dataSource: GraphDataSource?, animated: Bool, zoomingForThisStep: Bool) {
+        self.style = self.dataSource?.style ?? self.style
         self.dataSource = dataSource
         self.preveous = .zero
         self.currentMaxValue = 0
@@ -43,15 +44,25 @@ class GraphContentView: UIView {
         } else {
             self.enabledRows = []
         }
-        if (self.dataSource?.style ?? .basic) == .doubleCompare {
+
+        if self.style == .doubleCompare {
+            self.yAxisLabelOverlay.labelOverrideColor = self.dataSource?.yRows.first?.color
+            self.secondYAxisLabelOverlay.labelOverrideColor = self.dataSource?.yRows.last?.color
             self.insertSubview(self.secondYAxisLabelOverlay, aboveSubview: self.yAxisLabelOverlay)
             self.yAxisOverlays.append(self.secondYAxisLabelOverlay)
         } else {
+            self.yAxisLabelOverlay.labelOverrideColor = nil
             self.yAxisLabelOverlay.isHidden = false
             if let index = self.yAxisOverlays.firstIndex(of: self.secondYAxisLabelOverlay) {
                 self.secondYAxisLabelOverlay.isHidden = true
                 self.yAxisOverlays.remove(at: index)
             }
+        }
+
+        if self.style == .stackedBar {
+            self.selectionLineView.isHidden = true
+        } else {
+            self.selectionLineView.isHidden = false
         }
 
         self.updateTansformer()

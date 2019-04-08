@@ -61,7 +61,7 @@ class FiltersTableViewCell: UITableViewCell {
         self.filterViews = []
 
         for (index, item) in rows.enumerated() {
-            let filterView = FilterView(title: item.name, isSelected: item.isSelected)
+            let filterView = FilterView(title: item.name, isSelected: item.isSelected, color: item.color)
 
             filterView.longAction = {
                 item.selectedLongAction?()
@@ -80,7 +80,6 @@ class FiltersTableViewCell: UITableViewCell {
 
             self.contentView.addSubview(filterView)
             self.filterViews.append(filterView)
-            filterView.backgroundColor = item.color
             let size = FilterView.size(text: item.name)
 
             if xCoord + size.width >= width - 16 {
@@ -109,6 +108,8 @@ class FilterView: UIView {
     let selectionArrow = UIImageView(image: UIImage(named: "img_select_arrow")!)
     let button = UIButton()
 
+    let color: UIColor
+
     private(set) var isSelected: Bool
     var action: VoidBlock?
     var longAction: VoidBlock?
@@ -118,9 +119,10 @@ class FilterView: UIView {
         self.updateFrame(animated: animated)
     }
 
-    init(title: String, isSelected: Bool, action: VoidBlock? = nil, longAction: VoidBlock? = nil) {
+    init(title: String, isSelected: Bool, color: UIColor, action: VoidBlock? = nil, longAction: VoidBlock? = nil) {
         self.isSelected = isSelected
         self.action = action
+        self.color = color
         super.init(frame: .zero)
         self.label.text = title
         self.setup()
@@ -145,6 +147,8 @@ class FilterView: UIView {
 
         let longPress = UILongPressGestureRecognizer(target: self, action: #selector(self.longPress(gesture:)))
         self.button.addGestureRecognizer(longPress)
+
+        self.layer.borderWidth = 1
     }
 
     @objc
@@ -160,28 +164,53 @@ class FilterView: UIView {
     }
 
     func updateFrame(animated: Bool) {
-        let updateBlock = {
+        let animationDuration: TimeInterval = 0.2
+
+        let updateBlock: (_ animated: Bool) -> Void = { animated in
             let size = FilterView.size(text: self.label.text ?? "")
             let labelWidth = size.width - 40
+            var toBorderColor: UIColor
 
             if self.isSelected {
                 let offset: CGFloat = 12 + 8 + 8
                 self.label.frame = CGRect(x: offset, y: 0, width: labelWidth, height: size.height)
+                self.backgroundColor = self.color
+                toBorderColor = UIColor.clear
                 self.selectionArrow.frame = CGRect(x: 12, y: 11, width: 8, height: 8)
             } else {
                 self.label.frame = CGRect(x: 20, y: 0, width: labelWidth, height: size.height)
+                self.backgroundColor = UIColor.white
+                toBorderColor = self.color
                 self.selectionArrow.frame = CGRect(x: -12, y: 11, width: 8, height: 8)
             }
             self.selectionArrow.alpha = self.isSelected ? 1 : 0
             self.button.frame.size = size
+
+            if animated {
+                let borderColorAnimation = CABasicAnimation(keyPath: "borderColor")
+                borderColorAnimation.fromValue = self.layer.borderColor
+                borderColorAnimation.toValue = toBorderColor.cgColor
+                borderColorAnimation.duration = animationDuration
+                self.layer.add(borderColorAnimation, forKey: "borderColor")
+            }
+            self.layer.borderColor = toBorderColor.cgColor
         }
 
         if animated {
-            UIView.animate(withDuration: 0.25) {
-                updateBlock()
+            UIView.animate(withDuration: animationDuration) {
+                updateBlock(true)
             }
+            let changeColor = CATransition()
+            changeColor.duration = animationDuration
+            CATransaction.begin()
+            CATransaction.setCompletionBlock {
+                self.label.layer.add(changeColor, forKey: nil)
+                self.label.textColor = self.isSelected ? .white : self.color
+            }
+            CATransaction.commit()
         } else {
-            updateBlock()
+            updateBlock(false)
+            self.label.textColor = self.isSelected ? .white : self.color
         }
     }
 
