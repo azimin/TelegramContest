@@ -150,11 +150,11 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
                 }
                 section.zoomedSection = newSection
                 section.currentSelectedRange = 0.4..<0.6
-                cell.graphView.transform(to: section.currentDataSource, enableRows: section.enabledRows, range: 0.4..<0.6, zoomed: true)
+                cell.graphView.transform(to: section.currentDataSource, enableRows: section.enabledRows, zoomStep: nil, range: 0.4..<0.6, zoomed: true)
             }
             cell.graphView.zoomOutAction = {
                 section.zoomedSection = nil
-                cell.graphView.transform(to: section.currentDataSource, enableRows: section.enabledRows, range: section.currentSelectedRange, zoomed: false)
+                cell.graphView.transform(to: section.currentDataSource, enableRows: section.enabledRows, zoomStep: section.currentZoomStep, range: section.currentSelectedRange, zoomed: false)
             }
             cell.graphView.updateZoomStep(newValue: section.currentZoomStep)
             cell.graphView.selectedRange = section.currentSelectedRange

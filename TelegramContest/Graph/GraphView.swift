@@ -83,9 +83,10 @@ class GraphView: UIView {
     }
 
     private var shouldUpdateRange: Bool = true
-    func transform(to dataSource: GraphDataSource, enableRows: [Int], range: Range<CGFloat>, zoomed: Bool) {
+    func transform(to dataSource: GraphDataSource, enableRows: [Int], zoomStep: Int?, range: Range<CGFloat>, zoomed: Bool) {
         self.graphContentView.updateSelectedRange(range, shouldDraw: false)
-        self.graphContentView.updateDataSouce(dataSource, enableRows: enableRows, animated: true, zoomingForThisStep: false, zoomed: zoomed)
+        self.graphContentView.updateZoomStep(newValue: zoomStep, override: false)
+        self.graphContentView.updateDataSouce(dataSource, enableRows: enableRows, animated: true, zoomingForThisStep: true, zoomed: zoomed)
 
         self.graphControlView.updateDataSouce(dataSource, enableRows: enableRows, animated: true)
         
@@ -178,13 +179,13 @@ class GraphView: UIView {
     }
 
     @objc private func rangeUpdateEnded(control: ThumbnailControl) {
-        self.graphContentView.isTransformingMode = false
+        self.graphContentView.isMovingZoomMode = false
     }
 
     @objc private func rangeUpdateStated(control: ThumbnailControl) {
         switch control.gesture {
         case .increaseLeft, .increaseRight:
-            self.graphContentView.isTransformingMode = true
+            self.graphContentView.isMovingZoomMode = true
         case .move, .none:
             break
         }

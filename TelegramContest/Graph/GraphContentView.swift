@@ -72,7 +72,7 @@ class GraphContentView: UIView {
 
         self.updateTansformer()
         self.hideSelection()
-        self.update(animated: animated, zoomingForThisStep: animated)
+        self.update(animated: animated, zoomingForThisStep: zoomingForThisStep)
     }
 
     func updateTansformer() {
@@ -91,9 +91,9 @@ class GraphContentView: UIView {
         }
     }
 
-    var isTransformingMode: Bool = false {
+    var isMovingZoomMode: Bool = false {
         didSet {
-            if oldValue != isTransformingMode {
+            if oldValue != isMovingZoomMode {
                 self.updateZoomingStatus()
             }
         }
@@ -101,7 +101,7 @@ class GraphContentView: UIView {
     private var cachedRange: Range<CGFloat>?
 
     private func updateZoomingStatus() {
-        if self.isTransformingMode {
+        if self.isMovingZoomMode {
             self.cachedRange = self.selectedRange
         } else {
             self.cachedRange = nil
@@ -357,7 +357,7 @@ class GraphContentView: UIView {
             graphView.color = yRow.color
 
             if anyPoints.isEmpty {
-                let zooming = zoomingForThisStep || self.isTransformingMode
+                let zooming = zoomingForThisStep || self.isMovingZoomMode
                 let pair = graphView.reportLabelPoints(graphContext: context, startingRange: self.cachedRange, zooming: zooming, zoomStep: self.zoomStep)
                 anyPoints = pair.points
                 
