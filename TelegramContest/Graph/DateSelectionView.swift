@@ -93,9 +93,9 @@ class DateSelectionView: UIView {
         didSet {
             let config = theme.configuration
             self.dateLabel?.textColor = config.isLight ? UIColor(hex: "6D6D72") : UIColor.white
-            self.arrowImageView?.tintColor = config.isLight ? UIColor(hex: "C5C7CC") : UIColor(hex: "4E545F")
+            self.arrowImageView?.tintColor = config.tooltipArrow
             self.plate?.backgroundColor = config.mainBackgroundColor
-            self.line?.backgroundColor = config.lineColor
+            self.line?.backgroundColor = config.gridLines
         }
     }
 

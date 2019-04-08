@@ -10,14 +10,14 @@ import UIKit
 
 class ThumbnailImage {
     // Comment: Used paint code to generate bezier path code
-    static func imageDraw(isLight: Bool) -> UIImage? {
+    static func imageDraw(theme: Theme) -> UIImage? {
         let rect = CGRect(origin: .zero, size: CGSize(width: 44, height: 43))
         UIGraphicsBeginImageContextWithOptions(rect.size, false, UIScreen.main.scale)
         guard let context = UIGraphicsGetCurrentContext() else {
             return nil
         }
 
-        let fillColor = isLight ? UIColor(hex: "C3D0DF") : UIColor(hex: "58626C")
+        let fillColor = theme.configuration.scrollSelector
         let fillColor2 = UIColor(red: 0.996, green: 0.996, blue: 0.996, alpha: 1.000)
 
         context.saveGState()

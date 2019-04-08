@@ -29,6 +29,7 @@ class GraphView: UIView {
         didSet {
             let config = theme.configuration
             self.backgroundColor = config.backgroundColor
+            self.zoomOutButton.setTitleColor(config.zoomOutText, for: .normal)
             self.updateTheme()
         }
     }

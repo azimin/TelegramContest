@@ -28,15 +28,16 @@ class ThumbnailControl: UIControl {
     var theme: Theme = .default {
         didSet {
             let config = theme.configuration
-            self.beforeOverlay.backgroundColor = config.controlOverlayColor
-            self.endOverlay.backgroundColor = config.controlOverlayColor
+            self.beforeOverlay.backgroundColor = config.scrollBackground
+            self.endOverlay.backgroundColor = config.scrollBackground
 
-            let image = ThumbnailImage.imageDraw(isLight: config.isLight)
+            let image = ThumbnailImage.imageDraw(theme: self.theme)
             let insets = UIEdgeInsets(top: 16, left: 17, bottom: 16, right: 17)
             let strechingImage = image?.resizableImage(withCapInsets: insets, resizingMode: .stretch)
             controlImageView.image = strechingImage
         }
     }
+    
     private(set) var gesture: Gesture = .none {
         didSet {
             switch gesture {

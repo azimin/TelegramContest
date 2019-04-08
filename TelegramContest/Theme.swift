@@ -8,15 +8,32 @@
 
 import UIKit
 
-struct ThemeConfiguration {
-    var isLight: Bool
-    var mainBackgroundColor: UIColor
-    var backgroundColor: UIColor
-    var selectionColor: UIColor
-    var nameColor: UIColor
-    var titleColor: UIColor
-    var lineColor: UIColor
-    var controlOverlayColor: UIColor
+class ThemeConfiguration {
+    let isLight: Bool
+    let mainBackgroundColor: UIColor
+    let backgroundColor: UIColor
+    let selectionColor: UIColor
+    let nameColor: UIColor
+    let scrollBackground: UIColor
+    let scrollSelector: UIColor
+    let zoomOutText: UIColor
+    let gridLines: UIColor
+    let tooltipArrow: UIColor
+    let axisTextColor: UIColor
+
+    init(isLight: Bool, mainBackgroundColor: UIColor, backgroundColor: UIColor, selectionColor: UIColor, nameColor: UIColor, scrollBackground: UIColor, scrollSelector: UIColor, zoomOutText: UIColor, gridLines: UIColor, tooltipArrow: UIColor, axisTextColor: UIColor) {
+        self.isLight = isLight
+        self.mainBackgroundColor = mainBackgroundColor
+        self.backgroundColor = backgroundColor
+        self.selectionColor = selectionColor
+        self.nameColor = nameColor
+        self.scrollBackground = scrollBackground
+        self.scrollSelector = scrollSelector
+        self.zoomOutText = zoomOutText
+        self.gridLines = gridLines
+        self.tooltipArrow = tooltipArrow
+        self.axisTextColor = axisTextColor
+    }
 }
 
 class Theme: Equatable {
@@ -38,17 +55,6 @@ class Theme: Equatable {
 
     static func setupConfiguration(style: Style) -> ThemeConfiguration {
         switch style {
-        case .dark:
-            return ThemeConfiguration(
-                isLight: false,
-                mainBackgroundColor: UIColor(hex: "1A222C"),
-                backgroundColor: UIColor(hex: "242E3E"),
-                selectionColor: UIColor(hex: "161C26"),
-                nameColor: UIColor(hex: "FEFEFE"),
-                titleColor: UIColor(hex: "5F6B7F"),
-                lineColor: UIColor(hex: "171D24"),
-                controlOverlayColor: UIColor(hex: "171E29").withAlphaComponent(0.6)
-            )
         case .light:
             return ThemeConfiguration(
                 isLight: true,
@@ -56,9 +62,26 @@ class Theme: Equatable {
                 backgroundColor: UIColor(hex: "FEFEFE"),
                 selectionColor: UIColor(hex: "D9D9D9"),
                 nameColor: UIColor(hex: "000000"),
-                titleColor: UIColor(hex: "6C6C71"),
-                lineColor: UIColor(hex: "D1D3D4"),
-                controlOverlayColor: UIColor(hex: "E1E9F3").withAlphaComponent(0.6)
+                scrollBackground: UIColor(hex: "E2EEF9").withAlphaComponent(0.6),
+                scrollSelector: UIColor(hex: "C0D1E1"),
+                zoomOutText: UIColor(hex: "108BE3"),
+                gridLines: UIColor(hex: "182D3B").withAlphaComponent(0.1),
+                tooltipArrow: UIColor(hex: "59606D").withAlphaComponent(0.3),
+                axisTextColor: UIColor(hex: "8E8E93")
+            )
+        case .dark:
+            return ThemeConfiguration(
+                isLight: false,
+                mainBackgroundColor: UIColor(hex: "1A222C"),
+                backgroundColor: UIColor(hex: "242E3E"),
+                selectionColor: UIColor(hex: "161C26"),
+                nameColor: UIColor(hex: "FEFEFE"),
+                scrollBackground: UIColor(hex: "18222D").withAlphaComponent(0.6),
+                scrollSelector: UIColor(hex: "56626D"),
+                zoomOutText: UIColor(hex: "2EA6FE"),
+                gridLines: UIColor(hex: "8596AB").withAlphaComponent(0.2),
+                tooltipArrow: UIColor(hex: "D2D5D7"),
+                axisTextColor: UIColor(hex: "8596AB")
             )
         }
     }

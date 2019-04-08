@@ -33,6 +33,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         self.tableView.canCancelContentTouches = false
         self.tableView.dataSource = self
         self.tableView.delegate = self
+        self.tableView.separatorStyle = .none
         self.tableView.translatesAutoresizingMaskIntoConstraints = false
         self.tableView.allowsMultipleSelection = true
         self.tableView.topAnchor.constraint(equalTo: self.view.topAnchor).isActive = true
@@ -47,7 +48,6 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     var theme: Theme = .default {
         didSet {
             let config = theme.configuration
-            self.tableView.separatorColor = config.lineColor
             self.tableView.backgroundColor = config.mainBackgroundColor
             self.setNeedsStatusBarAppearanceUpdate()
         }

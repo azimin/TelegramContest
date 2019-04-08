@@ -35,7 +35,7 @@ class ViewsOverlayView: UIView {
         didSet {
             let config = theme.configuration
             self.backgroundColor = config.backgroundColor
-            self.allItems.forEach({ $0.label.textColor = config.titleColor })
+            self.allItems.forEach({ $0.label.textColor = config.axisTextColor })
         }
     }
 
@@ -115,7 +115,7 @@ class ViewsOverlayView: UIView {
             label.text = item.text
             label.font = UIFont.systemFont(ofSize: 12)
             label.textAlignment = .center
-            label.textColor = config.titleColor
+            label.textColor = config.axisTextColor
             label.alpha = self.calculateAlpha(baseOn: item.alpha)
             let size = label.sizeThatFits(CGSize(width: 10000, height: 50))
             label.frame.size = size

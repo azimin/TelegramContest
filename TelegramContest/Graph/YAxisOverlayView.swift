@@ -21,8 +21,8 @@ class YAxisView: UIView {
     var theme: Theme = .default {
         didSet {
             let config = theme.configuration
-            self.label?.textColor = config.titleColor
-            self.line?.backgroundColor = config.lineColor
+            self.label?.textColor = config.axisTextColor
+            self.line?.backgroundColor = config.gridLines
         }
     }
 
