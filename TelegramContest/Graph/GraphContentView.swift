@@ -358,7 +358,8 @@ class GraphContentView: UIView {
 
             if anyPoints.isEmpty {
                 let zooming = zoomingForThisStep || self.isMovingZoomMode
-                let pair = graphView.reportLabelPoints(graphContext: context, startingRange: self.cachedRange, zooming: zooming, zoomStep: self.zoomStep)
+                let startingRange  = zoomingForThisStep ? self.selectedRange : self.cachedRange
+                let pair = graphView.reportLabelPoints(graphContext: context, startingRange: startingRange, zooming: zooming, zoomStep: self.zoomStep)
                 anyPoints = pair.points
                 
                 if zooming {

@@ -25,12 +25,15 @@ class GraphView: UIView {
         }
     }
 
-    var selectedRange: Range<CGFloat> {
-        didSet {
+    private(set) var selectedRange: Range<CGFloat>
+
+    func updateSelectedRange(range: Range<CGFloat>, skip: Bool) {
+        self.selectedRange = range
+        if !skip {
             self.graphControlView.control.update(range: self.selectedRange, animated: false)
             self.graphContentView.updateSelectedRange(self.selectedRange, shouldDraw: true)
-            self.updateLabel()
         }
+        self.updateLabel()
     }
 
     var theme: Theme = .default {
@@ -71,7 +74,11 @@ class GraphView: UIView {
 
         let dates = self.converValues(values: dataSource.xRow.fullDateStrings, range: self.selectedRange)
         if let firstDate = dates.first, let lastDate = dates.last {
-            self.titleLabel.text = "\(firstDate) - \(lastDate)"
+            if firstDate == lastDate {
+                self.titleLabel.text = firstDate
+            } else {
+                self.titleLabel.text = "\(firstDate) - \(lastDate)"
+            }
         }
     }
 
@@ -95,6 +102,7 @@ class GraphView: UIView {
         shouldUpdateRange = true
 
         self.updateDataSource(dataSource: dataSource, enableRows: enableRows, skip: true, zoomed: zoomed)
+        self.updateSelectedRange(range: range, skip: true)
     }
 
     private let graphContentView = GraphContentView()
@@ -174,7 +182,7 @@ class GraphView: UIView {
             return
         }
 
-        self.selectedRange = control.range
+        self.updateSelectedRange(range: control.range, skip: false)
         self.rangeUpdated?(control.range)
     }
 

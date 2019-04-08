@@ -111,7 +111,6 @@ class ViewsOverlayView: UIView {
         let config = self.theme.configuration
         for item in items {
             let label = UILabel(frame: .zero)
-            label.center = CGPoint(x: item.position, y: label.center.y)
             label.text = item.text
             label.font = UIFont.systemFont(ofSize: 12)
             label.textAlignment = .center
@@ -119,6 +118,7 @@ class ViewsOverlayView: UIView {
             label.alpha = self.calculateAlpha(baseOn: item.alpha)
             let size = label.sizeThatFits(CGSize(width: 10000, height: 50))
             label.frame.size = size
+            label.center = CGPoint(x: item.position, y: label.center.y)
             self.addSubview(label)
             let visualItem = VisualItem(label: label, item: item)
             self.allItems.append(visualItem)

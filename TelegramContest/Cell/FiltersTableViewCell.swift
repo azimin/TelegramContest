@@ -179,7 +179,7 @@ class FilterView: UIView {
                 self.selectionArrow.frame = CGRect(x: 12, y: 11, width: 8, height: 8)
             } else {
                 self.label.frame = CGRect(x: 20, y: 0, width: labelWidth, height: size.height)
-                self.backgroundColor = UIColor.white
+                self.backgroundColor = UIColor.clear
                 toBorderColor = self.color
                 self.selectionArrow.frame = CGRect(x: -12, y: 11, width: 8, height: 8)
             }

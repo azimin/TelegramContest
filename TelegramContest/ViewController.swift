@@ -35,20 +35,20 @@ class PathManager {
     }
 
     static func section(to graph: Graph) -> Section? {
-        return self.dataSource(fromPath: self.path(to: graph), byDay: true)
+        return self.dataSource(fromPath: self.path(to: graph), byDay: true, graph: graph)
     }
 
     static func section(to date: Date, in graph: Graph) -> Section? {
-        return self.dataSource(fromPath: self.path(to: date, in: graph), byDay: false)
+        return self.dataSource(fromPath: self.path(to: date, in: graph), byDay: false, graph: graph)
     }
 
-    private static func dataSource(fromPath: String, byDay: Bool) -> Section? {
+    private static func dataSource(fromPath: String, byDay: Bool, graph: Graph) -> Section? {
         let path = Bundle.main.path(forResource: fromPath, ofType: "json")!
         let data = try! Data(contentsOf: URL(fileURLWithPath: path), options: .mappedIfSafe)
 
         let jsonResult = try! JSONSerialization.jsonObject(with: data, options: .mutableLeaves)
         if let jsonResult = jsonResult as? [String: Any], let dataSource = GraphDataSource(json: jsonResult, byDay: byDay) {
-            return Section(dataSource: dataSource, selectedRange: 0.0..<1.0, enabledRows: Array(0..<dataSource.yRows.count))
+            return Section(dataSource: dataSource, selectedRange: 0.0..<1.0, enabledRows: Array(0..<dataSource.yRows.count), graph: graph)
         }
         return nil
     }
@@ -145,7 +145,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
             }
             cell.graphView.zoomAction = { index in
                 let date = dataSource.xRow.dates[index]
-                guard let newSection = PathManager.section(to: date, in: .first) else {
+                guard let newSection = PathManager.section(to: date, in: section.graph) else {
                     return
                 }
                 section.zoomedSection = newSection
@@ -157,7 +157,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
                 cell.graphView.transform(to: section.currentDataSource, enableRows: section.enabledRows, zoomStep: section.currentZoomStep, range: section.currentSelectedRange, zoomed: false)
             }
             cell.graphView.updateZoomStep(newValue: section.currentZoomStep)
-            cell.graphView.selectedRange = section.currentSelectedRange
+            cell.graphView.updateSelectedRange(range: section.currentSelectedRange, skip: false)
             cell.graphView.updateEnabledRows(section.enabledRows, animated: false)
             return cell
         default:

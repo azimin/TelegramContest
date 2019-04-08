@@ -148,6 +148,7 @@ class Section {
     private var selectedRange: Range<CGFloat>
     private var zoomStep: Int?
     var enabledRows: [Int]
+    var graph: PathManager.Graph
     
     var zoomedSection: Section?
 
@@ -202,11 +203,12 @@ class Section {
         }
     }
 
-    init(dataSource: GraphDataSource, selectedRange: Range<CGFloat>, enabledRows: [Int]) {
+    init(dataSource: GraphDataSource, selectedRange: Range<CGFloat>, enabledRows: [Int], graph: PathManager.Graph) {
         self.dataSource = dataSource
         self.selectedRange = selectedRange
         self.enabledRows = enabledRows
         self.zoomStep = nil
+        self.graph = graph
     }
 }
 
