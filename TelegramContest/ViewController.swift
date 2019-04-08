@@ -19,8 +19,38 @@ class PathManager {
         static var allCases: [Graph] = [.first, .second, .third, .forth, .fivth]
     }
 
-    static func path(to graph: Graph) -> String {
+    private static func path(to graph: Graph) -> String {
         return "data/\(graph.rawValue)/overview"
+    }
+
+    private static func path(to date: Date, in graph: Graph) -> String {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM"
+        let folder = dateFormatter.string(from: date)
+
+        dateFormatter.dateFormat = "dd"
+        let subfolder = dateFormatter.string(from: date)
+
+        return "data/\(graph.rawValue)/\(folder)/\(subfolder)"
+    }
+
+    static func section(to graph: Graph) -> Section? {
+        return self.dataSource(fromPath: self.path(to: graph), byDay: true)
+    }
+
+    static func section(to date: Date, in graph: Graph) -> Section? {
+        return self.dataSource(fromPath: self.path(to: date, in: graph), byDay: false)
+    }
+
+    private static func dataSource(fromPath: String, byDay: Bool) -> Section? {
+        let path = Bundle.main.path(forResource: fromPath, ofType: "json")!
+        let data = try! Data(contentsOf: URL(fileURLWithPath: path), options: .mappedIfSafe)
+
+        let jsonResult = try! JSONSerialization.jsonObject(with: data, options: .mutableLeaves)
+        if let jsonResult = jsonResult as? [String: Any], let dataSource = GraphDataSource(json: jsonResult, byDay: byDay) {
+            return Section(dataSource: dataSource, selectedRange: 0.0..<1.0, enabledRows: Array(0..<dataSource.yRows.count))
+        }
+        return nil
     }
 }
 
@@ -46,15 +76,10 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
 //        }
 
         for graph in PathManager.Graph.allCases {
-            let path = Bundle.main.path(forResource: PathManager.path(to: graph), ofType: "json")!
-            let data = try! Data(contentsOf: URL(fileURLWithPath: path), options: .mappedIfSafe)
-
-            let jsonResult = try! JSONSerialization.jsonObject(with: data, options: .mutableLeaves)
-            if let jsonResult = jsonResult as? [String: Any], let dataSource = GraphDataSource(json: jsonResult) {
-                self.section.append(Section(dataSource: dataSource, selectedRange: 0.0..<1.0, enabledRows: Array(0..<dataSource.yRows.count)))
+            if let section = PathManager.section(to: graph) {
+                self.section.append(section)
             }
         }
-
 
         self.view.addSubview(self.tableView)
         self.tableView.canCancelContentTouches = false
@@ -105,21 +130,34 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         }
 
         let section = self.section[indexPath.section - 1]
-        let dataSource = section.dataSource
+        let dataSource = section.currentDataSource
         switch indexPath.row {
         case 0:
             let cell = tableView.dequeueReusableCell(withIdentifier: "GraphTableViewCell\(dataSource.style.rawValue)", for: indexPath) as! GraphTableViewCell
             cell.graphView.style = dataSource.style
             cell.graphView.theme = theme
-            cell.graphView.dataSource = dataSource
+            cell.graphView.updateDataSource(dataSource: dataSource, enableRows: section.enabledRows, skip: false, zoomed: section.zoomedSection != nil)
             cell.graphView.rangeUpdated = { value in
-                section.selectedRange = value
+                section.currentSelectedRange = value
             }
             cell.graphView.updatedZoomStep = { value in
-                section.zoomStep = value
+                section.currentZoomStep = value
             }
-            cell.graphView.updateZoomStep(newValue: section.zoomStep)
-            cell.graphView.selectedRange = section.selectedRange
+            cell.graphView.zoomAction = { index in
+                let date = dataSource.xRow.dates[index]
+                guard let newSection = PathManager.section(to: date, in: .first) else {
+                    return
+                }
+                section.zoomedSection = newSection
+                section.currentSelectedRange = 0.4..<0.6
+                cell.graphView.transform(to: section.currentDataSource, enableRows: section.enabledRows, range: 0.4..<0.6, zoomed: true)
+            }
+            cell.graphView.zoomOutAction = {
+                section.zoomedSection = nil
+                cell.graphView.transform(to: section.currentDataSource, enableRows: section.enabledRows, range: section.currentSelectedRange, zoomed: false)
+            }
+            cell.graphView.updateZoomStep(newValue: section.currentZoomStep)
+            cell.graphView.selectedRange = section.currentSelectedRange
             cell.graphView.updateEnabledRows(section.enabledRows, animated: false)
             return cell
         default:

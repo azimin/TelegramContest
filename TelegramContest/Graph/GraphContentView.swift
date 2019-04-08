@@ -8,6 +8,8 @@
 
 import UIKit
 
+typealias SelectIndexAction = (_ index: Int) -> Void
+
 class GraphContentView: UIView {
     private enum Constants {
         static var aniamtionDuration: TimeInterval = 0.2
@@ -20,6 +22,12 @@ class GraphContentView: UIView {
     private var coeficent: CGFloat?
 
     var style: GraphStyle = .basic
+    var zoomed: Bool = false
+    var zoomAction: SelectIndexAction? {
+        didSet {
+            self.selectionPlateView.tapAction = self.zoomAction
+        }
+    }
 
     func visibleRowValues(dataSource: GraphDataSource?, values: [Int]) -> [[Int]] {
         guard let dataSource = dataSource else {
@@ -34,16 +42,13 @@ class GraphContentView: UIView {
         return newValues
     }
 
-    func updateDataSouce(_ dataSource: GraphDataSource?, animated: Bool, zoomingForThisStep: Bool) {
+    func updateDataSouce(_ dataSource: GraphDataSource?, enableRows: [Int], animated: Bool, zoomingForThisStep: Bool, zoomed: Bool) {
         self.style = self.dataSource?.style ?? self.style
+        self.zoomed = zoomed
         self.dataSource = dataSource
         self.preveous = .zero
         self.currentMaxValue = 0
-        if let dataSource = dataSource {
-            self.enabledRows = Array(0..<dataSource.yRows.count)
-        } else {
-            self.enabledRows = []
-        }
+        self.enabledRows = enableRows
 
         if self.style == .doubleCompare {
             self.yAxisLabelOverlay.labelOverrideColor = self.dataSource?.yRows.first?.color
@@ -86,9 +91,9 @@ class GraphContentView: UIView {
         }
     }
 
-    var isZoomingMode: Bool = false {
+    var isTransformingMode: Bool = false {
         didSet {
-            if oldValue != isZoomingMode {
+            if oldValue != isTransformingMode {
                 self.updateZoomingStatus()
             }
         }
@@ -96,7 +101,7 @@ class GraphContentView: UIView {
     private var cachedRange: Range<CGFloat>?
 
     private func updateZoomingStatus() {
-        if self.isZoomingMode {
+        if self.isTransformingMode {
             self.cachedRange = self.selectedRange
         } else {
             self.cachedRange = nil
@@ -352,7 +357,7 @@ class GraphContentView: UIView {
             graphView.color = yRow.color
 
             if anyPoints.isEmpty {
-                let zooming = zoomingForThisStep || self.isZoomingMode
+                let zooming = zoomingForThisStep || self.isTransformingMode
                 let pair = graphView.reportLabelPoints(graphContext: context, startingRange: self.cachedRange, zooming: zooming, zoomStep: self.zoomStep)
                 anyPoints = pair.points
                 
@@ -494,7 +499,8 @@ class GraphContentView: UIView {
                                                   graph: dataSource,
                                                   enabledRows: self.enabledRows,
                                                   index: selection.index,
-                                                  height: height) })
+                                                  height: height,
+                                                  canZoom: !self.zoomed) })
         }
 
         if overlays.count > 0 {

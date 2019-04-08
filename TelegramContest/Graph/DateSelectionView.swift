@@ -29,10 +29,13 @@ class DateSelectionView: UIView {
     private var numberLabels: [UILabel] = []
     private var namesLabels: [UILabel] = []
 
+    private var currentIndex = 0
+    private var canZoom: Bool = false
+
     var selectedIndex: Int?
     private let style: Style
 
-    var tapAction: VoidBlock?
+    var tapAction: SelectIndexAction?
 
     init(style: Style) {
         self.style = style
@@ -86,7 +89,9 @@ class DateSelectionView: UIView {
 
     @objc
     func didTap() {
-        self.tapAction?()
+        if canZoom {
+            self.tapAction?(self.currentIndex)
+        }
     }
 
     var theme: Theme = .default {
@@ -99,12 +104,14 @@ class DateSelectionView: UIView {
         }
     }
 
-    func show(position: CGFloat, graph: GraphDataSource, enabledRows: [Int], index: Int, height: CGFloat) {
+    func show(position: CGFloat, graph: GraphDataSource, enabledRows: [Int], index: Int, height: CGFloat, canZoom: Bool) {
+        self.canZoom = canZoom
+        self.currentIndex = index
         switch self.style {
         case .line:
             self.showLine(position: position)
         case .plate:
-            self.showPlate(position: position, graph: graph, enabledRows: enabledRows, index: index, availableHeight: height)
+            self.showPlate(position: position, graph: graph, enabledRows: enabledRows, index: index, availableHeight: height, canZoom: canZoom)
         }
     }
 
@@ -118,7 +125,7 @@ class DateSelectionView: UIView {
         line.center = CGPoint(x: position, y: self.center.y)
     }
 
-    private func showPlate(position: CGFloat, graph: GraphDataSource, enabledRows: [Int], index: Int, availableHeight: CGFloat) {
+    private func showPlate(position: CGFloat, graph: GraphDataSource, enabledRows: [Int], index: Int, availableHeight: CGFloat, canZoom: Bool) {
         guard let plate = self.plate else {
             return
         }
@@ -188,6 +195,7 @@ class DateSelectionView: UIView {
             height: Constants.arrowSize.height
         )
         self.arrowImageView.center.y = self.dateLabel.center.y
+        self.arrowImageView.isHidden = !self.canZoom
 
         var y = dateSize.height + 9
         for (index, valueLabel) in self.numberLabels.enumerated() {

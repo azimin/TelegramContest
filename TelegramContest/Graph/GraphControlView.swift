@@ -22,13 +22,9 @@ class GraphControlView: UIView {
 
     var style: GraphStyle = .basic
 
-    func updateDataSouce(_ dataSource: GraphDataSource?, animated: Bool) {
+    func updateDataSouce(_ dataSource: GraphDataSource?, enableRows: [Int], animated: Bool) {
         self.dataSource = dataSource
-        if let dataSource = dataSource {
-            self.enabledRows = Array(0..<dataSource.yRows.count)
-        } else {
-            self.enabledRows = []
-        }
+        self.enabledRows = enableRows
         self.transformedValues = Transformer(rows: dataSource?.yRows.map({ $0.values }) ?? [], visibleRows: self.enabledRows, style: style.transformerStyle).values
         self.update(animated: animated)
     }

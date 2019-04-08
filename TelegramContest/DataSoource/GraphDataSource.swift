@@ -127,11 +127,15 @@ class GraphXRow {
     var dateStrings: [String]
     var fullDateStrings: [String]
 
-    init(dates: [Date]) {
+    init(dates: [Date], byDay: Bool) {
         self.dates = dates
 
         let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "MMM d"
+        if byDay {
+            dateFormatter.dateFormat = "MMM d"
+        } else {
+            dateFormatter.dateFormat = "HH:mm"
+        }
         self.dateStrings = dates.map({ dateFormatter.string(from: $0) })
 
         dateFormatter.dateFormat = "d MMM yyyy"
@@ -140,10 +144,63 @@ class GraphXRow {
 }
 
 class Section {
-    var dataSource: GraphDataSource
-    var selectedRange: Range<CGFloat>
-    var zoomStep: Int?
+    private var dataSource: GraphDataSource
+    private var selectedRange: Range<CGFloat>
+    private var zoomStep: Int?
     var enabledRows: [Int]
+    
+    var zoomedSection: Section?
+
+    var currentDataSource: GraphDataSource {
+        set {
+            if let zoomedSection = self.zoomedSection {
+                zoomedSection.currentDataSource = newValue
+            } else {
+                self.dataSource = newValue
+            }
+        }
+        get {
+            if let zoomedSection = self.zoomedSection {
+                return zoomedSection.currentDataSource
+            } else {
+                return dataSource
+            }
+        }
+    }
+
+    var currentSelectedRange: Range<CGFloat> {
+        set {
+            if let zoomedSection = self.zoomedSection {
+                zoomedSection.currentSelectedRange = newValue
+            } else {
+                self.selectedRange = newValue
+            }
+        }
+        get {
+            if let zoomedSection = self.zoomedSection {
+                return zoomedSection.currentSelectedRange
+            } else {
+                return selectedRange
+            }
+        }
+    }
+
+    var currentZoomStep: Int? {
+        set {
+            if let zoomedSection = self.zoomedSection {
+                zoomedSection.currentZoomStep = newValue
+            } else {
+                self.zoomStep = newValue
+            }
+        }
+        get {
+            if let zoomedSection = self.zoomedSection {
+                return zoomedSection.currentZoomStep
+            } else {
+                return zoomStep
+            }
+        }
+    }
 
     init(dataSource: GraphDataSource, selectedRange: Range<CGFloat>, enabledRows: [Int]) {
         self.dataSource = dataSource
@@ -168,7 +225,7 @@ class GraphDataSource {
         self.style = .basic
     }
 
-    init?(json: [String: Any]) {
+    init?(json: [String: Any], byDay: Bool) {
         var lineRows: [GraphLineRow] = []
         var types: [String: String] =  (json["types"] as? [String: String]) ?? [:]
         var names: [String: String] = (json["names"] as? [String: String]) ?? [:]
@@ -211,7 +268,7 @@ class GraphDataSource {
                             }
                         case "x":
                             let dates = values.map({ Date(timeIntervalSince1970: TimeInterval($0 / 1000)) })
-                            xRow = GraphXRow(dates: dates)
+                            xRow = GraphXRow(dates: dates, byDay: byDay)
                         default:
                             break
                         }

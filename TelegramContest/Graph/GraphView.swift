@@ -11,10 +11,17 @@ import UIKit
 class GraphView: UIView {
     var rangeUpdated: ((_ range: Range<CGFloat>) -> Void)?
 
-    var dataSource: GraphDataSource? {
-        didSet {
-            self.graphControlView.updateDataSouce(dataSource, animated: false)
-            self.graphContentView.updateDataSouce(dataSource, animated: false, zoomingForThisStep: false)
+    private(set) var dataSource: GraphDataSource?
+
+    var zoomAction: SelectIndexAction?
+    var zoomOutAction: VoidBlock?
+
+    func updateDataSource(dataSource: GraphDataSource, enableRows: [Int], skip: Bool, zoomed: Bool) {
+        self.zoomOutButton.isHidden = !zoomed
+        self.dataSource = dataSource
+        if !skip {
+            self.graphControlView.updateDataSouce(dataSource, enableRows: enableRows, animated: false)
+            self.graphContentView.updateDataSouce(dataSource, enableRows: enableRows, animated: false, zoomingForThisStep: false, zoomed: zoomed)
         }
     }
 
@@ -76,15 +83,17 @@ class GraphView: UIView {
     }
 
     private var shouldUpdateRange: Bool = true
-    func transform(to dataSource: GraphDataSource, range: Range<CGFloat>) {
+    func transform(to dataSource: GraphDataSource, enableRows: [Int], range: Range<CGFloat>, zoomed: Bool) {
         self.graphContentView.updateSelectedRange(range, shouldDraw: false)
-        self.graphContentView.updateDataSouce(dataSource, animated: true, zoomingForThisStep: false)
+        self.graphContentView.updateDataSouce(dataSource, enableRows: enableRows, animated: true, zoomingForThisStep: false, zoomed: zoomed)
 
-        self.graphControlView.updateDataSouce(dataSource, animated: true)
+        self.graphControlView.updateDataSouce(dataSource, enableRows: enableRows, animated: true)
         
         shouldUpdateRange = false
         self.graphControlView.control.update(range: range, animated: true)
         shouldUpdateRange = true
+
+        self.updateDataSource(dataSource: dataSource, enableRows: enableRows, skip: true, zoomed: zoomed)
     }
 
     private let graphContentView = GraphContentView()
@@ -136,6 +145,8 @@ class GraphView: UIView {
 
         self.zoomOutButton.setTitle("⤶ Zoom out", for: .normal)
         self.zoomOutButton.titleLabel?.font = UIFont.systemFont(ofSize: 13)
+        self.zoomOutButton.isExclusiveTouch = true
+        self.zoomOutButton.addTarget(self, action: #selector(self.zoomOutTapAction), for: .touchUpInside)
 
         self.graphControlView.control.addTarget(self, action: #selector(self.rangeUpdated(control:)), for: .valueChanged)
         self.graphControlView.control.addTarget(self, action: #selector(self.rangeUpdateEnded(control:)), for: .editingDidEnd)
@@ -145,7 +156,16 @@ class GraphView: UIView {
             self.updatedZoomStep?(value)
         }
 
+        self.graphContentView.zoomAction = { index in
+            self.zoomAction?(index)
+        }
+
         self.style = .basic
+    }
+
+    @objc
+    func zoomOutTapAction() {
+        self.zoomOutAction?()
     }
 
     @objc private func rangeUpdated(control: ThumbnailControl) {
@@ -158,13 +178,13 @@ class GraphView: UIView {
     }
 
     @objc private func rangeUpdateEnded(control: ThumbnailControl) {
-        self.graphContentView.isZoomingMode = false
+        self.graphContentView.isTransformingMode = false
     }
 
     @objc private func rangeUpdateStated(control: ThumbnailControl) {
         switch control.gesture {
         case .increaseLeft, .increaseRight:
-            self.graphContentView.isZoomingMode = true
+            self.graphContentView.isTransformingMode = true
         case .move, .none:
             break
         }

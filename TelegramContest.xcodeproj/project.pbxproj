@@ -31,7 +31,7 @@
 		9FB94A212259FD56004476AF /* FiltersTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FB94A202259FD56004476AF /* FiltersTableViewCell.swift */; };
 		9FB94A242259FD6C004476AF /* GraphDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FB94A232259FD6C004476AF /* GraphDataSource.swift */; };
 		9FB94A26225A42BF004476AF /* Graph.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FB94A25225A42BF004476AF /* Graph.swift */; };
-		9FDAD343225B76E300DB6E56 /* data in Resources */ = {isa = PBXBuildFile; fileRef = 9FDAD342225B76E300DB6E56 /* data */; };
+		9FDAD345225B967D00DB6E56 /* data in Resources */ = {isa = PBXBuildFile; fileRef = 9FDAD344225B967D00DB6E56 /* data */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -61,7 +61,7 @@
 		9FB94A202259FD56004476AF /* FiltersTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FiltersTableViewCell.swift; sourceTree = "<group>"; };
 		9FB94A232259FD6C004476AF /* GraphDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GraphDataSource.swift; sourceTree = "<group>"; };
 		9FB94A25225A42BF004476AF /* Graph.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Graph.swift; sourceTree = "<group>"; };
-		9FDAD342225B76E300DB6E56 /* data */ = {isa = PBXFileReference; lastKnownFileType = folder; path = data; sourceTree = "<group>"; };
+		9FDAD344225B967D00DB6E56 /* data */ = {isa = PBXFileReference; lastKnownFileType = folder; path = data; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -150,7 +150,7 @@
 		9FB94A222259FD66004476AF /* DataSoource */ = {
 			isa = PBXGroup;
 			children = (
-				9FDAD342225B76E300DB6E56 /* data */,
+				9FDAD344225B967D00DB6E56 /* data */,
 				9FB94A232259FD6C004476AF /* GraphDataSource.swift */,
 			);
 			path = DataSoource;
@@ -215,7 +215,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9FDAD343225B76E300DB6E56 /* data in Resources */,
+				9FDAD345225B967D00DB6E56 /* data in Resources */,
 				9F20A4CB2244B9D400BE0210 /* LaunchScreen.storyboard in Resources */,
 				9F26422C224004D500FEB2DD /* Assets.xcassets in Resources */,
 				9F26424B224005CC00FEB2DD /* chart_data.json in Resources */,
