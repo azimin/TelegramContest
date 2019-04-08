@@ -104,15 +104,17 @@ class Transformer {
 }
 
 class GraphLineRow {
+    var style: GraphContext.Style
     var color: UIColor
     var name: String
     var values: [Int]
     var transformedValues: [Int] = []
 
-    init(color: UIColor, name: String, values: [Int]) {
+    init(color: UIColor, name: String, values: [Int], style: GraphContext.Style) {
         self.color = color
         self.name = name
         self.values = values
+        self.style = style
     }
 }
 
@@ -146,10 +148,16 @@ class Section {
 class GraphDataSource {
     let xRow: GraphXRow
     let yRows: [GraphLineRow]
+    private let yScaled: Bool
+    private let stacked: Bool
+    let style: GraphStyle
 
     init(xRow: GraphXRow, yRows: [GraphLineRow]) {
         self.xRow = xRow
         self.yRows = yRows
+        self.yScaled = false
+        self.stacked = false
+        self.style = .basic
     }
 
     init?(json: [String: Any]) {
@@ -157,6 +165,10 @@ class GraphDataSource {
         var types: [String: String] =  (json["types"] as? [String: String]) ?? [:]
         var names: [String: String] = (json["names"] as? [String: String]) ?? [:]
         var colors: [String: UIColor] =  ((json["colors"] as? [String: String]) ?? [:]).mapValues({ return UIColor(hex: $0 )})
+
+        self.yScaled = (json["y_scaled"] as? Bool) ?? false
+        self.stacked = (json["stacked"] as? Bool) ?? false
+        let percentage = (json["percentage"] as? Bool) ?? false
 
         var xRow: GraphXRow?
 
@@ -176,7 +188,17 @@ class GraphDataSource {
                         switch type {
                         case "line":
                             if let color = colors[name], let realName = names[name] {
-                                let lineRow = GraphLineRow(color: color, name: realName, values: values.map({ Int($0) }))
+                                let lineRow = GraphLineRow(color: color, name: realName, values: values.map({ Int($0) }), style: .graph)
+                                lineRows.append(lineRow)
+                            }
+                        case "bar":
+                            if let color = colors[name], let realName = names[name] {
+                                let lineRow = GraphLineRow(color: color, name: realName, values: values.map({ Int($0) }), style: .bar)
+                                lineRows.append(lineRow)
+                            }
+                        case "area":
+                            if let color = colors[name], let realName = names[name] {
+                                let lineRow = GraphLineRow(color: color, name: realName, values: values.map({ Int($0) }), style: .area)
                                 lineRows.append(lineRow)
                             }
                         case "x":
@@ -188,6 +210,18 @@ class GraphDataSource {
                     }
                 }
             }
+        }
+
+        if self.stacked {
+            if percentage {
+                self.style = .percentStackedBar
+            } else {
+                self.style = .stackedBar
+            }
+        } else if self.yScaled {
+            self.style = .doubleCompare
+        } else {
+            self.style = .basic
         }
 
         if let xRow = xRow, xRow.dates.count > 0, lineRows.count > 0 {

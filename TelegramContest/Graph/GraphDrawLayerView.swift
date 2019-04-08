@@ -11,8 +11,8 @@ import UIKit
 class GraphContext {
     enum Style {
         case graph
-        case stack
-        case overlay
+        case bar
+        case area
     }
 
     let range: Range<CGFloat>
@@ -21,7 +21,7 @@ class GraphContext {
     let minValue: Int
     let style: Style
 
-    init(range: Range<CGFloat>, values: [Int], maxValue: Int, minValue: Int, style: Style = .overlay) {
+    init(range: Range<CGFloat>, values: [Int], maxValue: Int, minValue: Int, style: Style = .area) {
         self.range = range
         self.values = values
         self.maxValue = maxValue
@@ -167,14 +167,14 @@ class GraphDrawLayerView: UIView {
             self.selectedPath.strokeColor = color.cgColor
             self.pathLayer.fillColor = UIColor.clear.cgColor
             self.pathLayer.lineJoin = CAShapeLayerLineJoin.bevel
-        case .stack:
+        case .bar:
             self.selectedPath.lineWidth = 0
             self.pathLayer.lineWidth = 0
             self.selectedPath.fillColor = color.cgColor
             self.selectedPath.lineJoin = CAShapeLayerLineJoin.miter
             self.pathLayer.fillColor = color.cgColor
             self.pathLayer.lineJoin = CAShapeLayerLineJoin.miter
-        case .overlay:
+        case .area:
             self.pathLayer.lineWidth = 0
             self.selectedPath.strokeColor = color.cgColor
             self.pathLayer.fillColor = color.cgColor
@@ -186,9 +186,9 @@ class GraphDrawLayerView: UIView {
         switch self.graphContext?.style ?? .graph {
         case .graph:
             return self.generatePathGraph(graphContext: graphContext)
-        case .stack:
+        case .bar:
             return self.generatePathStack(graphContext: graphContext)
-        case .overlay:
+        case .area:
             return self.generatePathOverlay(graphContext: graphContext)
         }
     }
@@ -448,9 +448,9 @@ class GraphDrawLayerView: UIView {
 
     func selectPosition(graphContext: GraphContext?, position: CGFloat, animationDuration: TimeInterval) -> Selection {
         switch self.graphContext?.style ?? .graph {
-        case .graph, .overlay:
+        case .graph, .area:
             return self.selectLine(graphContext: graphContext, position: position, animationDuration: animationDuration)
-        case .stack:
+        case .bar:
             return self.selectSquare(graphContext: graphContext, position: position, animationDuration: animationDuration)
         }
     }

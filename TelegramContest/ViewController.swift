@@ -16,17 +16,25 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        let path = Bundle.main.path(forResource: "chart_data", ofType: "json")!
+//        let path = Bundle.main.path(forResource: "chart_data", ofType: "json")!
+//        let data = try! Data(contentsOf: URL(fileURLWithPath: path), options: .mappedIfSafe)
+//
+//        let jsonResult = try! JSONSerialization.jsonObject(with: data, options: .mutableLeaves)
+//        if let jsonResult = jsonResult as? [Any] {
+//            for result in jsonResult {
+//                if let value = result as? [String: Any],
+//                    let dataSource = GraphDataSource(json: value) {
+//                    self.section.append(Section(dataSource: dataSource, selectedRange: 0..<1, enabledRows: Array(0..<dataSource.yRows.count)))
+//                }
+//            }
+//        }
+
+        let path = Bundle.main.path(forResource: "overview", ofType: "json")!
         let data = try! Data(contentsOf: URL(fileURLWithPath: path), options: .mappedIfSafe)
 
         let jsonResult = try! JSONSerialization.jsonObject(with: data, options: .mutableLeaves)
-        if let jsonResult = jsonResult as? [Any] {
-            for result in jsonResult {
-                if let value = result as? [String: Any],
-                    let dataSource = GraphDataSource(json: value) {
-                    self.section.append(Section(dataSource: dataSource, selectedRange: 0..<1, enabledRows: Array(0..<dataSource.yRows.count)))
-                }
-            }
+        if let jsonResult = jsonResult as? [String: Any], let dataSource = GraphDataSource(json: jsonResult) {
+            self.section.append(Section(dataSource: dataSource, selectedRange: 0..<1, enabledRows: Array(0..<dataSource.yRows.count)))
         }
 
         self.view.addSubview(self.tableView)
@@ -79,6 +87,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         switch indexPath.row {
         case 0:
             let cell = tableView.dequeueReusableCell(withIdentifier: "GraphTableViewCell", for: indexPath) as! GraphTableViewCell
+            cell.graphView.style = dataSource.style
             cell.graphView.theme = theme
             cell.graphView.dataSource = dataSource
             cell.graphView.rangeUpdated = { value in

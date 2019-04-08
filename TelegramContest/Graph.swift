@@ -34,9 +34,9 @@ enum GraphStyle {
         case .doubleCompare:
             return .graph
         case .stackedBar:
-            return .stack
+            return .bar
         case .percentStackedBar:
-            return .overlay
+            return .area
         }
     }
 }

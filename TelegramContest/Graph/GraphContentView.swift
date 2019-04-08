@@ -151,6 +151,7 @@ class GraphContentView: UIView {
         self.selectionViews.forEach({ $0.frame = CGRect(x: Constants.offset, y: 6, width: self.frame.size.width - Constants.offset * 2, height: graphHeight + 8) })
         self.graphDrawLayers.forEach({ $0.offset = 20 })
         self.updateShadow()
+        self.updateHierarhy()
     }
 
     var theme: Theme = .default {
@@ -187,6 +188,18 @@ class GraphContentView: UIView {
         self.addSubview(self.shadowImage)
         self.addSubview(self.graphSelectionOverlayView)
         self.addSubview(self.selectionPlateView)
+    }
+
+    func updateHierarhy() {
+        let linesOboveGraphics = true
+        if linesOboveGraphics {
+            self.yAxisLineOverlay.bringSubviewToFront(self.yAxisLabelOverlay)
+            self.selectionLineView.bringSubviewToFront(self.yAxisLabelOverlay)
+        } else {
+            self.yAxisLineOverlay.sendSubviewToBack(self.dateLabels)
+            self.selectionLineView.sendSubviewToBack(self.dateLabels)
+        }
+
     }
 
     private func update(animated: Bool, force: Bool = false, zoomingForThisStep: Bool = false) {
@@ -286,7 +299,7 @@ class GraphContentView: UIView {
                 values: self.transformedValues[index],
                 maxValue: self.currentMaxValue,
                 minValue: minValue,
-                style: self.style.drawStyle
+                style: yRow.style
             )
             graphView.update(graphContext: context, animationDuration: animated ? Constants.aniamtionDuration : 0)
             graphView.color = yRow.color
