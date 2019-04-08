@@ -8,6 +8,22 @@
 
 import UIKit
 
+class PathManager {
+    enum Graph: String {
+        case first = "1"
+        case second = "2"
+        case third = "3"
+        case forth = "4"
+        case fivth = "5"
+
+        static var allCases: [Graph] = [.first, .second, .third, .forth, .fivth]
+    }
+
+    static func path(to graph: Graph) -> String {
+        return "data/\(graph.rawValue)/overview"
+    }
+}
+
 class ViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
 
     let tableView = UITableView(frame: .zero, style: .grouped)
@@ -29,13 +45,16 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
 //            }
 //        }
 
-        let path = Bundle.main.path(forResource: "overview", ofType: "json")!
-        let data = try! Data(contentsOf: URL(fileURLWithPath: path), options: .mappedIfSafe)
+        for graph in PathManager.Graph.allCases {
+            let path = Bundle.main.path(forResource: PathManager.path(to: graph), ofType: "json")!
+            let data = try! Data(contentsOf: URL(fileURLWithPath: path), options: .mappedIfSafe)
 
-        let jsonResult = try! JSONSerialization.jsonObject(with: data, options: .mutableLeaves)
-        if let jsonResult = jsonResult as? [String: Any], let dataSource = GraphDataSource(json: jsonResult) {
-            self.section.append(Section(dataSource: dataSource, selectedRange: 0..<1, enabledRows: Array(0..<dataSource.yRows.count)))
+            let jsonResult = try! JSONSerialization.jsonObject(with: data, options: .mutableLeaves)
+            if let jsonResult = jsonResult as? [String: Any], let dataSource = GraphDataSource(json: jsonResult) {
+                self.section.append(Section(dataSource: dataSource, selectedRange: 0..<1, enabledRows: Array(0..<dataSource.yRows.count)))
+            }
         }
+
 
         self.view.addSubview(self.tableView)
         self.tableView.canCancelContentTouches = false
@@ -48,7 +67,10 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         self.tableView.bottomAnchor.constraint(equalTo: self.view.bottomAnchor).isActive = true
         self.tableView.leadingAnchor.constraint(equalTo: self.view.leadingAnchor).isActive = true
         self.tableView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor).isActive = true
-        self.tableView.register(GraphTableViewCell.self, forCellReuseIdentifier: "GraphTableViewCell")
+        self.tableView.register(GraphTableViewCell.self, forCellReuseIdentifier: "GraphTableViewCell\(GraphStyle.basic.rawValue)")
+        self.tableView.register(GraphTableViewCell.self, forCellReuseIdentifier: "GraphTableViewCell\(GraphStyle.doubleCompare.rawValue)")
+        self.tableView.register(GraphTableViewCell.self, forCellReuseIdentifier: "GraphTableViewCell\(GraphStyle.percentStackedBar.rawValue)")
+        self.tableView.register(GraphTableViewCell.self, forCellReuseIdentifier: "GraphTableViewCell\(GraphStyle.stackedBar.rawValue)")
         self.tableView.register(ButtonTableViewCell.self, forCellReuseIdentifier: "ButtonTableViewCell")
         self.tableView.register(FiltersTableViewCell.self, forCellReuseIdentifier: "FiltersTableViewCell")
     }
@@ -86,7 +108,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         let dataSource = section.dataSource
         switch indexPath.row {
         case 0:
-            let cell = tableView.dequeueReusableCell(withIdentifier: "GraphTableViewCell", for: indexPath) as! GraphTableViewCell
+            let cell = tableView.dequeueReusableCell(withIdentifier: "GraphTableViewCell\(dataSource.style.rawValue)", for: indexPath) as! GraphTableViewCell
             cell.graphView.style = dataSource.style
             cell.graphView.theme = theme
             cell.graphView.dataSource = dataSource

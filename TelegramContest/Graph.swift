@@ -8,7 +8,7 @@
 
 import Foundation
 
-enum GraphStyle {
+enum GraphStyle: String {
     case basic
     case doubleCompare
     case stackedBar
