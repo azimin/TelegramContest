@@ -52,7 +52,7 @@ class GraphDrawLayerView: UIView {
     var isHidding: Bool = false
     var graphContext: GraphContext? {
         didSet {
-            self.pathLayer.path = self.generatePath(graphContext: self.graphContext)
+            self.pathLayer.path = self.generatePath(graphContext: self.graphContext, fakeDots: (0, 0))
         }
     }
 
@@ -96,7 +96,7 @@ class GraphDrawLayerView: UIView {
         self.layer.addSublayer(self.pathLayer)
         self.layer.addSublayer(self.selectedPath)
 
-        self.pathLayer.lineJoin = CAShapeLayerLineJoin.bevel
+        self.pathLayer.lineJoin = CAShapeLayerLineJoin.round
         self.pathLayer.strokeColor = UIColor.red.cgColor
         self.pathLayer.fillColor = UIColor.clear.cgColor
         self.pathLayer.lineWidth = self.lineWidth
@@ -123,7 +123,7 @@ class GraphDrawLayerView: UIView {
         self.availbleFrame = CGRect(x: 0, y: self.offset, width: self.frame.width, height: self.frame.height - self.offset)
         self.pathLayer.frame = self.availbleFrame
         self.selectedPath.frame = self.availbleFrame
-        self.pathLayer.path = self.generatePath(graphContext: self.graphContext)
+        self.pathLayer.path = self.generatePath(graphContext: self.graphContext, fakeDots: (0, 0))
     }
 
 //    var zoomView = UIView()
@@ -162,11 +162,63 @@ class GraphDrawLayerView: UIView {
 ////        self.update(graphContext: self.graphContext, animationDuration: 0.5)
 //    }
 
-    func update(graphContext: GraphContext?, animationDuration: TimeInterval) {
+    typealias FakeDots = (beggining: Int, end: Int)
+
+    func update(graphContext: GraphContext?, animationDuration: TimeInterval, zoomingIndex: ZoomIndex?) {
         if animationDuration > 0 {
+            var fakeDotsBefore: FakeDots?
+            var fakeDotsAfter: FakeDots?
+            if let zoomingIndex = zoomingIndex, let firstGraph = self.graphContext, let secondGraph = graphContext {
+                let index: Int
+                let oldGraphContext: GraphContext
+                let newGraphContext: GraphContext
+                switch zoomingIndex {
+                case .inside(let value):
+                    index = value
+                    oldGraphContext = firstGraph
+                    newGraphContext = secondGraph
+                case .outside(let value):
+                    index = value
+                    oldGraphContext = secondGraph
+                    newGraphContext = firstGraph
+                }
+                //  let oldGraphContext = self.graphContext, let newGraphContext = graphContext
+                let fullWidth1 = round(self.availbleFrame.width / oldGraphContext.interval)
+
+                let lowerIndex = Int(CGFloat(oldGraphContext.values.count) * oldGraphContext.range.lowerBound)
+                let upperIndex = Int(CGFloat(oldGraphContext.values.count) * oldGraphContext.range.upperBound)
+                let interval = upperIndex - lowerIndex
+                let bottomPercentage = max(CGFloat(index - lowerIndex) / CGFloat(interval), 0)
+                let topPercentage = max(CGFloat(upperIndex - index) / CGFloat(interval), 0)
+
+                let steps1 = oldGraphContext.stepsBaseOn(width: fullWidth1)
+                let numberOfDots1 = self.availbleFrame.width / steps1.pixels
+
+                let fullWidth2 = round(self.availbleFrame.width / newGraphContext.interval)
+                let steps2 = newGraphContext.stepsBaseOn(width: fullWidth2)
+                let numberOfDots2 = self.availbleFrame.width / steps2.pixels
+
+                let lowerFakeDots = (Int(CGFloat(numberOfDots1) * bottomPercentage) - Int(numberOfDots2 / 2))
+                let upperFakeDots = (Int(CGFloat(numberOfDots1) * topPercentage) - Int(numberOfDots2 / 2))
+
+                switch zoomingIndex {
+                case .inside(_):
+                    fakeDotsBefore = (-lowerFakeDots, -upperFakeDots)
+                    fakeDotsAfter = (lowerFakeDots, upperFakeDots)
+                case .outside(_):
+                    fakeDotsAfter = (-lowerFakeDots, -upperFakeDots)
+                    fakeDotsBefore = (lowerFakeDots, upperFakeDots)
+                }
+            }
+
             let animation = CABasicAnimation(keyPath: "path")
-            animation.fromValue = self.pathLayer.path
-            animation.toValue = self.generatePath(graphContext: graphContext)
+            if let fakeDotsBefore = fakeDotsBefore, let fakeDotsAfter = fakeDotsAfter {
+                animation.fromValue = self.generatePath(graphContext: self.graphContext, fakeDots: fakeDotsBefore)
+                animation.toValue = self.generatePath(graphContext: graphContext, fakeDots: fakeDotsAfter)
+            } else {
+                animation.fromValue = self.pathLayer.path
+                animation.toValue = self.generatePath(graphContext: graphContext, fakeDots: (0, 0))
+            }
             animation.duration = animationDuration
             animation.timingFunction = CAMediaTimingFunction(name: .easeOut)
             self.pathLayer.add(animation, forKey: "path")
@@ -183,26 +235,26 @@ class GraphDrawLayerView: UIView {
             self.pathLayer.strokeColor = color.cgColor
             self.selectedPath.strokeColor = color.cgColor
             self.pathLayer.fillColor = UIColor.clear.cgColor
-            self.pathLayer.lineJoin = CAShapeLayerLineJoin.bevel
+            self.pathLayer.lineJoin = CAShapeLayerLineJoin.round
         case .bar:
             self.selectedPath.lineWidth = 0
             self.pathLayer.lineWidth = 0
             self.selectedPath.fillColor = color.cgColor
-            self.selectedPath.lineJoin = CAShapeLayerLineJoin.miter
+            self.selectedPath.lineJoin = CAShapeLayerLineJoin.round
             self.pathLayer.fillColor = color.cgColor
-            self.pathLayer.lineJoin = CAShapeLayerLineJoin.miter
+            self.pathLayer.lineJoin = CAShapeLayerLineJoin.round
         case .area:
             self.pathLayer.lineWidth = 0
             self.selectedPath.strokeColor = color.cgColor
             self.pathLayer.fillColor = color.cgColor
-            self.pathLayer.lineJoin = CAShapeLayerLineJoin.bevel
+            self.pathLayer.lineJoin = CAShapeLayerLineJoin.round
         }
     }
 
-    func generatePath(graphContext: GraphContext?) -> CGPath {
+    func generatePath(graphContext: GraphContext?, fakeDots: FakeDots) -> CGPath {
         switch self.graphContext?.style ?? .graph {
         case .graph:
-            return self.generatePathGraph(graphContext: graphContext)
+            return self.generatePathGraph(graphContext: graphContext, fakeDots: fakeDots)
         case .bar:
             return self.generatePathStack(graphContext: graphContext)
         case .area:
@@ -226,7 +278,7 @@ class GraphDrawLayerView: UIView {
             let value: Int = graphContext.values[index]
             let x = steps.pixels * CGFloat(index) - offset
             let yPercent = CGFloat(value) / CGFloat(graphContext.maxValue)
-            if x > (-1.1 * self.availbleFrame.width) && x < (self.availbleFrame.width * 1.1) {
+            if x > (-0.1 * self.availbleFrame.width) && x < (self.availbleFrame.width * 1.1) {
                 let newValue = graphContext.values[point]
                 let newX = steps.pixels * CGFloat(point) - offset
                 let newYPercent = CGFloat(newValue) / CGFloat(graphContext.maxValue)
@@ -241,7 +293,7 @@ class GraphDrawLayerView: UIView {
         return path
     }
 
-    func generatePathGraph(graphContext: GraphContext?) -> CGPath {
+    func generatePathGraph(graphContext: GraphContext?, fakeDots: FakeDots) -> CGPath {
         guard let graphContext = graphContext, self.availbleFrame.width > 0 else {
             return CGMutablePath()
         }
@@ -256,13 +308,25 @@ class GraphDrawLayerView: UIView {
         for index in 0..<(graphContext.values.count / steps.points) {
             let value: Int = graphContext.values[index]
             let x = steps.pixels * CGFloat(index) - offset
-            let yPercent = CGFloat(value) / CGFloat(graphContext.maxValue)
-            if x > (-1.1 * self.availbleFrame.width) && x < (self.availbleFrame.width * 1.1) {
+            if x > (-0.1 * self.availbleFrame.width) && x < (self.availbleFrame.width * 1.1) {
+                let yPercent = CGFloat(value) / CGFloat(graphContext.maxValue)
                 if !isMoved {
                     path.move(to: CGPoint(x: x, y: (1 - yPercent) * self.availbleFrame.height))
+                    if fakeDots.beggining > 2 {
+                        for _ in 0..<fakeDots.beggining {
+                            path.addLine(to: CGPoint(x: x, y: (1 - yPercent) * self.availbleFrame.height))
+                        }
+                    }
                     isMoved = true
                 }
                 path.addLine(to: CGPoint(x: x, y: (1 - yPercent) * self.availbleFrame.height))
+            }
+        }
+
+
+        if fakeDots.end > 2 {
+            for _ in 0..<fakeDots.end {
+                path.addLine(to: CGPoint(x: self.availbleFrame.width * 1.1, y: self.availbleFrame.height / 2))
             }
         }
 
@@ -288,7 +352,7 @@ class GraphDrawLayerView: UIView {
             let x = steps.pixels * CGFloat(index) - offset - (steps.pixels / 2)
             let yPercent = CGFloat(value) / CGFloat(graphContext.maxValue)
             let y = round((1 - yPercent) * self.availbleFrame.height)
-            if x > (-1.1 * self.availbleFrame.width) && x < (self.availbleFrame.width * 1.1) {
+            if x > (-0.1 * self.availbleFrame.width) && x < (self.availbleFrame.width * 1.1) {
                 if !isMoved {
                     path.move(to: CGPoint(x: x, y: y))
                     firstPoint = CGPoint(x: x, y: y)
@@ -323,7 +387,7 @@ class GraphDrawLayerView: UIView {
             let x = steps.pixels * CGFloat(index) - offset
             let yPercent = CGFloat(value) / CGFloat(graphContext.maxValue)
             let y = round((1 - yPercent) * self.availbleFrame.height)
-            if x > (-1.1 * self.availbleFrame.width) && x < (self.availbleFrame.width * 1.1) {
+            if x > (-0.1 * self.availbleFrame.width) && x < (self.availbleFrame.width * 1.1) {
                 if !isMoved {
                     path.move(to: CGPoint(x: x, y: y))
                     isMoved = true

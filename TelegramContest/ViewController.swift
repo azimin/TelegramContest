@@ -8,6 +8,11 @@
 
 import UIKit
 
+enum ZoomIndex {
+    case inside(value: Int)
+    case outside(value: Int)
+}
+
 class PathManager {
     enum Graph: String {
         case first = "1"
@@ -150,11 +155,17 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
                 }
                 section.zoomedSection = newSection
                 section.currentSelectedRange = 0.4..<0.6
-                cell.graphView.transform(to: section.currentDataSource, enableRows: section.enabledRows, zoomStep: nil, range: 0.4..<0.6, zoomed: true)
+                section.zoomedIndex = index
+                cell.graphView.transform(to: section.currentDataSource, enableRows: section.enabledRows, index: .inside(value: index), zoomStep: nil, range: 0.4..<0.6, zoomed: true)
             }
             cell.graphView.zoomOutAction = {
                 section.zoomedSection = nil
-                cell.graphView.transform(to: section.currentDataSource, enableRows: section.enabledRows, zoomStep: section.currentZoomStep, range: section.currentSelectedRange, zoomed: false)
+                var zoomedIndex: ZoomIndex? = nil
+                if let index = section.zoomedIndex {
+                    zoomedIndex = .outside(value: index)
+                }
+                cell.graphView.transform(to: section.currentDataSource, enableRows: section.enabledRows, index: zoomedIndex, zoomStep: section.currentZoomStep, range: section.currentSelectedRange, zoomed: false)
+                section.zoomedIndex = nil
             }
             cell.graphView.updateZoomStep(newValue: section.currentZoomStep)
             cell.graphView.updateSelectedRange(range: section.currentSelectedRange, skip: false)

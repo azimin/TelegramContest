@@ -44,7 +44,7 @@ class GraphContentView: UIView {
         return newValues
     }
 
-    func updateDataSouce(_ dataSource: GraphDataSource?, enableRows: [Int], animated: Bool, zoomingForThisStep: Bool, zoomed: Bool) {
+    func updateDataSouce(_ dataSource: GraphDataSource?, enableRows: [Int], animated: Bool, zoomingIndex: ZoomIndex?, zoomed: Bool) {
         self.style = self.dataSource?.style ?? self.style
         self.zoomed = zoomed
         self.dataSource = dataSource
@@ -74,7 +74,7 @@ class GraphContentView: UIView {
 
         self.updateTansformer()
         self.hideSelection()
-        self.update(animated: animated, zoomingForThisStep: zoomingForThisStep)
+        self.update(animated: animated, zoomingIndex: zoomingIndex)
     }
 
     func updateTansformer() {
@@ -89,7 +89,7 @@ class GraphContentView: UIView {
         self.selectedRange = selectedRange
         self.hideSelection()
         if shouldDraw {
-            self.update(animated: false)
+            self.update(animated: false, zoomingIndex: nil)
         }
     }
 
@@ -119,7 +119,7 @@ class GraphContentView: UIView {
         self.enabledRows = values
 
         self.updateTansformer()
-        self.update(animated: animated, force: true)
+        self.update(animated: animated, force: true, zoomingIndex: nil)
 
         if let selection = self.selectedLocation {
             self.showSelection(location: selection, animated: animated, shouldRespectCahce: false)
@@ -250,7 +250,7 @@ class GraphContentView: UIView {
         }
     }
 
-    private func update(animated: Bool, force: Bool = false, zoomingForThisStep: Bool = false) {
+    private func update(animated: Bool, force: Bool = false, zoomingIndex: ZoomIndex?) {
         guard let dataSource = self.dataSource else {
             self.graphDrawLayers.forEach({ $0.isHidden = true })
             return
@@ -321,7 +321,7 @@ class GraphContentView: UIView {
         } else {
             self.counter.animate(from: self.currentMaxValue, to: maxValue) { (value) in
                 self.currentMaxValue = value
-                self.update(animated: false)
+                self.update(animated: false, zoomingIndex: nil)
             }
             updateYAxis(maxValue, true)
         }
@@ -365,10 +365,11 @@ class GraphContentView: UIView {
                 minValue: minValue,
                 style: yRow.style
             )
-            graphView.update(graphContext: context, animationDuration: animated ? Constants.aniamtionDuration : 0)
+            graphView.update(graphContext: context, animationDuration: animated ? Constants.aniamtionDuration : 0, zoomingIndex: zoomingIndex)
             graphView.color = yRow.color
 
             if anyPoints.isEmpty {
+                let zoomingForThisStep = zoomingIndex != nil
                 let zooming = zoomingForThisStep || self.isMovingZoomMode
                 let startingRange  = zoomingForThisStep ? self.selectedRange : self.cachedRange
                 let pair = graphView.reportLabelPoints(graphContext: context, startingRange: startingRange, zooming: zooming, zoomStep: self.zoomStep)

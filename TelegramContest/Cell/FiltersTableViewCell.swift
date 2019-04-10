@@ -143,12 +143,12 @@ class FilterView: UIView {
         self.updateFrame(animated: false)
 
         self.button.addTarget(self, action: #selector(self.tapAction), for: .touchUpInside)
-        self.button.isExclusiveTouch = true
 
         let longPress = UILongPressGestureRecognizer(target: self, action: #selector(self.longPress(gesture:)))
         self.button.addGestureRecognizer(longPress)
 
         self.layer.borderWidth = 1
+        self.layer.borderColor = self.color.cgColor
     }
 
     @objc
@@ -169,31 +169,19 @@ class FilterView: UIView {
         let updateBlock: (_ animated: Bool) -> Void = { animated in
             let size = FilterView.size(text: self.label.text ?? "")
             let labelWidth = size.width - 40
-            var toBorderColor: UIColor
 
             if self.isSelected {
                 let offset: CGFloat = 12 + 8 + 8
                 self.label.frame = CGRect(x: offset, y: 0, width: labelWidth, height: size.height)
                 self.backgroundColor = self.color
-                toBorderColor = UIColor.clear
                 self.selectionArrow.frame = CGRect(x: 12, y: 11, width: 8, height: 8)
             } else {
                 self.label.frame = CGRect(x: 20, y: 0, width: labelWidth, height: size.height)
                 self.backgroundColor = UIColor.clear
-                toBorderColor = self.color
                 self.selectionArrow.frame = CGRect(x: -12, y: 11, width: 8, height: 8)
             }
             self.selectionArrow.alpha = self.isSelected ? 1 : 0
             self.button.frame.size = size
-
-            if animated {
-                let borderColorAnimation = CABasicAnimation(keyPath: "borderColor")
-                borderColorAnimation.fromValue = self.layer.borderColor
-                borderColorAnimation.toValue = toBorderColor.cgColor
-                borderColorAnimation.duration = animationDuration
-                self.layer.add(borderColorAnimation, forKey: "borderColor")
-            }
-            self.layer.borderColor = toBorderColor.cgColor
         }
 
         if animated {
@@ -208,6 +196,7 @@ class FilterView: UIView {
                 self.label.textColor = self.isSelected ? .white : self.color
             }
             CATransaction.commit()
+            self.label.textColor = self.isSelected ? .white : self.color
         } else {
             updateBlock(false)
             self.label.textColor = self.isSelected ? .white : self.color

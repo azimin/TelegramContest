@@ -142,7 +142,7 @@ class GraphControlView: UIView {
                     minValue: minValue,
                     style: yRow.style
                 )
-                graphView.update(graphContext: context, animationDuration: animated ? Constants.aniamtionDuration : 0)
+                graphView.update(graphContext: context, animationDuration: animated ? Constants.aniamtionDuration : 0, zoomingIndex: nil)
                 graphView.color = yRow.color
             }
         }
