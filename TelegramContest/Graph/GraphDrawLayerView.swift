@@ -168,6 +168,7 @@ class GraphDrawLayerView: UIView {
         if animationDuration > 0 {
             var fakeDotsBefore: FakeDots?
             var fakeDotsAfter: FakeDots?
+            let oldContext = self.graphContext
             if let zoomingIndex = zoomingIndex, let firstGraph = self.graphContext, let secondGraph = graphContext {
                 let index: Int
                 let oldGraphContext: GraphContext
@@ -213,7 +214,7 @@ class GraphDrawLayerView: UIView {
 
             let animation = CABasicAnimation(keyPath: "path")
             if let fakeDotsBefore = fakeDotsBefore, let fakeDotsAfter = fakeDotsAfter {
-                animation.fromValue = self.generatePath(graphContext: self.graphContext, fakeDots: fakeDotsBefore)
+                animation.fromValue = self.generatePath(graphContext: oldContext, fakeDots: fakeDotsBefore)
                 animation.toValue = self.generatePath(graphContext: graphContext, fakeDots: fakeDotsAfter)
             } else {
                 animation.fromValue = self.pathLayer.path
@@ -251,8 +252,20 @@ class GraphDrawLayerView: UIView {
         }
     }
 
+    func generateFakePath(count: Int) -> CGPath {
+        let path = CGMutablePath()
+        path.move(to: CGPoint(x: -10, y: self.availbleFrame.height / 2))
+        path.addLine(to: CGPoint(x: -10, y: self.availbleFrame.height / 2))
+        for _ in 0..<count {
+            path.addLine(to: CGPoint(x: self.availbleFrame.width / 2, y: self.availbleFrame.height / 2))
+        }
+        path.addLine(to: CGPoint(x: self.availbleFrame.width + 10, y: self.availbleFrame.height / 2))
+        path.addLine(to: CGPoint(x: self.availbleFrame.width + 10, y: self.availbleFrame.height / 2))
+        return path
+    }
+
     func generatePath(graphContext: GraphContext?, fakeDots: FakeDots) -> CGPath {
-        switch self.graphContext?.style ?? .graph {
+        switch graphContext?.style ?? .graph {
         case .graph:
             return self.generatePathGraph(graphContext: graphContext, fakeDots: fakeDots)
         case .bar:

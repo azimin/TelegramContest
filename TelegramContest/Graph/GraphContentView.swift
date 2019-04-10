@@ -66,7 +66,7 @@ class GraphContentView: UIView {
             }
         }
 
-        if self.style == .stackedBar {
+        if self.style == .stackedBar || self.dataSource?.yRows.first?.style == .bar {
             self.selectionLineView.isHidden = true
         } else {
             self.selectionLineView.isHidden = false

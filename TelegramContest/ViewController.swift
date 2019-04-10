@@ -153,10 +153,16 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
                 guard let newSection = PathManager.section(to: date, in: section.graph) else {
                     return
                 }
+                let range: Range<CGFloat>
+                if section.graph == .forth {
+                    range = 0..<1.0
+                } else {
+                    range = 0.4..<0.6
+                }
                 section.zoomedSection = newSection
-                section.currentSelectedRange = 0.4..<0.6
+                section.currentSelectedRange = range
                 section.zoomedIndex = index
-                cell.graphView.transform(to: section.currentDataSource, enableRows: section.enabledRows, index: .inside(value: index), zoomStep: nil, range: 0.4..<0.6, zoomed: true)
+                cell.graphView.transform(to: section.currentDataSource, enableRows: section.enabledRows, index: .inside(value: index), zoomStep: nil, range: range, zoomed: true)
             }
             cell.graphView.zoomOutAction = {
                 section.zoomedSection = nil
