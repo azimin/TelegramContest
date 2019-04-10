@@ -53,7 +53,7 @@ class FiltersTableViewCell: UITableViewCell {
             return
         }
 
-        var yCoord: CGFloat = 8
+        var yCoord: CGFloat = 0
         var xCoord: CGFloat = 16
         let offset: CGFloat = 8
 
@@ -91,6 +91,7 @@ class FiltersTableViewCell: UITableViewCell {
             xCoord += size.width + offset
             self.height = yCoord + offset + size.height
         }
+        self.height += 10
     }
 
     override func systemLayoutSizeFitting(_ targetSize: CGSize, withHorizontalFittingPriority horizontalFittingPriority: UILayoutPriority, verticalFittingPriority: UILayoutPriority) -> CGSize {

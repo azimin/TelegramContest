@@ -97,10 +97,9 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         self.tableView.bottomAnchor.constraint(equalTo: self.view.bottomAnchor).isActive = true
         self.tableView.leadingAnchor.constraint(equalTo: self.view.leadingAnchor).isActive = true
         self.tableView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor).isActive = true
-        self.tableView.register(GraphTableViewCell.self, forCellReuseIdentifier: "GraphTableViewCell\(GraphStyle.basic.rawValue)")
-        self.tableView.register(GraphTableViewCell.self, forCellReuseIdentifier: "GraphTableViewCell\(GraphStyle.doubleCompare.rawValue)")
-        self.tableView.register(GraphTableViewCell.self, forCellReuseIdentifier: "GraphTableViewCell\(GraphStyle.percentStackedBar.rawValue)")
-        self.tableView.register(GraphTableViewCell.self, forCellReuseIdentifier: "GraphTableViewCell\(GraphStyle.stackedBar.rawValue)")
+        for graph in PathManager.Graph.allCases {
+            self.tableView.register(GraphTableViewCell.self, forCellReuseIdentifier: "GraphTableViewCell\(graph.rawValue)")
+        }
         self.tableView.register(ButtonTableViewCell.self, forCellReuseIdentifier: "ButtonTableViewCell")
         self.tableView.register(FiltersTableViewCell.self, forCellReuseIdentifier: "FiltersTableViewCell")
     }
@@ -123,7 +122,8 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         if section == 0 {
             return 1
         } else {
-            return 2
+            let sectionType = self.section[section - 1]
+            return sectionType.currentDataSource.yRows.count > 1 ? 2 : 1
         }
     }
 
@@ -138,7 +138,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         let dataSource = section.currentDataSource
         switch indexPath.row {
         case 0:
-            let cell = tableView.dequeueReusableCell(withIdentifier: "GraphTableViewCell\(dataSource.style.rawValue)", for: indexPath) as! GraphTableViewCell
+            let cell = tableView.dequeueReusableCell(withIdentifier: "GraphTableViewCell\(section.graph.rawValue)", for: indexPath) as! GraphTableViewCell
             cell.graphView.style = dataSource.style
             cell.graphView.theme = theme
             cell.graphView.updateDataSource(dataSource: dataSource, enableRows: section.enabledRows, skip: false, zoomed: section.zoomedSection != nil)
@@ -219,7 +219,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
 
         switch indexPath.row {
         case 0:
-            return 390
+            return 404
         default:
             return UITableView.automaticDimension
         }
