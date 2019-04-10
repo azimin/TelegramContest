@@ -154,15 +154,18 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
                     return
                 }
                 let range: Range<CGFloat>
+                let enableRows: [Int]
                 if section.graph == .forth {
                     range = 0..<1.0
+                    enableRows = newSection.enabledRows
                 } else {
                     range = 0.4..<0.6
+                    enableRows = section.enabledRows
                 }
                 section.zoomedSection = newSection
                 section.currentSelectedRange = range
                 section.zoomedIndex = index
-                cell.graphView.transform(to: section.currentDataSource, enableRows: section.enabledRows, index: .inside(value: index), zoomStep: nil, range: range, zoomed: true)
+                cell.graphView.transform(to: section.currentDataSource, enableRows: enableRows, index: .inside(value: index), zoomStep: nil, range: range, zoomed: true)
             }
             cell.graphView.zoomOutAction = {
                 section.zoomedSection = nil

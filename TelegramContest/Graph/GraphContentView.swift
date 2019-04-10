@@ -140,6 +140,7 @@ class GraphContentView: UIView {
     private var shadowImage = UIImageView(frame: .zero)
     private var shadowCachedSize: CGRect = .zero
     private var graphSelectionOverlayView: GraphSelectionOverlayView = GraphSelectionOverlayView()
+    private var graphView = UIView()
 
     var updatedZoomStep: ((Int?) -> Void)?
 
@@ -181,7 +182,8 @@ class GraphContentView: UIView {
         let graphHeight = self.frame.height - Constants.labelsHeight - 20
         let topFrame = CGRect(x: Constants.offset, y: 20, width: self.frame.size.width - Constants.offset * 2, height: graphHeight)
         let graphFrame = CGRect(x: Constants.offset, y: 0, width: self.frame.size.width - Constants.offset * 2, height: graphHeight + 20)
-        self.graphDrawLayers.forEach({ $0.frame = graphFrame })
+        self.graphView.frame = graphFrame
+//        self.graphDrawLayers.forEach({ $0.frame = graphFrame })
         self.graphSelectionOverlayView.frame = graphFrame
         self.yAxisOverlays.forEach({ $0.frame = topFrame })
         self.secondYAxisLabelOverlay.frame = topFrame
@@ -223,9 +225,12 @@ class GraphContentView: UIView {
         self.addSubview(self.dateLabels)
         self.addSubview(self.yAxisLineOverlay)
         self.addSubview(self.selectionLineView)
+        self.graphView.layer.masksToBounds = true
+        self.addSubview(self.graphView)
         self.addSubview(self.yAxisLabelOverlay)
         self.addSubview(self.shadowImage)
         self.addSubview(self.graphSelectionOverlayView)
+        self.graphSelectionOverlayView.layer.masksToBounds = true
         self.addSubview(self.selectionPlateView)
 
         self.selectionPlateView.closeAction = {
@@ -258,12 +263,13 @@ class GraphContentView: UIView {
 
         while graphDrawLayers.count < dataSource.yRows.count {
             let graphView = GraphDrawLayerView()
-            graphView.layer.masksToBounds = true
+//            graphView.layer.masksToBounds = true
             graphView.frame = CGRect(x: 0, y: 0, width: self.frame.width, height: self.frame.height - Constants.labelsHeight)
             if let lates = self.graphDrawLayers.last {
-                self.insertSubview(graphView, belowSubview: lates)
+                self.graphView.insertSubview(graphView, belowSubview: lates)
             } else {
-                self.insertSubview(graphView, belowSubview: self.yAxisLabelOverlay)
+                self.graphView.addSubview(graphView)
+//                self.insertSubview(graphView, belowSubview: self.yAxisLabelOverlay)
             }
             self.graphDrawLayers.append(graphView)
         }
@@ -326,10 +332,10 @@ class GraphContentView: UIView {
             updateYAxis(maxValue, true)
         }
 
-//        if zoomingForThisStep && animated {
-//            let image = self.takeScreenshot()
-//            self.animateZoom(snapshotImage: image)
-//        }
+        var imageBefore: UIImage? = nil
+        if zoomingIndex != nil && animated {
+            imageBefore = self.graphView.takeScreenshot()
+        }
 
         var anyPoints: [GraphDrawLayerView.LabelPosition] = []
         for index in 0..<self.graphDrawLayers.count {
@@ -418,18 +424,69 @@ class GraphContentView: UIView {
                 }
             }
         }
+
+        if zoomingIndex != nil && animated {
+            let view = UIView()
+            view.frame = CGRect(x: 0, y: 0, width: self.graphView.frame.width * 2, height: self.graphView.frame.height)
+            for (index, yRow) in dataSource.yRows.enumerated() {
+                let count = Int(CGFloat(self.transformedValues[index].count) * self.selectedRange.interval)
+                let context = GraphContext(
+                    range: self.selectedRange,
+                    values: Array(repeating: 5, count: count / 2) + self.transformedValues[index] + Array(repeating: 5, count: count / 2),
+                    maxValue: self.currentMaxValue,
+                    minValue: minValue,
+                    style: yRow.style
+                )
+                let layer = GraphDrawLayerView()
+                layer.frame = view.bounds
+                layer.update(graphContext: context, animationDuration: 0, zoomingIndex: nil)
+                layer.color = yRow.color
+                layer.setNeedsDisplay()
+                view.addSubview(layer)
+            }
+            self.addSubview(view)
+            view.setNeedsDisplay()
+            let imageAfter = view.asImage()
+            self.animateZoom(imageBefore: imageBefore ?? UIImage(), imageAfter: imageAfter)
+            view.removeFromSuperview()
+        }
+
     }
 
-    func animateZoom(snapshotImage: UIImage) {
-        let snapshotImageView = UIImageView(image: snapshotImage)
-        self.addSubview(snapshotImageView)
-        snapshotImageView.frame = self.bounds
-        snapshotImageView.backgroundColor = UIColor.white
-        UIView.animate(withDuration: 5, animations: {
-            snapshotImageView.alpha = 0
-            snapshotImageView.transform = CGAffineTransform.init(scaleX: 3, y: 1)
+    func animateZoom(imageBefore: UIImage, imageAfter: UIImage) {
+        let whiteView = UIView()
+        whiteView.frame = self.graphView.frame
+        whiteView.backgroundColor = UIColor.white
+        self.insertSubview(whiteView, aboveSubview: self.graphView)
+
+        let snapshotImageAfterView = UIImageView(image: imageAfter)
+        self.insertSubview(snapshotImageAfterView, aboveSubview: whiteView)
+
+        self.insertSubview(whiteView, aboveSubview: self.graphView)
+        let snapshotImageBeforeView = UIImageView(image: imageBefore)
+        self.insertSubview(snapshotImageBeforeView, aboveSubview: snapshotImageAfterView)
+
+        snapshotImageBeforeView.frame = self.graphView.frame
+        snapshotImageAfterView.frame = CGRect(x: -self.graphView.frame.width / 2, y: 0, width: self.graphView.frame.width * 2, height: self.graphView.frame.height)
+        snapshotImageBeforeView.backgroundColor = UIColor.white
+        snapshotImageAfterView.backgroundColor = UIColor.white
+
+        snapshotImageAfterView.alpha = 0
+        snapshotImageAfterView.transform = CGAffineTransform.init(scaleX: 0.5, y: 1)
+
+        UIView.animate(withDuration: 0.25, animations: {
+            snapshotImageBeforeView.alpha = 0
+            snapshotImageBeforeView.transform = CGAffineTransform.init(scaleX: 3, y: 1)
         }) { (_) in
-            snapshotImageView.removeFromSuperview()
+            snapshotImageBeforeView.removeFromSuperview()
+        }
+
+        UIView.animate(withDuration: 0.35, animations: {
+            snapshotImageAfterView.alpha = 1
+            snapshotImageAfterView.transform = CGAffineTransform.init(scaleX: 1, y: 1)
+        }) { (_) in
+            snapshotImageAfterView.removeFromSuperview()
+            whiteView.removeFromSuperview()
         }
     }
 
