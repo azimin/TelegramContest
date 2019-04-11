@@ -469,7 +469,7 @@ class GraphContentView: UIView {
             snapshotImageAfterView.transform = CGAffineTransform.init(scaleX: 0.3, y: 1)
         }
 
-        let duration: TimeInterval = 0.4
+        let duration: TimeInterval = 0.3
         UIView.animate(withDuration: reversed ? duration : duration * 0.7, delay: 0, options: [reversed ? .curveEaseOut : .curveEaseIn], animations: {
             if reversed {
                 snapshotImageBeforeView.alpha = 1

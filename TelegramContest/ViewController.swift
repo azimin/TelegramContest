@@ -155,6 +155,24 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         }
 
         let section = self.section[indexPath.section - 1]
+
+        let selectAction: SelectionBlock = { index in
+            if section.enabledRows.contains(index) {
+                section.enabledRows.removeAll(where: { $0 == index })
+            } else {
+                section.enabledRows.append(index)
+            }
+            let graphCell = tableView.cellForRow(at: IndexPath(row: 0, section: indexPath.section)) as! GraphTableViewCell
+            let graphView = graphCell.graphView
+            graphView.updateEnabledRows(section.enabledRows, animated: true)
+        }
+        let longSelectAction: SelectionBlock = { index in
+            section.enabledRows = [index]
+            let graphCell = tableView.cellForRow(at: IndexPath(row: 0, section: indexPath.section)) as! GraphTableViewCell
+            let graphView = graphCell.graphView
+            graphView.updateEnabledRows(section.enabledRows, animated: true)
+        }
+
         switch indexPath.row {
         case 0:
             let dataSource = section.currentDataSource
@@ -162,6 +180,8 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
             cell.graphView.style = dataSource.style
             cell.graphView.theme = theme
             cell.graphView.updateDataSource(dataSource: dataSource, enableRows: section.enabledRows, skip: false, zoomed: section.zoomedSection != nil)
+            cell.graphView.selectedAction = selectAction
+            cell.graphView.selectedLongAction = longSelectAction
             cell.graphView.rangeUpdated = { value in
                 section.currentSelectedRange = value
             }
@@ -237,22 +257,11 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
             var rows: [Row] = []
 
             for (index, yRow) in yRows.enumerated() {
-                let row = Row(name: yRow.name, color: yRow.color, isSelected: section.enabledRows.contains(index), selectedAction: {
-                    if section.enabledRows.contains(index) {
-                        section.enabledRows.removeAll(where: { $0 == index })
-                    } else {
-                        section.enabledRows.append(index)
-                    }
-                    let graphCell = tableView.cellForRow(at: IndexPath(row: 0, section: indexPath.section)) as! GraphTableViewCell
-                    let graphView = graphCell.graphView
-                    graphView.updateEnabledRows(section.enabledRows, animated: true)
-                    }
-                ) {
-                    section.enabledRows = [index]
-                    let graphCell = tableView.cellForRow(at: IndexPath(row: 0, section: indexPath.section)) as! GraphTableViewCell
-                    let graphView = graphCell.graphView
-                    graphView.updateEnabledRows(section.enabledRows, animated: true)
-                }
+                let row = Row(name: yRow.name,
+                              color: yRow.color,
+                              isSelected: section.enabledRows.contains(index),
+                              selectedAction: selectAction,
+                              selectedLongAction: longSelectAction)
                 rows.append(row)
             }
 

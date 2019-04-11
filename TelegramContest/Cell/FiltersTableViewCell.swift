@@ -14,10 +14,10 @@ class Row {
     var name: String
     var color: UIColor
     var isSelected: Bool
-    var selectedAction: VoidBlock?
-    var selectedLongAction: VoidBlock?
+    var selectedAction: SelectionBlock?
+    var selectedLongAction: SelectionBlock?
 
-    init(name: String, color: UIColor, isSelected: Bool, selectedAction: VoidBlock?, selectedLongAction: VoidBlock?) {
+    init(name: String, color: UIColor, isSelected: Bool, selectedAction: SelectionBlock?, selectedLongAction: SelectionBlock?) {
         self.name = name
         self.color = color
         self.isSelected = isSelected
@@ -55,10 +55,10 @@ class FiltersViewContentller {
         self.clear()
 
         for (index, item) in rows.enumerated() {
-            let filterView = FilterView(title: item.name, isSelected: item.isSelected, color: item.color)
+            let filterView = FilterView(title: item.name, isSelected: item.isSelected, color: item.color, index: index)
 
-            filterView.longAction = {
-                item.selectedLongAction?()
+            filterView.longAction = { index in
+                item.selectedLongAction?(index)
                 filterView.updateSelection(isSelected: true, animated: true)
                 for (newIndex, filter) in self.filterViews.enumerated() {
                     if index != newIndex {
@@ -67,8 +67,8 @@ class FiltersViewContentller {
                 }
             }
 
-            filterView.action = {
-                item.selectedAction?()
+            filterView.action = { index in
+                item.selectedAction?(index)
                 filterView.updateSelection(isSelected: !filterView.isSelected, animated: true)
             }
 
@@ -130,18 +130,20 @@ class FilterView: UIView {
     let color: UIColor
 
     private(set) var isSelected: Bool
-    var action: VoidBlock?
-    var longAction: VoidBlock?
+    private let index: Int
+    var action: SelectionBlock?
+    var longAction: SelectionBlock?
 
     func updateSelection(isSelected: Bool, animated: Bool) {
         self.isSelected = isSelected
         self.updateFrame(animated: animated)
     }
 
-    init(title: String, isSelected: Bool, color: UIColor, action: VoidBlock? = nil, longAction: VoidBlock? = nil) {
+    init(title: String, isSelected: Bool, color: UIColor, index: Int, action: SelectionBlock? = nil, longAction: SelectionBlock? = nil) {
         self.isSelected = isSelected
         self.action = action
         self.color = color
+        self.index = index
         super.init(frame: .zero)
         self.label.text = title
         self.setup()
@@ -173,13 +175,13 @@ class FilterView: UIView {
     @objc
     func longPress(gesture: UILongPressGestureRecognizer) {
         if gesture.state == .began {
-            self.longAction?()
+            self.longAction?(self.index)
         }
     }
 
     @objc
     func tapAction() {
-        self.action?()
+        self.action?(self.index)
     }
 
     func updateFrame(animated: Bool) {

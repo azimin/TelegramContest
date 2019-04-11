@@ -8,6 +8,8 @@
 
 import UIKit
 
+typealias SelectionBlock = (_ index: Int) -> Void
+
 class GraphView: UIView {
     var rangeUpdated: ((_ range: Range<CGFloat>) -> Void)?
 
@@ -16,6 +18,17 @@ class GraphView: UIView {
     var zoomAction: SelectIndexAction?
     var zoomOutAction: VoidBlock?
     var updateSizeAction: VoidBlock?
+
+    var selectedAction: SelectionBlock? {
+        didSet {
+            self.graphControlView.selectedAction = selectedAction
+        }
+    }
+    var selectedLongAction: SelectionBlock? {
+        didSet {
+            self.graphControlView.selectedLongAction = selectedLongAction
+        }
+    }
 
     var height: CGFloat = 404
 

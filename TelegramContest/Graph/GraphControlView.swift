@@ -17,6 +17,8 @@ class GraphControlView: UIView {
 
     private(set) var dataSource: GraphDataSource?
     var updateSizeAction: VoidBlock?
+    var selectedAction: SelectionBlock?
+    var selectedLongAction: SelectionBlock?
     
     private var transformedValues: [[Int]] = []
 
@@ -186,11 +188,7 @@ class GraphControlView: UIView {
 
         var rows: [Row] = []
         for (index, yRow) in (dataSource?.yRows ?? []).enumerated() {
-            let row = Row(name: yRow.name, color: yRow.color, isSelected: enableRows.contains(index), selectedAction: {
-                print("Select")
-            }) {
-                print("Select all")
-            }
+            let row = Row(name: yRow.name, color: yRow.color, isSelected: enableRows.contains(index), selectedAction: self.selectedAction, selectedLongAction: self.selectedLongAction)
             rows.append(row)
         }
         filterViewController.rows = rows
