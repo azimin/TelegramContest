@@ -228,8 +228,8 @@ class GraphDrawLayerView: UIView {
         self.updateStyle()
     }
 
-    func updateStyle() {
-        switch self.graphContext?.style ?? .graph {
+    func updateStyle(graphContext: GraphContext? = nil) {
+        switch graphContext?.style ?? self.graphContext?.style ?? .graph {
         case .graph:
             self.pathLayer.lineWidth = self.lineWidth
             self.selectedPath.lineWidth = self.lineWidth
@@ -715,5 +715,18 @@ extension UIView {
             return image!
         }
         return UIImage()
+    }
+
+    func asImage() -> UIImage {
+        // FIXME
+        if #available(iOS 10.0, *) {
+            let renderer = UIGraphicsImageRenderer(bounds: bounds)
+            return renderer.image { rendererContext in
+                layer.render(in: rendererContext.cgContext)
+            }
+        } else {
+            return UIImage()
+            // Fallback on earlier versions
+        }
     }
 }

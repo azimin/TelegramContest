@@ -425,68 +425,80 @@ class GraphContentView: UIView {
             }
         }
 
-        if zoomingIndex != nil && animated {
-            let view = UIView()
-            view.frame = CGRect(x: 0, y: 0, width: self.graphView.frame.width * 2, height: self.graphView.frame.height)
-            for (index, yRow) in dataSource.yRows.enumerated() {
-                let count = Int(CGFloat(self.transformedValues[index].count) * self.selectedRange.interval)
-                let context = GraphContext(
-                    range: self.selectedRange,
-                    values: Array(repeating: 5, count: count / 2) + self.transformedValues[index] + Array(repeating: 5, count: count / 2),
-                    maxValue: self.currentMaxValue,
-                    minValue: minValue,
-                    style: yRow.style
-                )
-                let layer = GraphDrawLayerView()
-                layer.frame = view.bounds
-                layer.update(graphContext: context, animationDuration: 0, zoomingIndex: nil)
-                layer.color = yRow.color
-                layer.setNeedsDisplay()
-                view.addSubview(layer)
+        if let zoomingIndex = zoomingIndex, animated, style == .stackedBar {
+            let imageAfter = graphView.asImage()
+            switch zoomingIndex {
+            case .inside(_):
+                self.animateZoom(imageBefore: imageBefore ?? UIImage(), imageAfter: imageAfter, reversed: false)
+            case .outside(_):
+                self.animateZoom(imageBefore: imageAfter, imageAfter: imageBefore ?? UIImage(), reversed: true)
             }
-            self.addSubview(view)
-            view.setNeedsDisplay()
-            let imageAfter = view.asImage()
-            self.animateZoom(imageBefore: imageBefore ?? UIImage(), imageAfter: imageAfter)
-            view.removeFromSuperview()
         }
 
     }
 
-    func animateZoom(imageBefore: UIImage, imageAfter: UIImage) {
+    func animateZoom(imageBefore: UIImage, imageAfter: UIImage, reversed: Bool) {
         let whiteView = UIView()
         whiteView.frame = self.graphView.frame
         whiteView.backgroundColor = UIColor.white
         self.insertSubview(whiteView, aboveSubview: self.graphView)
 
         let snapshotImageAfterView = UIImageView(image: imageAfter)
-        self.insertSubview(snapshotImageAfterView, aboveSubview: whiteView)
-
-        self.insertSubview(whiteView, aboveSubview: self.graphView)
         let snapshotImageBeforeView = UIImageView(image: imageBefore)
-        self.insertSubview(snapshotImageBeforeView, aboveSubview: snapshotImageAfterView)
+
+        if reversed {
+//            self.insertSubview(snapshotImageBeforeView, aboveSubview: whiteView)
+//            self.insertSubview(snapshotImageAfterView, aboveSubview: snapshotImageBeforeView)
+            self.insertSubview(snapshotImageAfterView, aboveSubview: whiteView)
+            self.insertSubview(snapshotImageBeforeView, aboveSubview: snapshotImageAfterView)
+        } else {
+            self.insertSubview(snapshotImageAfterView, aboveSubview: whiteView)
+            self.insertSubview(snapshotImageBeforeView, aboveSubview: snapshotImageAfterView)
+        }
 
         snapshotImageBeforeView.frame = self.graphView.frame
-        snapshotImageAfterView.frame = CGRect(x: -self.graphView.frame.width / 2, y: 0, width: self.graphView.frame.width * 2, height: self.graphView.frame.height)
+        snapshotImageAfterView.frame = self.graphView.frame
         snapshotImageBeforeView.backgroundColor = UIColor.white
         snapshotImageAfterView.backgroundColor = UIColor.white
 
-        snapshotImageAfterView.alpha = 0
-        snapshotImageAfterView.transform = CGAffineTransform.init(scaleX: 0.5, y: 1)
-
-        UIView.animate(withDuration: 0.25, animations: {
+        if reversed {
             snapshotImageBeforeView.alpha = 0
             snapshotImageBeforeView.transform = CGAffineTransform.init(scaleX: 3, y: 1)
-        }) { (_) in
-            snapshotImageBeforeView.removeFromSuperview()
+        } else {
+            snapshotImageAfterView.alpha = 0
+            snapshotImageAfterView.transform = CGAffineTransform.init(scaleX: 0.3, y: 1)
         }
 
-        UIView.animate(withDuration: 0.35, animations: {
-            snapshotImageAfterView.alpha = 1
-            snapshotImageAfterView.transform = CGAffineTransform.init(scaleX: 1, y: 1)
+        let duration: TimeInterval = 0.4
+        UIView.animate(withDuration: reversed ? duration : duration * 0.7, delay: 0, options: [reversed ? .curveEaseOut : .curveEaseIn], animations: {
+            if reversed {
+                snapshotImageBeforeView.alpha = 1
+                snapshotImageBeforeView.transform = CGAffineTransform.identity
+            } else {
+                snapshotImageBeforeView.alpha = 0
+                snapshotImageBeforeView.transform = CGAffineTransform.init(scaleX: 3, y: 1)
+            }
+
+        }) { _ in
+            snapshotImageBeforeView.removeFromSuperview()
+            if reversed {
+                whiteView.removeFromSuperview()
+            }
+        }
+
+        UIView.animate(withDuration: reversed ? duration * 0.7 : duration, delay: 0, options: [reversed ? .curveEaseIn : .curveEaseOut], animations: {
+            if reversed {
+                snapshotImageAfterView.alpha = 0
+                snapshotImageAfterView.transform = CGAffineTransform.init(scaleX: 0.3, y: 1)
+            } else {
+                snapshotImageAfterView.alpha = 1
+                snapshotImageAfterView.transform = CGAffineTransform.identity
+            }
         }) { (_) in
             snapshotImageAfterView.removeFromSuperview()
-            whiteView.removeFromSuperview()
+            if !reversed {
+                whiteView.removeFromSuperview()
+            }
         }
     }
 
