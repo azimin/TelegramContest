@@ -145,9 +145,9 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         }
 
         let section = self.section[indexPath.section - 1]
-        let dataSource = section.currentDataSource
         switch indexPath.row {
         case 0:
+            let dataSource = section.currentDataSource
             let cell = tableView.dequeueReusableCell(withIdentifier: "GraphTableViewCell\(section.graph.rawValue)", for: indexPath) as! GraphTableViewCell
             cell.graphView.style = dataSource.style
             cell.graphView.theme = theme
@@ -159,7 +159,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
                 section.currentZoomStep = value
             }
             cell.graphView.zoomAction = { index in
-                let date = dataSource.xRow.dates[index]
+                let date = section.currentDataSource.xRow.dates[index]
                 guard let newSection = PathManager.section(to: date, in: section.graph) else {
                     return
                 }
@@ -181,6 +181,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
 
                 section.zoomedSection = newSection
                 section.currentSelectedRange = range
+                section.enabledRows = enableRows
                 section.zoomedIndex = index
                 let zoom = Zoom(index: .inside(value: index), style: zoomAnimationStyle)
                 cell.graphView.transform(to: section.currentDataSource, enableRows: enableRows, zoom: zoom, zoomStep: nil, range: range, zoomed: true)
@@ -188,6 +189,9 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
             cell.graphView.zoomOutAction = {
                 section.zoomedSection = nil
                 var zoom: Zoom? = nil
+                if section.graph == .forth {
+                    section.enabledRows = [0]
+                }
                 if let index = section.zoomedIndex {
                     let zoomAnimationStyle: Zoom.AnimationStyle
                     if section.graph == .forth || section.graph == .third {
@@ -206,7 +210,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
             return cell
         default:
             let cell = tableView.dequeueReusableCell(withIdentifier: "FiltersTableViewCell", for: indexPath) as! FiltersTableViewCell
-            let yRows = dataSource.yRows
+            let yRows = section.currentDataSource.yRows
             let section = self.section[indexPath.section - 1]
             var rows: [Row] = []
 
