@@ -26,8 +26,7 @@ class Row {
     }
 }
 
-class FiltersTableViewCell: UITableViewCell {
-
+class FiltersViewContentller {
     var height: CGFloat = 0
     var isCached = false
 
@@ -39,16 +38,12 @@ class FiltersTableViewCell: UITableViewCell {
 
     var filterViews: [FilterView] = []
 
-    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
-        super.init(style: style, reuseIdentifier: reuseIdentifier)
-        self.selectionStyle = .none
+    func clear() {
+        self.filterViews.forEach({ $0.removeFromSuperview() })
+        self.filterViews = []
     }
 
-    required init?(coder aDecoder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-
-    func update(width: CGFloat) {
+    func update(width: CGFloat, contentView: UIView) {
         guard !isCached else {
             return
         }
@@ -57,8 +52,7 @@ class FiltersTableViewCell: UITableViewCell {
         var xCoord: CGFloat = 16
         let offset: CGFloat = 8
 
-        self.filterViews.forEach({ $0.removeFromSuperview() })
-        self.filterViews = []
+        self.clear()
 
         for (index, item) in rows.enumerated() {
             let filterView = FilterView(title: item.name, isSelected: item.isSelected, color: item.color)
@@ -78,7 +72,7 @@ class FiltersTableViewCell: UITableViewCell {
                 filterView.updateSelection(isSelected: !filterView.isSelected, animated: true)
             }
 
-            self.contentView.addSubview(filterView)
+            contentView.addSubview(filterView)
             self.filterViews.append(filterView)
             let size = FilterView.size(text: item.name)
 
@@ -93,11 +87,35 @@ class FiltersTableViewCell: UITableViewCell {
         }
         self.height += 10
     }
+}
+
+class FiltersTableViewCell: UITableViewCell {
+
+    let filtersViewController: FiltersViewContentller = FiltersViewContentller()
+
+    var rows: [Row] = [] {
+        didSet {
+            filtersViewController.rows = rows
+        }
+    }
+
+    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
+        super.init(style: style, reuseIdentifier: reuseIdentifier)
+        self.selectionStyle = .none
+    }
+
+    required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    func update(width: CGFloat) {
+        self.filtersViewController.update(width: width, contentView: self.contentView)
+    }
 
     override func systemLayoutSizeFitting(_ targetSize: CGSize, withHorizontalFittingPriority horizontalFittingPriority: UILayoutPriority, verticalFittingPriority: UILayoutPriority) -> CGSize {
         let size = super.systemLayoutSizeFitting(targetSize, withHorizontalFittingPriority: horizontalFittingPriority, verticalFittingPriority: verticalFittingPriority)
         self.update(width: size.width)
-        return CGSize(width: size.width, height: self.height)
+        return CGSize(width: size.width, height: self.filtersViewController.height)
     }
 
 }

@@ -12,6 +12,15 @@ struct Zoom {
     enum ZoomIndex {
         case inside(value: Int)
         case outside(value: Int)
+
+        var isInside: Bool {
+            switch self {
+            case .inside:
+                return true
+            case .outside:
+                return false
+            }
+        }
     }
 
     enum AnimationStyle {
@@ -21,6 +30,7 @@ struct Zoom {
 
     let index: ZoomIndex
     let style: AnimationStyle
+    let shouldReplaceRangeController: Bool
 }
 
 class PathManager {
@@ -133,7 +143,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
             return 1
         } else {
             let sectionType = self.section[section - 1]
-            return sectionType.currentDataSource.yRows.count > 1 ? 2 : 1
+            return sectionType.graph != .forth ? 2 : 1
         }
     }
 
@@ -158,6 +168,11 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
             cell.graphView.updatedZoomStep = { value in
                 section.currentZoomStep = value
             }
+            cell.graphView.updateSizeAction = {
+                self.graphCachedHeigh[indexPath] = cell.graphView.height
+                self.tableView.beginUpdates()
+                self.tableView.endUpdates()
+            }
             cell.graphView.zoomAction = { index in
                 let date = section.currentDataSource.xRow.dates[index]
                 guard let newSection = PathManager.section(to: date, in: section.graph) else {
@@ -165,12 +180,15 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
                 }
                 let range: Range<CGFloat>
                 let enableRows: [Int]
+                let shouldReplaceRangeController: Bool
                 if section.graph == .forth {
                     range = 0..<1.0
                     enableRows = newSection.enabledRows
+                    shouldReplaceRangeController = true
                 } else {
                     range = 0.4..<0.6
                     enableRows = section.enabledRows
+                    shouldReplaceRangeController = false
                 }
                 let zoomAnimationStyle: Zoom.AnimationStyle
                 if section.graph == .forth || section.graph == .third {
@@ -183,14 +201,18 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
                 section.currentSelectedRange = range
                 section.enabledRows = enableRows
                 section.zoomedIndex = index
-                let zoom = Zoom(index: .inside(value: index), style: zoomAnimationStyle)
+                let zoom = Zoom(index: .inside(value: index), style: zoomAnimationStyle, shouldReplaceRangeController: shouldReplaceRangeController)
                 cell.graphView.transform(to: section.currentDataSource, enableRows: enableRows, zoom: zoom, zoomStep: nil, range: range, zoomed: true)
             }
             cell.graphView.zoomOutAction = {
                 section.zoomedSection = nil
                 var zoom: Zoom? = nil
+                let shouldReplaceRangeController: Bool
                 if section.graph == .forth {
                     section.enabledRows = [0]
+                    shouldReplaceRangeController = true
+                } else {
+                    shouldReplaceRangeController = false
                 }
                 if let index = section.zoomedIndex {
                     let zoomAnimationStyle: Zoom.AnimationStyle
@@ -199,7 +221,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
                     } else {
                         zoomAnimationStyle = .basic
                     }
-                    zoom = Zoom(index: .outside(value: index), style: zoomAnimationStyle)
+                    zoom = Zoom(index: .outside(value: index), style: zoomAnimationStyle, shouldReplaceRangeController: shouldReplaceRangeController)
                 }
                 cell.graphView.transform(to: section.currentDataSource, enableRows: section.enabledRows, zoom: zoom, zoomStep: section.currentZoomStep, range: section.currentSelectedRange, zoomed: false)
                 section.zoomedIndex = nil
@@ -249,6 +271,8 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         return "Followers"
     }
 
+    var graphCachedHeigh: [IndexPath: CGFloat] = [:]
+
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         if indexPath.section == 0 {
             return 65
@@ -256,6 +280,9 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
 
         switch indexPath.row {
         case 0:
+            if let height = self.graphCachedHeigh[indexPath] {
+                return height
+            }
             return 404
         default:
             return UITableView.automaticDimension

@@ -334,7 +334,7 @@ class GraphContentView: UIView {
 
         var imageBefore: UIImage? = nil
         if let zoom = zoom, animated, zoom.style == .zooming {
-            imageBefore = self.graphView.takeScreenshot()
+            imageBefore = self.graphView.asImage()
         }
 
         var anyPoints: [GraphDrawLayerView.LabelPosition] = []

@@ -15,12 +15,15 @@ class GraphView: UIView {
 
     var zoomAction: SelectIndexAction?
     var zoomOutAction: VoidBlock?
+    var updateSizeAction: VoidBlock?
+
+    var height: CGFloat = 404
 
     func updateDataSource(dataSource: GraphDataSource, enableRows: [Int], skip: Bool, zoomed: Bool) {
         self.zoomOutButton.isHidden = !zoomed
         self.dataSource = dataSource
         if !skip {
-            self.graphControlView.updateDataSouce(dataSource, enableRows: enableRows, animated: false)
+            self.graphControlView.updateDataSouce(dataSource, enableRows: enableRows, animated: false, zoom: nil)
             self.graphContentView.updateDataSouce(dataSource, enableRows: enableRows, animated: false, zoom: nil, zoomed: zoomed)
         }
     }
@@ -97,7 +100,7 @@ class GraphView: UIView {
         self.graphContentView.updateZoomStep(newValue: zoomStep, override: false)
         self.graphContentView.updateDataSouce(dataSource, enableRows: enableRows, animated: true, zoom: zoom, zoomed: zoomed)
 
-        self.graphControlView.updateDataSouce(dataSource, enableRows: enableRows, animated: true)
+        self.graphControlView.updateDataSouce(dataSource, enableRows: enableRows, animated: true, zoom: zoom)
         
         shouldUpdateRange = false
         self.graphControlView.control.update(range: range, animated: true)
@@ -141,8 +144,11 @@ class GraphView: UIView {
         self.titleLabel.frame = CGRect(x: labelOffset, y: 12, width: self.frame.width - labelOffset * 2, height: labelHeight)
 
         self.graphContentView.frame = CGRect(x: 0, y: 12 + labelHeight, width: self.frame.width, height: 320)
-        self.graphControlView.frame = CGRect(x: 0, y: self.graphContentView.frame.maxY, width: self.frame.width, height: 42)
+        self.graphControlView.frame = CGRect(x: 0, y: self.graphContentView.frame.maxY, width: self.frame.width, height: self.graphControlView.height)
     }
+
+    // 390
+    // 404
 
     private func setup() {
         self.addSubview(self.graphControlView)
@@ -162,6 +168,12 @@ class GraphView: UIView {
         self.graphControlView.control.addTarget(self, action: #selector(self.rangeUpdated(control:)), for: .valueChanged)
         self.graphControlView.control.addTarget(self, action: #selector(self.rangeUpdateEnded(control:)), for: .editingDidEnd)
         self.graphControlView.control.addTarget(self, action: #selector(self.rangeUpdateStated(control:)), for: .editingDidBegin)
+
+        self.graphControlView.updateSizeAction = {
+            self.height = 362 + self.graphControlView.height
+            self.updateFrame()
+            self.updateSizeAction?()
+        }
 
         self.graphContentView.updatedZoomStep = { value in
             self.updatedZoomStep?(value)

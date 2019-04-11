@@ -725,8 +725,11 @@ extension UIView {
                 layer.render(in: rendererContext.cgContext)
             }
         } else {
-            return UIImage()
-            // Fallback on earlier versions
+            UIGraphicsBeginImageContext(self.frame.size)
+            self.layer.render(in: UIGraphicsGetCurrentContext()!)
+            let image = UIGraphicsGetImageFromCurrentImageContext()
+            UIGraphicsEndImageContext()
+            return UIImage(cgImage: image!.cgImage!)
         }
     }
 }

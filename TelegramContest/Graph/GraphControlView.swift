@@ -16,13 +16,20 @@ class GraphControlView: UIView {
     }
 
     private(set) var dataSource: GraphDataSource?
+    var updateSizeAction: VoidBlock?
+    
     private var transformedValues: [[Int]] = []
 
     private var enabledRows: [Int] = []
 
     var style: GraphStyle = .basic
+    var height: CGFloat = 42
 
-    func updateDataSouce(_ dataSource: GraphDataSource?, enableRows: [Int], animated: Bool) {
+    func updateDataSouce(_ dataSource: GraphDataSource?, enableRows: [Int], animated: Bool, zoom: Zoom?) {
+        if let zoom = zoom, zoom.shouldReplaceRangeController {
+            self.triggerFilterView(zoom: zoom, dataSource: dataSource, enableRows: enableRows)
+        }
+
         self.dataSource = dataSource
         self.enabledRows = enableRows
         self.transformedValues = Transformer(rows: dataSource?.yRows.map({ $0.values }) ?? [], visibleRows: self.enabledRows, style: style.transformerStyle).values
@@ -37,6 +44,8 @@ class GraphControlView: UIView {
 
     private var graphDrawLayers: [GraphDrawLayerView] = []
     var control = ThumbnailControl(frame: .zero)
+    var contentView: UIView = UIView()
+    var filtersView: UIView = UIView()
 
     init(dataSource: GraphDataSource? = nil, selectedRange: Range<CGFloat> = 0..<1) {
         self.dataSource = dataSource
@@ -67,12 +76,17 @@ class GraphControlView: UIView {
 
     private func updateFrame() {
         let topSpace = (self.frame.height - Constants.graphHeight) / 2
+        self.control.frame = self.bounds
+        self.contentView.frame = self.bounds
+        self.filtersView.frame = self.bounds
         self.graphDrawLayers.forEach({ $0.frame = CGRect(x: Constants.offset, y: topSpace, width: self.frame.width - Constants.offset * 2, height: Constants.graphHeight) })
-        self.control.frame = CGRect(x: 0, y: 0, width: self.frame.width, height: self.frame.height)
     }
 
     private func setup() {
-        self.addSubview(self.control)
+        self.addSubview(self.contentView)
+        self.filtersView.isHidden = true
+        self.addSubview(self.filtersView)
+        self.contentView.addSubview(self.control)
     }
 
     private func update(animated: Bool) {
@@ -88,9 +102,9 @@ class GraphControlView: UIView {
             graphView.lineWidth = 1
             graphView.frame = CGRect(x: 0, y: 0, width: self.frame.width, height: self.frame.height)
             if let lates = self.graphDrawLayers.last {
-                self.insertSubview(graphView, belowSubview: lates)
+                self.contentView.insertSubview(graphView, belowSubview: lates)
             } else {
-                self.insertSubview(graphView, belowSubview: self.control)
+                self.contentView.insertSubview(graphView, belowSubview: self.control)
             }
             self.graphDrawLayers.append(graphView)
         }
@@ -148,6 +162,85 @@ class GraphControlView: UIView {
         }
 
         self.updateFrame()
+    }
+
+    private let filterViewController = FiltersViewContentller()
+    private var contentImage: UIImage?
+
+    func triggerFilterView(zoom: Zoom, dataSource: GraphDataSource?, enableRows: [Int]) {
+        if !zoom.index.isInside {
+            self.hideFilterView()
+            return
+        } else {
+            self.showFilterView(dataSource: dataSource, enableRows: enableRows)
+        }
+    }
+
+    func showFilterView(dataSource: GraphDataSource?, enableRows: [Int]) {
+        let contentImage = self.contentView.asImage()
+        self.contentImage = contentImage
+
+        let contentImageView = UIImageView(image: contentImage)
+        contentImageView.frame = self.contentView.frame
+        self.addSubview(contentImageView)
+
+        var rows: [Row] = []
+        for (index, yRow) in (dataSource?.yRows ?? []).enumerated() {
+            let row = Row(name: yRow.name, color: yRow.color, isSelected: enableRows.contains(index), selectedAction: {
+                print("Select")
+            }) {
+                print("Select all")
+            }
+            rows.append(row)
+        }
+        filterViewController.rows = rows
+        filterViewController.update(width: self.frame.width, contentView: self.filtersView)
+        self.height = filterViewController.height - 6
+        self.contentView.isHidden = true
+
+        self.filtersView.isHidden = false
+        self.filtersView.alpha = 0
+        self.filtersView.transform = CGAffineTransform.init(scaleX: 0.5, y: 0.5)
+        UIView.animate(withDuration: 0.25, delay: 0, options: .curveEaseOut, animations: {
+            self.filtersView.alpha = 1
+            self.filtersView.transform = CGAffineTransform.identity
+            contentImageView.transform = CGAffineTransform.init(scaleX: 0.5, y: 0.5)
+            contentImageView.alpha = 0
+        }) { (_) in
+            contentImageView.removeFromSuperview()
+        }
+
+        self.updateSizeAction?()
+    }
+
+    func hideFilterView() {
+        let contentImageView = UIImageView(image: contentImage)
+        contentImageView.frame = self.contentView.frame
+        contentImageView.frame.size.height -= (self.height - 42)
+        self.addSubview(contentImageView)
+
+        let filterImage = self.filtersView.asImage()
+        let filterImageView = UIImageView(image: filterImage)
+        filterImageView.frame = self.filtersView.frame
+        self.addSubview(filterImageView)
+
+        contentImageView.alpha = 0
+        contentImageView.transform = CGAffineTransform.init(scaleX: 0.5, y: 0.5)
+        UIView.animate(withDuration: 0.25, delay: 0, options: .curveEaseOut, animations: {
+            contentImageView.alpha = 1
+            contentImageView.transform = CGAffineTransform.identity
+            filterImageView.transform = CGAffineTransform.init(scaleX: 0.5, y: 0.5)
+            filterImageView.alpha = 0
+        }) { (_) in
+            contentImageView.removeFromSuperview()
+            filterImageView.removeFromSuperview()
+            self.contentView.isHidden = false
+            self.filtersView.isHidden = true
+        }
+
+        self.filterViewController.clear()
+        self.height = 42
+        self.updateSizeAction?()
     }
 }
 
