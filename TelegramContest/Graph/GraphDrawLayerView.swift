@@ -13,6 +13,7 @@ class GraphContext {
         case graph
         case bar
         case area
+        case pie
     }
 
     let range: Range<CGFloat>
@@ -164,12 +165,13 @@ class GraphDrawLayerView: UIView {
 
     typealias FakeDots = (beggining: Int, end: Int)
 
-    func update(graphContext: GraphContext?, animationDuration: TimeInterval, zoomingIndex: Zoom.ZoomIndex?) {
+    func update(graphContext: GraphContext?, animationDuration: TimeInterval, zoom: Zoom?) {
         if animationDuration > 0 {
             var fakeDotsBefore: FakeDots?
             var fakeDotsAfter: FakeDots?
             let oldContext = self.graphContext
-            if let zoomingIndex = zoomingIndex, let firstGraph = self.graphContext, let secondGraph = graphContext {
+            if let zoom = zoom, zoom.style == .basic, let firstGraph = self.graphContext, let secondGraph = graphContext {
+                let zoomingIndex = zoom.index
                 let index: Int
                 let oldGraphContext: GraphContext
                 let newGraphContext: GraphContext
@@ -249,6 +251,12 @@ class GraphDrawLayerView: UIView {
             self.selectedPath.strokeColor = color.cgColor
             self.pathLayer.fillColor = color.cgColor
             self.pathLayer.lineJoin = CAShapeLayerLineJoin.round
+        case .pie:
+            self.pathLayer.lineWidth = self.availbleFrame.height / 2
+            self.selectedPath.strokeColor = color.cgColor
+            self.pathLayer.strokeColor = color.cgColor
+            self.pathLayer.fillColor = UIColor.clear.cgColor
+            self.pathLayer.lineJoin = CAShapeLayerLineJoin.round
         }
     }
 
@@ -272,6 +280,8 @@ class GraphDrawLayerView: UIView {
             return self.generatePathStack(graphContext: graphContext)
         case .area:
             return self.generatePathOverlay(graphContext: graphContext)
+        case .pie:
+            return self.generatePathPie(graphContext: graphContext)
         }
     }
 
@@ -346,6 +356,10 @@ class GraphDrawLayerView: UIView {
         return path
     }
 
+    private func deg2rad(_ number: CGFloat) -> CGFloat {
+        return number * .pi / 180
+    }
+
     func generatePathStack(graphContext: GraphContext?) -> CGPath {
         guard let graphContext = graphContext, self.availbleFrame.width > 0 else {
             return CGMutablePath()
@@ -414,6 +428,58 @@ class GraphDrawLayerView: UIView {
 
         return path
     }
+
+    func generatePathPie(graphContext: GraphContext?) -> CGPath {
+        guard let graphContext = graphContext, self.availbleFrame.width > 0 else {
+            return CGMutablePath()
+        }
+
+        let width = self.availbleFrame.width
+        let height = self.availbleFrame.height / 2
+
+        let path = CGMutablePath()
+        path.addEllipse(in: CGRect(x: (width - height) / 2, y: (self.availbleFrame.height - height) / 2, width: height, height: height))
+        self.pathLayer.strokeEnd = graphContext.range.upperBound
+
+        return path
+    }
+
+    func generatePathPieZoomed(graphContext: GraphContext?) -> CGPath {
+        guard let graphContext = graphContext, self.availbleFrame.width > 0 else {
+            return CGMutablePath()
+        }
+
+        let path = CGMutablePath()
+
+        let xOffset = self.availbleFrame.width / 2
+        let yOffset = self.availbleFrame.height / 2
+        let offset = CGPoint(x: xOffset, y: yOffset)
+
+        let startDegree: CGFloat = round(graphContext.range.lowerBound * 360)
+        let endDegree: CGFloat = round(graphContext.range.upperBound * 360)
+
+        let height: CGFloat = self.availbleFrame.height
+        let halfHeight = height / 2
+        let circleLine = sqrt((pow(halfHeight, 2) * 2)) * 6
+
+        func point(degree: CGFloat, offset: CGPoint) -> CGPoint {
+            return CGPoint(x: offset.x + circleLine * sin(deg2rad(degree)),
+                           y: offset.y - circleLine * cos(deg2rad(degree)))
+        }
+
+        path.move(to: point(degree: startDegree, offset: offset))
+        var currentStartDegree = startDegree
+        while endDegree > currentStartDegree, endDegree - currentStartDegree > 45 {
+            path.addLine(to: point(degree: currentStartDegree, offset: offset))
+            currentStartDegree = CGFloat(findNear(value: Int(currentStartDegree), positive: true, devidedBy: 45)) + 1
+        }
+        path.addLine(to: point(degree: endDegree, offset: offset))
+        path.addLine(to: CGPoint(x: xOffset, y: yOffset))
+
+
+        return path
+    }
+
 
     // MARK: Labels
 
@@ -546,7 +612,7 @@ class GraphDrawLayerView: UIView {
 
     func selectPosition(graphContext: GraphContext?, position: CGFloat, animationDuration: TimeInterval) -> Selection {
         switch self.graphContext?.style ?? .graph {
-        case .graph, .area:
+        case .graph, .area, .pie:
             return self.selectLine(graphContext: graphContext, position: position, animationDuration: animationDuration)
         case .bar:
             return self.selectSquare(graphContext: graphContext, position: position, animationDuration: animationDuration)
@@ -652,6 +718,10 @@ extension Range where Bound: FloatingPoint {
 }
 
 func findNear(value: Int, positive: Bool, devidedBy: Int) -> Int {
+    if devidedBy == 0 {
+        return 0
+    }
+
     if value % devidedBy == 0 {
         return value
     }

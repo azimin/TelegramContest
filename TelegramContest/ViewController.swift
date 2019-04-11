@@ -26,6 +26,7 @@ struct Zoom {
     enum AnimationStyle {
         case basic
         case zooming
+        case pie
     }
 
     let index: ZoomIndex
@@ -63,8 +64,23 @@ class PathManager {
         return self.dataSource(fromPath: self.path(to: graph), byDay: true, graph: graph)
     }
 
-    static func section(to date: Date, in graph: Graph) -> Section? {
-        return self.dataSource(fromPath: self.path(to: date, in: graph), byDay: false, graph: graph)
+    static func section(to date: Date, index: Int, section: Section) -> Section? {
+        if section.graph == .fivth {
+            return self.fivth(index: index, section: section)
+        }
+        return self.dataSource(fromPath: self.path(to: date, in: section.graph), byDay: false, graph: section.graph)
+    }
+
+    static func fivth(index: Int, section: Section) -> Section? {
+        let range = (index - 4)..<(index + 4)
+        let dates = section.currentDataSource.xRow.dates[range]
+        var yRows: [GraphLineRow] = []
+        for yRow in section.currentDataSource.yRows {
+            yRows.append(GraphLineRow(color: yRow.color, name: yRow.name, values: Array(yRow.values[range]), style: .pie))
+        }
+        let dataSource = GraphDataSource(xRow: GraphXRow(dates: Array(dates), byDay: true), yRows: yRows, style: .pie)
+        let section = Section(dataSource: dataSource, selectedRange: 0.4..<0.6, enabledRows: section.enabledRows, graph: section.graph)
+        return section
     }
 
     private static func dataSource(fromPath: String, byDay: Bool, graph: Graph) -> Section? {
@@ -195,7 +211,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
             }
             cell.graphView.zoomAction = { index in
                 let date = section.currentDataSource.xRow.dates[index]
-                guard let newSection = PathManager.section(to: date, in: section.graph) else {
+                guard let newSection = PathManager.section(to: date, index: index, section: section) else {
                     return
                 }
                 let range: Range<CGFloat>
@@ -213,6 +229,8 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
                 let zoomAnimationStyle: Zoom.AnimationStyle
                 if section.graph == .forth || section.graph == .third {
                     zoomAnimationStyle = .zooming
+                } else if section.graph == .fivth {
+                    zoomAnimationStyle = .pie
                 } else {
                     zoomAnimationStyle = .basic
                 }

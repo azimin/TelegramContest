@@ -220,12 +220,12 @@ class GraphDataSource {
     private let stacked: Bool
     let style: GraphStyle
 
-    init(xRow: GraphXRow, yRows: [GraphLineRow]) {
+    init(xRow: GraphXRow, yRows: [GraphLineRow], style: GraphStyle) {
         self.xRow = xRow
         self.yRows = yRows
         self.yScaled = false
         self.stacked = false
-        self.style = .basic
+        self.style = style
     }
 
     init?(json: [String: Any], byDay: Bool) {

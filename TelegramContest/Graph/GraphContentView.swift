@@ -44,13 +44,17 @@ class GraphContentView: UIView {
         return newValues
     }
 
+    private var selectionAvailable: Bool = true
+
     func updateDataSouce(_ dataSource: GraphDataSource?, enableRows: [Int], animated: Bool, zoom: Zoom?, zoomed: Bool) {
-        self.style = self.dataSource?.style ?? self.style
-        self.zoomed = zoomed
         self.dataSource = dataSource
+        self.style = dataSource?.style ?? self.style
+        self.zoomed = zoomed
         self.preveous = .zero
         self.currentMaxValue = 0
         self.enabledRows = enableRows
+
+        self.updatePieSelectedRange(force: true)
 
         if self.style == .doubleCompare {
             self.yAxisLabelOverlay.labelOverrideColor = self.dataSource?.yRows.first?.color
@@ -72,6 +76,12 @@ class GraphContentView: UIView {
             self.selectionLineView.isHidden = false
         }
 
+        if self.dataSource?.yRows.first?.style == .pie {
+            self.selectionAvailable = false
+        } else {
+            self.selectionAvailable = true
+        }
+
         self.updateTansformer()
         self.hideSelection()
         self.update(animated: animated, zoom: zoom)
@@ -84,13 +94,45 @@ class GraphContentView: UIView {
     }
 
     private(set) var selectedRange: Range<CGFloat>
+    private var pieChartSelectedRange: Range<Int> = 0..<1
+    private var pieChartSumValue: Int = 1
+    private var shouldUpdatePieChart: Bool = false
 
     func updateSelectedRange(_ selectedRange: Range<CGFloat>, shouldDraw: Bool) {
         self.selectedRange = selectedRange
         self.hideSelection()
+
+        self.updatePieSelectedRange(force: false)
+
         if shouldDraw {
             self.update(animated: false, zoom: nil)
         }
+    }
+
+    func updatePieSelectedRange(force: Bool) {
+        guard self.style == .pie, let dataSource = self.dataSource else {
+            return
+        }
+
+        let count = dataSource.xRow.dateStrings.count
+        let lowValue = Int(round(CGFloat(count) * self.selectedRange.lowerBound))
+        let upperValue = Int(round(CGFloat(count) * self.selectedRange.upperBound))
+        let range = lowValue..<upperValue
+        print(range)
+        if !force && pieChartSelectedRange == range {
+            return
+        }
+
+        self.pieChartSelectedRange = range
+
+        var sumValue: Int = 0
+        for (index, yRow) in dataSource.yRows.enumerated() {
+            if enabledRows.contains(index) {
+                sumValue += converValues(values: yRow.values, range: self.selectedRange, rounded: true).reduce(0, { $0 + $1 })
+            }
+        }
+        self.shouldUpdatePieChart = true
+        self.pieChartSumValue = max(sumValue, 1)
     }
 
     var isMovingZoomMode: Bool = false {
@@ -119,6 +161,8 @@ class GraphContentView: UIView {
         self.enabledRows = values
 
         self.updateTansformer()
+        self.updatePieSelectedRange(force: true)
+
         self.update(animated: animated, force: true, zoom: nil)
 
         if let selection = self.selectedLocation {
@@ -256,9 +300,19 @@ class GraphContentView: UIView {
     }
 
     private func update(animated: Bool, force: Bool = false, zoom: Zoom?) {
+        var animated = animated
+
         guard let dataSource = self.dataSource else {
             self.graphDrawLayers.forEach({ $0.isHidden = true })
             return
+        }
+
+        if !self.shouldUpdatePieChart, self.style == .pie {
+            return
+        }
+        self.shouldUpdatePieChart = false
+        if self.style == .pie {
+            animated = true
         }
 
         while graphDrawLayers.count < dataSource.yRows.count {
@@ -284,7 +338,7 @@ class GraphContentView: UIView {
 
         for index in 0..<self.graphDrawLayers.count {
             if enabledRows.contains(index) {
-                let values = self.converValues(values: self.transformedValues[index], range: self.selectedRange)
+                let values = self.converValues(values: self.transformedValues[index], range: self.selectedRange, rounded: false)
                 let max = values.max() ?? 0
                 let min = values.min() ?? 0
 
@@ -338,6 +392,7 @@ class GraphContentView: UIView {
         }
 
         var anyPoints: [GraphDrawLayerView.LabelPosition] = []
+        var startingRange: CGFloat = 0
         for index in 0..<self.graphDrawLayers.count {
             let graphView = self.graphDrawLayers[index]
             let isHidden = !enabledRows.contains(index)
@@ -362,19 +417,32 @@ class GraphContentView: UIView {
                 graphView.alpha = isHidden ? 0 : 1
             }
 
-
             let yRow = dataSource.yRows[index]
+            let range: Range<CGFloat>
+            if yRow.style == .pie {
+                let sumValue = CGFloat(self.converValues(values: yRow.values, range: self.selectedRange, rounded: true).reduce(0, { $0 + $1 }))
+                let delta = sumValue / CGFloat(self.pieChartSumValue)
+                if !isHidden {
+                    range = startingRange..<(startingRange + delta)
+                    startingRange += delta
+                } else {
+                    range = startingRange..<startingRange + 0.001
+                }
+            } else {
+                range = self.selectedRange
+            }
+
             let context = GraphContext(
-                range: self.selectedRange,
+                range: range,
                 values: self.transformedValues[index],
                 maxValue: self.currentMaxValue,
                 minValue: minValue,
                 style: yRow.style
             )
-            graphView.update(graphContext: context, animationDuration: animated ? Constants.aniamtionDuration : 0, zoomingIndex: zoom?.index)
+            graphView.update(graphContext: context, animationDuration: animated ? Constants.aniamtionDuration : 0, zoom: zoom)
             graphView.color = yRow.color
 
-            if anyPoints.isEmpty {
+            if anyPoints.isEmpty && yRow.style != .pie {
                 let zoomingForThisStep = zoom != nil
                 let zooming = zoomingForThisStep || self.isMovingZoomMode
                 let startingRange  = zoomingForThisStep ? self.selectedRange : self.cachedRange
@@ -502,10 +570,19 @@ class GraphContentView: UIView {
         }
     }
 
-    private func converValues(values: [Int], range: Range<CGFloat>) -> [Int] {
+    private func converValues(values: [Int], range: Range<CGFloat>, rounded: Bool) -> [Int] {
         let count = values.count
-        let firstCount = Int(floor(range.lowerBound * CGFloat(count)))
-        let endCount = Int(ceil(range.upperBound * CGFloat(count)))
+        let firstCount: Int
+        let endCount: Int
+
+        if rounded {
+            firstCount = Int(round(range.lowerBound * CGFloat(count)))
+            endCount = Int(round(range.upperBound * CGFloat(count)))
+        } else {
+            firstCount = Int(floor(range.lowerBound * CGFloat(count)))
+            endCount = Int(ceil(range.upperBound * CGFloat(count)))
+        }
+
         return Array(values[firstCount..<endCount])
     }
 
@@ -515,6 +592,10 @@ class GraphContentView: UIView {
         guard let touch = touches.first else {
             return
         }
+        guard self.selectionAvailable else {
+            return
+        }
+
         let location = touch.location(in: self)
         let locationInSelection = touch.location(in: self.selectionPlateView)
         if self.selectionPlateView.frame.contains(location) {
@@ -528,6 +609,10 @@ class GraphContentView: UIView {
         guard let touch = touches.first else {
             return
         }
+        guard self.selectionAvailable else {
+            return
+        }
+
         let location = touch.location(in: self)
         let locationInSelection = touch.location(in: self.selectionPlateView)
         if self.selectionPlateView.frame.contains(location) {

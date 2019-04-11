@@ -13,6 +13,7 @@ enum GraphStyle: String {
     case doubleCompare
     case stackedBar
     case percentStackedBar
+    case pie
 
     var transformerStyle: Transformer.Style {
         switch self {
@@ -23,6 +24,8 @@ enum GraphStyle: String {
         case .stackedBar:
             return .append
         case .percentStackedBar:
+            return .appendPercent
+        case .pie:
             return .appendPercent
         }
     }
@@ -37,6 +40,8 @@ enum GraphStyle: String {
             return .bar
         case .percentStackedBar:
             return .area
+        case .pie:
+            return .pie
         }
     }
 }
