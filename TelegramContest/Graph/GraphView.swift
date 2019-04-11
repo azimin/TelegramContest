@@ -109,6 +109,11 @@ class GraphView: UIView {
 
     private var shouldUpdateRange: Bool = true
     func transform(to dataSource: GraphDataSource, enableRows: [Int], zoom: Zoom?, zoomStep: Int?, range: Range<CGFloat>, zoomed: Bool) {
+        if dataSource.style == .pie {
+            self.graphControlView.control.pagingDelta = 0.2
+        } else {
+            self.graphControlView.control.pagingDelta = nil
+        }
         self.graphContentView.updateSelectedRange(range, shouldDraw: false)
         self.graphContentView.updateZoomStep(newValue: zoomStep, override: false)
         self.graphContentView.updateDataSouce(dataSource, enableRows: enableRows, animated: true, zoom: zoom, zoomed: zoomed)

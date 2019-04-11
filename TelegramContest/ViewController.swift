@@ -72,7 +72,7 @@ class PathManager {
     }
 
     static func fivth(index: Int, section: Section) -> Section? {
-        let range = (index - 4)..<(index + 4)
+        let range = (index - 2)..<(index + 3)
         let dates = section.currentDataSource.xRow.dates[range]
         var yRows: [GraphLineRow] = []
         for yRow in section.currentDataSource.yRows {
