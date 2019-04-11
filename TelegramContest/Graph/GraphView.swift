@@ -21,7 +21,7 @@ class GraphView: UIView {
         self.dataSource = dataSource
         if !skip {
             self.graphControlView.updateDataSouce(dataSource, enableRows: enableRows, animated: false)
-            self.graphContentView.updateDataSouce(dataSource, enableRows: enableRows, animated: false, zoomingIndex: nil, zoomed: zoomed)
+            self.graphContentView.updateDataSouce(dataSource, enableRows: enableRows, animated: false, zoom: nil, zoomed: zoomed)
         }
     }
 
@@ -92,10 +92,10 @@ class GraphView: UIView {
     }
 
     private var shouldUpdateRange: Bool = true
-    func transform(to dataSource: GraphDataSource, enableRows: [Int], index: ZoomIndex?, zoomStep: Int?, range: Range<CGFloat>, zoomed: Bool) {
+    func transform(to dataSource: GraphDataSource, enableRows: [Int], zoom: Zoom?, zoomStep: Int?, range: Range<CGFloat>, zoomed: Bool) {
         self.graphContentView.updateSelectedRange(range, shouldDraw: false)
         self.graphContentView.updateZoomStep(newValue: zoomStep, override: false)
-        self.graphContentView.updateDataSouce(dataSource, enableRows: enableRows, animated: true, zoomingIndex: index, zoomed: zoomed)
+        self.graphContentView.updateDataSouce(dataSource, enableRows: enableRows, animated: true, zoom: zoom, zoomed: zoomed)
 
         self.graphControlView.updateDataSouce(dataSource, enableRows: enableRows, animated: true)
         

@@ -164,7 +164,7 @@ class GraphDrawLayerView: UIView {
 
     typealias FakeDots = (beggining: Int, end: Int)
 
-    func update(graphContext: GraphContext?, animationDuration: TimeInterval, zoomingIndex: ZoomIndex?) {
+    func update(graphContext: GraphContext?, animationDuration: TimeInterval, zoomingIndex: Zoom.ZoomIndex?) {
         if animationDuration > 0 {
             var fakeDotsBefore: FakeDots?
             var fakeDotsAfter: FakeDots?

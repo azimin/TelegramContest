@@ -8,9 +8,19 @@
 
 import UIKit
 
-enum ZoomIndex {
-    case inside(value: Int)
-    case outside(value: Int)
+struct Zoom {
+    enum ZoomIndex {
+        case inside(value: Int)
+        case outside(value: Int)
+    }
+
+    enum AnimationStyle {
+        case basic
+        case zooming
+    }
+
+    let index: ZoomIndex
+    let style: AnimationStyle
 }
 
 class PathManager {
@@ -162,18 +172,32 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
                     range = 0.4..<0.6
                     enableRows = section.enabledRows
                 }
+                let zoomAnimationStyle: Zoom.AnimationStyle
+                if section.graph == .forth || section.graph == .third {
+                    zoomAnimationStyle = .zooming
+                } else {
+                    zoomAnimationStyle = .basic
+                }
+
                 section.zoomedSection = newSection
                 section.currentSelectedRange = range
                 section.zoomedIndex = index
-                cell.graphView.transform(to: section.currentDataSource, enableRows: enableRows, index: .inside(value: index), zoomStep: nil, range: range, zoomed: true)
+                let zoom = Zoom(index: .inside(value: index), style: zoomAnimationStyle)
+                cell.graphView.transform(to: section.currentDataSource, enableRows: enableRows, zoom: zoom, zoomStep: nil, range: range, zoomed: true)
             }
             cell.graphView.zoomOutAction = {
                 section.zoomedSection = nil
-                var zoomedIndex: ZoomIndex? = nil
+                var zoom: Zoom? = nil
                 if let index = section.zoomedIndex {
-                    zoomedIndex = .outside(value: index)
+                    let zoomAnimationStyle: Zoom.AnimationStyle
+                    if section.graph == .forth || section.graph == .third {
+                        zoomAnimationStyle = .zooming
+                    } else {
+                        zoomAnimationStyle = .basic
+                    }
+                    zoom = Zoom(index: .outside(value: index), style: zoomAnimationStyle)
                 }
-                cell.graphView.transform(to: section.currentDataSource, enableRows: section.enabledRows, index: zoomedIndex, zoomStep: section.currentZoomStep, range: section.currentSelectedRange, zoomed: false)
+                cell.graphView.transform(to: section.currentDataSource, enableRows: section.enabledRows, zoom: zoom, zoomStep: section.currentZoomStep, range: section.currentSelectedRange, zoomed: false)
                 section.zoomedIndex = nil
             }
             cell.graphView.updateZoomStep(newValue: section.currentZoomStep)
