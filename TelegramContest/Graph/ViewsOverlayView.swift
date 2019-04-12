@@ -234,7 +234,6 @@ class ViewsOverlayView: UIView {
                     self.allItems = []
                 } else {
                     let oldPosition = xPositions[index]
-                    print(oldPosition)
                     label.center.x = oldPosition
                     label.alpha = 1
                 }
@@ -244,28 +243,5 @@ class ViewsOverlayView: UIView {
                 allItems.forEach({ $0.label.removeFromSuperview() })
             }
         })
-    }
-
-    private func animateForceZoomOutLogic(position: CGFloat) {
-//        var selectedIndex: Int = 0
-//        var distance: CGFloat = 1000
-//
-//        for (index, item) in self.allItems.enumerated() {
-//            let itemDistance = abs(item.label.center.x - position)
-//            if itemDistance < distance {
-//                distance = itemDistance
-//                selectedIndex = index
-//            }
-//        }
-//
-//        for (index, item) in self.allItems.enumerated() {
-//            let distance = (abs(CGFloat(selectedIndex - index) / 3) + 1)
-//            if index < selectedIndex {
-//                item.label.center.x -= distance * self.frame.width
-//            } else if index > selectedIndex {
-//                item.label.center.x += distance * self.frame.width
-//            }
-//            item.label.alpha = 0
-//        }
     }
 }

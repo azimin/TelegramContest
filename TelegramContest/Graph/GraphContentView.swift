@@ -547,7 +547,7 @@ class GraphContentView: UIView {
     func animateZoom(imageBefore: UIImage, imageAfter: UIImage, reversed: Bool) {
         let whiteView = UIView()
         whiteView.frame = self.graphView.frame
-        whiteView.backgroundColor = UIColor.white
+        whiteView.backgroundColor = self.theme.configuration.backgroundColor
         self.graphView.addSubview(whiteView)
 
         let imageAfter2: UIImage
@@ -577,8 +577,8 @@ class GraphContentView: UIView {
             y: 0,
             width: self.graphView.frame.width * 3,
             height: self.graphView.frame.height)
-        snapshotImageBeforeView.backgroundColor = UIColor.white
-        snapshotImageAfterView.backgroundColor = UIColor.white
+        snapshotImageBeforeView.backgroundColor = self.theme.configuration.backgroundColor
+        snapshotImageAfterView.backgroundColor = self.theme.configuration.backgroundColor
 
         if reversed {
             snapshotImageBeforeView.alpha = 0
@@ -644,6 +644,11 @@ class GraphContentView: UIView {
             return
         }
         guard self.selectionAvailable else {
+            return
+        }
+
+        if self.selectedLocation != nil {
+            self.hideSelection()
             return
         }
 

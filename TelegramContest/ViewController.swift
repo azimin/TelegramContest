@@ -148,14 +148,28 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         }
         self.tableView.register(ButtonTableViewCell.self, forCellReuseIdentifier: "ButtonTableViewCell")
         self.tableView.register(FiltersTableViewCell.self, forCellReuseIdentifier: "FiltersTableViewCell")
+        self.updateBarButton()
     }
 
     var theme: Theme = .default {
         didSet {
             let config = theme.configuration
             self.tableView.backgroundColor = config.mainBackgroundColor
-            self.setNeedsStatusBarAppearanceUpdate()
+            (self.navigationController as? NavigationController)?.theme = self.theme
+            self.updateBarButton()
         }
+    }
+
+    func updateBarButton() {
+        self.navigationItem.rightBarButtonItem = UIBarButtonItem(title: self.theme.configuration.isLight ? "Night Mode" : "Day Mode", style: .done, target: self, action: #selector(self.switchTheme))
+    }
+
+    @objc
+    func switchTheme() {
+        self.theme = self.theme.configuration.isLight ? Theme(style: .dark) : Theme(style: .light)
+        let position = self.tableView.contentOffset
+        self.tableView.reloadData()
+        self.tableView.setContentOffset(position, animated: false)
     }
 
     // MARK: - TableView
@@ -315,6 +329,22 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
 
     var graphCachedHeigh: [IndexPath: CGFloat] = [:]
 
+    func tableView(_ tableView: UITableView, estimatedHeightForRowAt indexPath: IndexPath) -> CGFloat {
+        if indexPath.section == 0 {
+            return 65
+        }
+
+        switch indexPath.row {
+        case 0:
+            if let height = self.graphCachedHeigh[indexPath] {
+                return height
+            }
+            return 404
+        default:
+            return 44
+        }
+    }
+
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         if indexPath.section == 0 {
             return 65
@@ -334,8 +364,8 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         guard indexPath.section > 0 else {
-            self.animateThemeSwitch()
             self.theme = self.theme.configuration.isLight ? Theme(style: .dark) : Theme(style: .light)
+
             self.tableView.reloadData()
             return
         }
@@ -358,10 +388,6 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
 //        graphView.updateEnabledRows(section.enabledRows, animated: true)
 //
 //        cell?.accessoryType = shouldSelect ? .checkmark : .none
-    }
-
-    override var preferredStatusBarStyle: UIStatusBarStyle {
-        return self.theme.configuration.isLight ? .default : .lightContent
     }
 
     func animateThemeSwitch() {

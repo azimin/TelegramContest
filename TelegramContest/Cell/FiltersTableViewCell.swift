@@ -192,14 +192,14 @@ class FilterView: UIView {
             let labelWidth = size.width - 40
 
             if self.isSelected {
-                let offset: CGFloat = 12 + 8 + 8
+                let offset: CGFloat = 12 + 10 + 8
                 self.label.frame = CGRect(x: offset, y: 0, width: labelWidth, height: size.height)
                 self.backgroundColor = self.color
-                self.selectionArrow.frame = CGRect(x: 12, y: 11, width: 8, height: 8)
+                self.selectionArrow.frame = CGRect(x: 12, y: 10, width: 12, height: 10)
             } else {
                 self.label.frame = CGRect(x: 20, y: 0, width: labelWidth, height: size.height)
                 self.backgroundColor = UIColor.clear
-                self.selectionArrow.frame = CGRect(x: -12, y: 11, width: 8, height: 8)
+                self.selectionArrow.frame = CGRect(x: -12, y: 10, width: 12, height: 10)
             }
             self.selectionArrow.alpha = self.isSelected ? 1 : 0
             self.button.frame.size = size
@@ -226,7 +226,7 @@ class FilterView: UIView {
 
     static func size(text: String) -> CGSize {
         let labelWidth = text.widthOfString(usingFont: FilterView.font)
-        return CGSize(width: labelWidth + 12 + 8 + 12 + 8, height: 30)
+        return CGSize(width: labelWidth + 12 + 10 + 12 + 8, height: 30)
     }
 }
 
