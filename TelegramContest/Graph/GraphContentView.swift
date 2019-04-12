@@ -232,7 +232,7 @@ class GraphContentView: UIView {
         let topFrame = CGRect(x: Constants.offset, y: 20, width: self.frame.size.width - Constants.offset * 2, height: graphHeight)
         let graphFrame = CGRect(x: Constants.offset, y: 0, width: self.frame.size.width - Constants.offset * 2, height: graphHeight + 20)
         self.graphView.frame = graphFrame
-//        self.graphDrawLayers.forEach({ $0.frame = graphFrame })
+        self.graphDrawLayers.forEach({ $0.frame = self.graphView.bounds })
         self.graphSelectionOverlayView.frame = graphFrame
         self.yAxisOverlays.forEach({ $0.frame = topFrame })
         self.secondYAxisLabelOverlay.frame = topFrame

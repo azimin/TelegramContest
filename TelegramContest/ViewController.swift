@@ -82,14 +82,27 @@ class PathManager {
     }
 
     static func fivth(index: Int, section: Section) -> Section? {
-        let range = (index - 2)..<(index + 3)
+        var offset: Int = 0
+        let count = section.currentDataSource.xRow.dates.count
+        let range: Range<Int>
+        if index < 2 {
+            offset = 2 - index
+            range = (index - 2 + offset)..<(index + 3 + offset)
+        } else if index > count - 3 {
+            offset = index - count + 3
+            range = (index - 2 - offset)..<(index + 3 - offset)
+            offset = -offset
+        } else {
+            range = (index - 2)..<(index + 3)
+        }
+
         let dates = section.currentDataSource.xRow.dates[range]
         var yRows: [GraphLineRow] = []
         for yRow in section.currentDataSource.yRows {
             yRows.append(GraphLineRow(color: yRow.color, name: yRow.name, values: Array(yRow.values[range]), style: .pie))
         }
         let dataSource = GraphDataSource(xRow: GraphXRow(dates: Array(dates), byDay: true), yRows: yRows, style: .pie)
-        let section = Section(dataSource: dataSource, selectedRange: 0.4..<0.6, enabledRows: section.enabledRows, graph: section.graph)
+        let section = Section(dataSource: dataSource, selectedRange: (0.4 - CGFloat(offset) * 0.2)..<(0.6 - CGFloat(offset) * 0.2), enabledRows: section.enabledRows, graph: section.graph)
         return section
     }
 
@@ -99,7 +112,7 @@ class PathManager {
 
         let jsonResult = try! JSONSerialization.jsonObject(with: data, options: .mutableLeaves)
         if let jsonResult = jsonResult as? [String: Any], let dataSource = GraphDataSource(json: jsonResult, byDay: byDay) {
-            return Section(dataSource: dataSource, selectedRange: 0.0..<1.0, enabledRows: Array(0..<dataSource.yRows.count), graph: graph)
+            return Section(dataSource: dataSource, selectedRange: byDay ? 0.0..<1.0 : 0.4..<0.6, enabledRows: Array(0..<dataSource.yRows.count), graph: graph)
         }
         return nil
     }
@@ -251,7 +264,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
                     enableRows = newSection.enabledRows
                     shouldReplaceRangeController = true
                 } else {
-                    range = 0.4..<0.6
+                    range = newSection.currentSelectedRange
                     enableRows = section.enabledRows
                     shouldReplaceRangeController = false
                 }
