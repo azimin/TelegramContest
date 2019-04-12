@@ -342,9 +342,10 @@ class GraphContentView: UIView {
         var maxValue = 0
         var minValue = 0
 
+        let indexes = convertIndexes(count: self.transformedValues.first?.count ?? 0, range: self.selectedRange, rounded: false)
         for index in 0..<self.graphDrawLayers.count {
             if enabledRows.contains(index) {
-                let values = self.converValues(values: self.transformedValues[index], range: self.selectedRange, rounded: false)
+                let values = self.transformedValues[index][indexes]
                 let max = values.max() ?? 0
                 let min = values.min() ?? 0
 
@@ -491,8 +492,29 @@ class GraphContentView: UIView {
             let item = ViewsOverlayView.Item(text: xRow, position: point.position, alpha: point.alpha, corner: corner)
             items.append(item)
         }
+
+        if let zoom = zoom {
+            let position = zoom.positionPercentage * self.dateLabels.frame.width
+            switch zoom.index {
+            case .inside(_):
+                self.dateLabels.animateForceZoomOut(position: position, reversed: false)
+            case .outside(_):
+                self.dateLabels.animateForceZoomIn(position: position, reversed: true)
+            }
+        }
+
         self.dateLabels.showItems(items: items)
         self.updateFrame()
+
+        if let zoom = zoom {
+            let position = zoom.positionPercentage * self.dateLabels.frame.width
+            switch zoom.index {
+            case .inside(_):
+                self.dateLabels.animateForceZoomIn(position: position, reversed: false)
+            case .outside(_):
+                self.dateLabels.animateForceZoomOut(position: position, reversed: true)
+            }
+        }
 
         if self.style == .doubleCompare {
             if dataSource.yRows.count == 2 {

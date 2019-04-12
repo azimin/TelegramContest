@@ -21,6 +21,15 @@ struct Zoom {
                 return false
             }
         }
+
+        var index: Int {
+            switch self {
+            case .inside(let value):
+                return value
+            case .outside(let value):
+                return value
+            }
+        }
     }
 
     enum AnimationStyle {
@@ -30,6 +39,7 @@ struct Zoom {
     }
 
     let index: ZoomIndex
+    let positionPercentage: CGFloat
     let style: AnimationStyle
     let shouldReplaceRangeController: Bool
 }
@@ -211,6 +221,11 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
             }
             cell.graphView.zoomAction = { index in
                 let date = section.currentDataSource.xRow.dates[index]
+
+                let indexes = convertIndexes(count: section.currentDataSource.xRow.dates.count, range: section.currentSelectedRange, rounded: false)
+                let positionPercentage = (CGFloat(index - indexes.lowerBound) / CGFloat(indexes.upperBound - indexes.lowerBound))
+                section.positionPercentage = positionPercentage
+
                 guard let newSection = PathManager.section(to: date, index: index, section: section) else {
                     return
                 }
@@ -239,7 +254,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
                 section.currentSelectedRange = range
                 section.enabledRows = enableRows
                 section.zoomedIndex = index
-                let zoom = Zoom(index: .inside(value: index), style: zoomAnimationStyle, shouldReplaceRangeController: shouldReplaceRangeController)
+                let zoom = Zoom(index: .inside(value: index), positionPercentage: positionPercentage, style: zoomAnimationStyle, shouldReplaceRangeController: shouldReplaceRangeController)
                 cell.graphView.transform(to: section.currentDataSource, enableRows: enableRows, zoom: zoom, zoomStep: nil, range: range, zoomed: true)
             }
             cell.graphView.zoomOutAction = {
@@ -259,7 +274,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
                     } else {
                         zoomAnimationStyle = .basic
                     }
-                    zoom = Zoom(index: .outside(value: index), style: zoomAnimationStyle, shouldReplaceRangeController: shouldReplaceRangeController)
+                    zoom = Zoom(index: .outside(value: index), positionPercentage: section.positionPercentage ?? 0, style: zoomAnimationStyle, shouldReplaceRangeController: shouldReplaceRangeController)
                 }
                 cell.graphView.transform(to: section.currentDataSource, enableRows: section.enabledRows, zoom: zoom, zoomStep: section.currentZoomStep, range: section.currentSelectedRange, zoomed: false)
                 section.zoomedIndex = nil

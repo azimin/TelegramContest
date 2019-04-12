@@ -27,6 +27,7 @@
 		9F26424F2240E30300FEB2DD /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F26424E2240E30300FEB2DD /* Theme.swift */; };
 		9F2642512240ECB000FEB2DD /* ButtonTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F2642502240ECB000FEB2DD /* ButtonTableViewCell.swift */; };
 		9F971557225FB88800DE497E /* PieChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F971556225FB88800DE497E /* PieChartView.swift */; };
+		9FA0DC642260CB5A0081E91F /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FA0DC632260CB5A0081E91F /* Utils.swift */; };
 		9FAAA9A52242132300726226 /* ThresholdOptimization.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FAAA9A42242132300726226 /* ThresholdOptimization.swift */; };
 		9FB94A1E2259ED28004476AF /* GraphStateTransformView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FB94A1D2259ED28004476AF /* GraphStateTransformView.swift */; };
 		9FB94A212259FD56004476AF /* FiltersTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FB94A202259FD56004476AF /* FiltersTableViewCell.swift */; };
@@ -58,6 +59,7 @@
 		9F26424E2240E30300FEB2DD /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		9F2642502240ECB000FEB2DD /* ButtonTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonTableViewCell.swift; sourceTree = "<group>"; };
 		9F971556225FB88800DE497E /* PieChartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PieChartView.swift; sourceTree = "<group>"; };
+		9FA0DC632260CB5A0081E91F /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 		9FAAA9A42242132300726226 /* ThresholdOptimization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThresholdOptimization.swift; sourceTree = "<group>"; };
 		9FB94A1D2259ED28004476AF /* GraphStateTransformView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GraphStateTransformView.swift; sourceTree = "<group>"; };
 		9FB94A202259FD56004476AF /* FiltersTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FiltersTableViewCell.swift; sourceTree = "<group>"; };
@@ -146,6 +148,7 @@
 			isa = PBXGroup;
 			children = (
 				9FB94A1D2259ED28004476AF /* GraphStateTransformView.swift */,
+				9FA0DC632260CB5A0081E91F /* Utils.swift */,
 			);
 			path = V2;
 			sourceTree = "<group>";
@@ -247,6 +250,7 @@
 				9F264227224004D400FEB2DD /* ViewController.swift in Sources */,
 				9F264249224005BF00FEB2DD /* AnimationCounter.swift in Sources */,
 				9F2642412240057600FEB2DD /* ThumbnailControl.swift in Sources */,
+				9FA0DC642260CB5A0081E91F /* Utils.swift in Sources */,
 				9F2642432240058600FEB2DD /* ViewsOverlayView.swift in Sources */,
 				9F264225224004D300FEB2DD /* AppDelegate.swift in Sources */,
 				9F26423B2240054700FEB2DD /* GraphView.swift in Sources */,

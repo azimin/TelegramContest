@@ -90,7 +90,7 @@ class GraphView: UIView {
             return
         }
 
-        let indexs = self.indexes(count: dataSource.xRow.fullDateStrings.count, range: self.selectedRange, rounded: false)
+        let indexs = convertIndexes(count: dataSource.xRow.fullDateStrings.count, range: self.selectedRange, rounded: false)
         guard indexs != cachedIndexInterval else {
             return
         }
@@ -105,24 +105,6 @@ class GraphView: UIView {
             self.titleLabel.text = "\(firstDate) - \(lastDate)"
             self.graphContentView.oneDayInterval = false
         }
-    }
-
-    private func converValues<T>(values: [T], range: Range<CGFloat>, rounded: Bool) -> [T] {
-        let index = self.indexes(count: values.count, range: range, rounded: rounded)
-        return Array(values[index])
-    }
-
-    private func indexes(count: Int, range: Range<CGFloat>, rounded: Bool) -> Range<Int> {
-        let firstCount: Int
-        let endCount: Int
-        if rounded {
-            firstCount = Int(round(range.lowerBound * CGFloat(count)))
-            endCount = Int(round(range.upperBound * CGFloat(count)))
-        } else {
-            firstCount = Int(floor(range.lowerBound * CGFloat(count)))
-            endCount = Int(ceil(range.upperBound * CGFloat(count)))
-        }
-        return max(firstCount, 0)..<min(endCount, count - 1)
     }
 
     private var shouldUpdateRange: Bool = true

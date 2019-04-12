@@ -149,6 +149,7 @@ class Section {
     private var zoomStep: Int?
     var enabledRows: [Int]
     var graph: PathManager.Graph
+    var positionPercentage: CGFloat?
 
     var zoomedIndex: Int?
     var zoomedSection: Section?
