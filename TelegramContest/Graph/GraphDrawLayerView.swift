@@ -463,7 +463,6 @@ class GraphDrawLayerView: UIView {
 
     func rotate(point: CGPoint, aroundPoint: CGPoint, angel: CGFloat) -> CGPoint {
         var oldPoint = point
-        print(angel, deg2rad(angel))
         let sinus = sin(deg2rad(angel))
         let cosis = cos(deg2rad(angel))
 

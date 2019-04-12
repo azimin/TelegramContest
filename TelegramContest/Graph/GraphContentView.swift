@@ -77,9 +77,14 @@ class GraphContentView: UIView {
         }
 
         if self.dataSource?.yRows.first?.style == .pie {
+            self.pieChartNumbersView?.removeFromSuperview()
+            self.pieChartNumbersView = PieChartNumbersView()
+            self.addSubview(self.pieChartNumbersView!)
             self.selectionAvailable = false
+            self.pieChartNumbersView?.isUserInteractionEnabled = false
         } else {
             self.selectionAvailable = true
+            self.pieChartNumbersView?.removeFromSuperview()
         }
 
         self.updateTansformer()
@@ -184,6 +189,7 @@ class GraphContentView: UIView {
     private var shadowCachedSize: CGRect = .zero
     private var graphSelectionOverlayView: GraphSelectionOverlayView = GraphSelectionOverlayView()
     private var graphView = UIView()
+    private var pieChartNumbersView: PieChartNumbersView?
 
     var updatedZoomStep: ((Int?) -> Void)?
 
@@ -233,6 +239,7 @@ class GraphContentView: UIView {
         self.dateLabels.frame = CGRect(x: Constants.offset, y: graphHeight + 20, width: self.frame.size.width - Constants.offset * 2, height: Constants.labelsHeight)
         self.selectionViews.forEach({ $0.frame = CGRect(x: Constants.offset, y: 6, width: self.frame.size.width - Constants.offset * 2, height: graphHeight + 8) })
         self.graphDrawLayers.forEach({ $0.offset = 20 })
+        self.pieChartNumbersView?.frame = graphFrame
         self.updateShadow()
         self.updateHierarhy()
     }
@@ -391,6 +398,7 @@ class GraphContentView: UIView {
         }
 
         var anyPoints: [GraphDrawLayerView.LabelPosition] = []
+        var pieValues: [PieChartValue] = []
         var startingRange: CGFloat = 0
         for index in 0..<self.graphDrawLayers.count {
             let graphView = self.graphDrawLayers[index]
@@ -441,6 +449,14 @@ class GraphContentView: UIView {
             graphView.update(graphContext: context, animationDuration: animated ? Constants.aniamtionDuration : 0, zoom: zoom)
             graphView.color = yRow.color
 
+            if yRow.style == .pie {
+                var rect = graphView.reportPieLabelFrame(graphContext: context)
+                rect.origin.y += 20
+                let sumValue = CGFloat(self.converValues(values: yRow.values, range: self.selectedRange, rounded: true).reduce(0, { $0 + $1 }))
+                let delta = sumValue / CGFloat(self.pieChartSumValue) * 100
+                pieValues.append(PieChartValue(isHidden: isHidden, value: Int(round(delta)), rect: rect))
+            }
+
             if anyPoints.isEmpty && yRow.style != .pie {
                 let zoomingForThisStep = zoom != nil
                 let zooming = zoomingForThisStep || self.isMovingZoomMode
@@ -457,6 +473,8 @@ class GraphContentView: UIView {
                 self.lastVisible = graphView
             }
         }
+
+        self.pieChartNumbersView?.show(values: pieValues)
 
         var items: [ViewsOverlayView.Item] = []
         for point in anyPoints {
@@ -514,8 +532,6 @@ class GraphContentView: UIView {
         let snapshotImageBeforeView = UIImageView(image: imageBefore)
 
         if reversed {
-//            self.insertSubview(snapshotImageBeforeView, aboveSubview: whiteView)
-//            self.insertSubview(snapshotImageAfterView, aboveSubview: snapshotImageBeforeView)
             self.insertSubview(snapshotImageAfterView, aboveSubview: whiteView)
             self.insertSubview(snapshotImageBeforeView, aboveSubview: snapshotImageAfterView)
         } else {
