@@ -180,7 +180,7 @@ class ViewsOverlayView: UIView {
             }
         }
 
-        UIView.animate(withDuration: 0.35, animations: {
+        UIView.animate(withDuration: 0.3, animations: {
             for (index, item) in self.allItems.enumerated() {
                 if !labelsToShow.contains(item.label) {
                     continue
@@ -226,7 +226,7 @@ class ViewsOverlayView: UIView {
         }
 
         let allItems = self.allItems
-        UIView.animate(withDuration: 0.35, animations: {
+        UIView.animate(withDuration: 0.3, animations: {
             for (index, label) in labelsToShow.enumerated() {
                 if reversed {
                     label.center.x = position

@@ -493,7 +493,7 @@ class GraphContentView: UIView {
             items.append(item)
         }
 
-        if let zoom = zoom {
+        if let zoom = zoom, zoom.style != .pie {
             let position = zoom.positionPercentage * self.dateLabels.frame.width
             switch zoom.index {
             case .inside(_):
@@ -506,7 +506,7 @@ class GraphContentView: UIView {
         self.dateLabels.showItems(items: items)
         self.updateFrame()
 
-        if let zoom = zoom {
+        if let zoom = zoom, zoom.style != .pie {
             let position = zoom.positionPercentage * self.dateLabels.frame.width
             switch zoom.index {
             case .inside(_):
@@ -548,21 +548,35 @@ class GraphContentView: UIView {
         let whiteView = UIView()
         whiteView.frame = self.graphView.frame
         whiteView.backgroundColor = UIColor.white
-        self.insertSubview(whiteView, aboveSubview: self.graphView)
+        self.graphView.addSubview(whiteView)
 
-        let snapshotImageAfterView = UIImageView(image: imageAfter)
+        let imageAfter2: UIImage
+        let imageAfter3: UIImage
+        if #available(iOS 10.0, *) {
+            imageAfter2 = UIImage.imageByCombiningImage(firstImage: imageAfter, withImage: imageAfter.withHorizontallyFlippedOrientation())
+            imageAfter3 = UIImage.imageByCombiningImage(firstImage: imageAfter.withHorizontallyFlippedOrientation(), withImage: imageAfter2)
+        } else {
+            imageAfter2 = UIImage.imageByCombiningImage(firstImage: imageAfter, withImage: imageAfter)
+            imageAfter3 = UIImage.imageByCombiningImage(firstImage: imageAfter, withImage: imageAfter2)
+        }
+        let snapshotImageAfterView = UIImageView(image: imageAfter3)
+
         let snapshotImageBeforeView = UIImageView(image: imageBefore)
 
         if reversed {
-            self.insertSubview(snapshotImageAfterView, aboveSubview: whiteView)
-            self.insertSubview(snapshotImageBeforeView, aboveSubview: snapshotImageAfterView)
+            self.graphView.insertSubview(snapshotImageAfterView, aboveSubview: whiteView)
+            self.graphView.insertSubview(snapshotImageBeforeView, aboveSubview: snapshotImageAfterView)
         } else {
-            self.insertSubview(snapshotImageAfterView, aboveSubview: whiteView)
-            self.insertSubview(snapshotImageBeforeView, aboveSubview: snapshotImageAfterView)
+            self.graphView.insertSubview(snapshotImageAfterView, aboveSubview: whiteView)
+            self.graphView.insertSubview(snapshotImageBeforeView, aboveSubview: snapshotImageAfterView)
         }
 
-        snapshotImageBeforeView.frame = self.graphView.frame
-        snapshotImageAfterView.frame = self.graphView.frame
+        snapshotImageBeforeView.frame = self.graphView.bounds
+        snapshotImageAfterView.frame = CGRect(
+            x: -self.graphView.frame.width,
+            y: 0,
+            width: self.graphView.frame.width * 3,
+            height: self.graphView.frame.height)
         snapshotImageBeforeView.backgroundColor = UIColor.white
         snapshotImageAfterView.backgroundColor = UIColor.white
 
@@ -732,5 +746,29 @@ class GraphContentView: UIView {
         if overlays.count > 0 {
             self.graphSelectionOverlayView.show(overlays: overlays)
         }
+    }
+}
+
+extension UIImage {
+    class func imageByCombiningImage(firstImage: UIImage, withImage secondImage: UIImage) -> UIImage {
+        let newImageWidth  = firstImage.size.width + secondImage.size.width
+        let newImageHeight = max(firstImage.size.height, secondImage.size.height)
+        let newImageSize = CGSize(width: newImageWidth, height: newImageHeight)
+
+        UIGraphicsBeginImageContextWithOptions(newImageSize, false, UIScreen.main.scale)
+
+        let firstImageDrawX: CGFloat = 0
+        let firstImageDrawY  = round((newImageSize.height - firstImage.size.height ) / 2)
+
+        let secondImageDrawX = firstImage.size.width
+        let secondImageDrawY = round((newImageSize.height - secondImage.size.height) / 2)
+
+        firstImage .draw(at: CGPoint(x: firstImageDrawX,  y: firstImageDrawY))
+        secondImage.draw(at: CGPoint(x: secondImageDrawX, y: secondImageDrawY))
+
+        let image = UIGraphicsGetImageFromCurrentImageContext()
+
+        UIGraphicsEndImageContext()
+        return image!
     }
 }
