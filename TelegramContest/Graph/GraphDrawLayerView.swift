@@ -435,13 +435,77 @@ class GraphDrawLayerView: UIView {
         }
 
         let width = self.availbleFrame.width
-        let height = self.availbleFrame.height / 2
+        let height = self.availbleFrame.height
+        let pathHeight = height / 2
 
         let path = CGMutablePath()
-        path.addEllipse(in: CGRect(x: (width - height) / 2, y: (self.availbleFrame.height - height) / 2, width: height, height: height))
+        path.addEllipse(in: CGRect(x: (width - pathHeight) / 2, y: (self.availbleFrame.height - pathHeight) / 2, width: pathHeight, height: pathHeight))
         self.pathLayer.strokeEnd = graphContext.range.upperBound
 
         return path
+    }
+
+    func reportPieLabelFrame(graphContext: GraphContext?) -> CGRect {
+        guard let graphContext = graphContext, self.availbleFrame.width > 0 else {
+            return .zero
+        }
+
+        let width = self.availbleFrame.width
+        let height = self.availbleFrame.height
+        let pathHeight = height / 2
+
+        var rect = self.square(radius: pathHeight, startAngle: 360 * graphContext.range.lowerBound + 90, endAngle: 360 * graphContext.range.upperBound + 90)
+        rect.origin.x += (width - pathHeight) / 2 + pathHeight / 2
+        rect.origin.y += (self.availbleFrame.height - pathHeight) / 2 + pathHeight / 2
+        rect.origin.y = height - rect.origin.y - rect.size.height
+        return rect
+    }
+
+    func rotate(point: CGPoint, aroundPoint: CGPoint, angel: CGFloat) -> CGPoint {
+        var oldPoint = point
+        print(angel, deg2rad(angel))
+        let sinus = sin(deg2rad(angel))
+        let cosis = cos(deg2rad(angel))
+
+        oldPoint.x -= aroundPoint.x
+        oldPoint.y -= aroundPoint.y
+
+        var newPoint: CGPoint = .zero
+        newPoint.x = oldPoint.x * cosis + oldPoint.y * sinus
+        newPoint.y = oldPoint.y * cosis - oldPoint.x * sinus
+
+        oldPoint.x = newPoint.x + aroundPoint.x
+        oldPoint.y = newPoint.y + aroundPoint.y
+
+        return oldPoint
+    }
+
+    func square(radius: CGFloat, startAngle: CGFloat, endAngle: CGFloat) -> CGRect {
+        var startAngle = startAngle
+        var fullAngel = ((endAngle + 360) - (startAngle + 360))
+        if fullAngel > 160 {
+            let delta = fullAngel - 160
+            fullAngel = 160
+            startAngle += delta / 2
+        }
+        let middleAngle = fullAngel / 2
+        func point(degree: CGFloat, radius: CGFloat) -> CGPoint {
+            return CGPoint(x: radius * sin(deg2rad(degree)),
+                           y: radius * cos(deg2rad(degree)))
+        }
+        let innerForCircleLineLength = radius * abs(sin(deg2rad(middleAngle)) / sin(deg2rad(middleAngle - 90))) * 2
+        let a = sqrt(pow((innerForCircleLineLength / 2), 2) + pow(radius, 2))
+        let b = innerForCircleLineLength
+        let innerCircleRadius = b / 2 * sqrt((2 * a - b)/(2 * a + b))
+        let innerSquareSide = 2 * innerCircleRadius / sqrt(2)
+        let pointInsideCircle = point(degree: middleAngle, radius: radius - innerCircleRadius)
+        let newPoint = rotate(point: pointInsideCircle, aroundPoint: .zero, angel: startAngle)
+        let rect = CGRect(x: newPoint.x - innerSquareSide / 2,
+                          y: newPoint.y - innerSquareSide / 2,
+                          width: innerSquareSide,
+                          height: innerSquareSide)
+
+        return rect
     }
 
     func generatePathPieZoomed(graphContext: GraphContext?) -> CGPath {

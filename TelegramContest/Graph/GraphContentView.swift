@@ -118,7 +118,6 @@ class GraphContentView: UIView {
         let lowValue = Int(round(CGFloat(count) * self.selectedRange.lowerBound))
         let upperValue = Int(round(CGFloat(count) * self.selectedRange.upperBound))
         let range = lowValue..<upperValue
-        print(range)
         if !force && pieChartSelectedRange == range {
             return
         }
