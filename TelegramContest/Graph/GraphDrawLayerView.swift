@@ -13,6 +13,7 @@ class GraphContext {
         case graph
         case bar
         case area
+        case areaBar
         case pie
     }
 
@@ -127,42 +128,6 @@ class GraphDrawLayerView: UIView {
         self.pathLayer.path = self.generatePath(graphContext: self.graphContext, fakeDots: (0, 0))
     }
 
-//    var zoomView = UIView()
-
-    func animateZoom() {
-//        let snapshotImage = self.takeScreenshot()
-//        let snapshotImageView = UIImageView(image: snapshotImage)
-//        self.addSubview(snapshotImageView)
-//        snapshotImageView.frame = self.bounds
-//        snapshotImageView.backgroundColor = UIColor.white
-//        UIView.animate(withDuration: 0.25, animations: {
-//            snapshotImageView.alpha = 0
-//            snapshotImageView.transform = CGAffineTransform.init(scaleX: 3, y: 1)
-//        }) { (_) in
-//            snapshotImageView.removeFromSuperview()
-//        }
-    }
-
-
-//    var counter = AnimationCounter()
-//    func transformFrom(point: Int) {
-//        guard let graphContext = self.graphContext else {
-//            return
-//        }
-//        let maxValue = 30
-//        counter.reset()
-//        counter.animate(from: 1, to: maxValue) { (value) in
-//            let range = graphContext.range
-//            let progress = CGFloat(value) / CGFloat(maxValue)
-//            let newInterval = range.interval * (1 - progress)
-//            let newRange: Range<CGFloat> = range.lowerBound + (newInterval / 2)..<range.upperBound - (newInterval / 2)
-//            let newGraphContext = GraphContext(range: newRange, values: graphContext.values, maxValue: graphContext.maxValue, minValue: graphContext.minValue)
-//            self.update(graphContext: newGraphContext, animationDuration: 0)
-//        }
-////        self.pathLayer.path = self.generatePointGraph(graphContext: self.graphContext, point: point)
-////        self.update(graphContext: self.graphContext, animationDuration: 0.5)
-//    }
-
     typealias FakeDots = (beggining: Int, end: Int)
 
     func update(graphContext: GraphContext?, animationDuration: TimeInterval, zoom: Zoom?) {
@@ -239,7 +204,7 @@ class GraphDrawLayerView: UIView {
             self.selectedPath.strokeColor = color.cgColor
             self.pathLayer.fillColor = UIColor.clear.cgColor
             self.pathLayer.lineJoin = CAShapeLayerLineJoin.round
-        case .bar:
+        case .bar, .areaBar:
             self.selectedPath.lineWidth = 0
             self.pathLayer.lineWidth = 0
             self.selectedPath.fillColor = color.cgColor
@@ -276,7 +241,7 @@ class GraphDrawLayerView: UIView {
         switch graphContext?.style ?? .graph {
         case .graph:
             return self.generatePathGraph(graphContext: graphContext, fakeDots: fakeDots)
-        case .bar:
+        case .bar, .areaBar:
             return self.generatePathStack(graphContext: graphContext)
         case .area:
             return self.generatePathOverlay(graphContext: graphContext)
@@ -376,7 +341,8 @@ class GraphDrawLayerView: UIView {
         var lastPoint: CGPoint = .zero
         for index in 0..<(graphContext.values.count / steps.points) {
             let value: Int = graphContext.values[index]
-            let x = steps.pixels * CGFloat(index) - offset - (steps.pixels / 2)
+//            let x = steps.pixels * CGFloat(index) - offset - (steps.pixels / 2)
+            let x = steps.pixels * CGFloat(index) - offset
             let yPercent = CGFloat(value) / CGFloat(graphContext.maxValue)
             let y = round((1 - yPercent) * self.availbleFrame.height)
             if x > (-0.1 * self.availbleFrame.width) && x < (self.availbleFrame.width * 1.1) {
@@ -677,7 +643,7 @@ class GraphDrawLayerView: UIView {
         switch self.graphContext?.style ?? .graph {
         case .graph, .area, .pie:
             return self.selectLine(graphContext: graphContext, position: position, animationDuration: animationDuration)
-        case .bar:
+        case .bar, .areaBar:
             return self.selectSquare(graphContext: graphContext, position: position, animationDuration: animationDuration)
         }
     }
@@ -712,7 +678,8 @@ class GraphDrawLayerView: UIView {
         }
 
         let value: Int = graphContext.values[cachedIndex]
-        let x = steps.pixels * CGFloat(cachedIndex) - offset - (steps.pixels / 2)
+//        let x = steps.pixels * CGFloat(cachedIndex) - offset - (steps.pixels / 2)
+        let x = steps.pixels * CGFloat(cachedIndex) - offset
         let yPercent = CGFloat(value) / CGFloat(graphContext.maxValue)
         let y = round((1 - yPercent) * self.availbleFrame.height)
         let height = (self.availbleFrame.height - y)

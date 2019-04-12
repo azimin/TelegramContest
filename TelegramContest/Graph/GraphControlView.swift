@@ -156,7 +156,7 @@ class GraphControlView: UIView {
                     values: self.transformedValues[index],
                     maxValue: maxValue,
                     minValue: minValue,
-                    style: yRow.style == .pie ? .area : yRow.style
+                    style: yRow.style == .pie ? .areaBar : yRow.style
                 )
                 graphView.update(graphContext: context, animationDuration: animated ? Constants.aniamtionDuration : 0, zoom: nil)
                 graphView.color = yRow.color

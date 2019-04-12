@@ -83,28 +83,46 @@ class GraphView: UIView {
         self.graphContentView.updateZoomStep(newValue: newValue, override: false)
     }
 
+    private var cachedIndexInterval: Range<Int> = -1..<1
+
     func updateLabel() {
         guard let dataSource = self.dataSource else {
             return
         }
 
-        let dates = self.converValues(values: dataSource.xRow.fullDateStrings, range: self.selectedRange)
-        if let firstDate = dates.first, let lastDate = dates.last {
-            if firstDate == lastDate {
-                self.titleLabel.text = firstDate
-                self.graphContentView.oneDayInterval = true
-            } else {
-                self.titleLabel.text = "\(firstDate) - \(lastDate)"
-                self.graphContentView.oneDayInterval = false
-            }
+        let indexs = self.indexes(count: dataSource.xRow.fullDateStrings.count, range: self.selectedRange, rounded: false)
+        guard indexs != cachedIndexInterval else {
+            return
+        }
+        self.cachedIndexInterval = indexs
+        let firstDate = dataSource.xRow.fullDateStrings[indexs.lowerBound]
+        let lastDate = dataSource.xRow.fullDateStrings[indexs.upperBound]
+
+        if firstDate == lastDate {
+            self.titleLabel.text = firstDate
+            self.graphContentView.oneDayInterval = true
+        } else {
+            self.titleLabel.text = "\(firstDate) - \(lastDate)"
+            self.graphContentView.oneDayInterval = false
         }
     }
 
-    private func converValues(values: [String], range: Range<CGFloat>) -> [String] {
-        let count = values.count
-        let firstCount = Int(floor(range.lowerBound * CGFloat(count)))
-        let endCount = Int(ceil(range.upperBound * CGFloat(count)))
-        return Array(values[max(firstCount, 0)..<min(endCount, count)])
+    private func converValues<T>(values: [T], range: Range<CGFloat>, rounded: Bool) -> [T] {
+        let index = self.indexes(count: values.count, range: range, rounded: rounded)
+        return Array(values[index])
+    }
+
+    private func indexes(count: Int, range: Range<CGFloat>, rounded: Bool) -> Range<Int> {
+        let firstCount: Int
+        let endCount: Int
+        if rounded {
+            firstCount = Int(round(range.lowerBound * CGFloat(count)))
+            endCount = Int(round(range.upperBound * CGFloat(count)))
+        } else {
+            firstCount = Int(floor(range.lowerBound * CGFloat(count)))
+            endCount = Int(ceil(range.upperBound * CGFloat(count)))
+        }
+        return max(firstCount, 0)..<min(endCount, count - 1)
     }
 
     private var shouldUpdateRange: Bool = true
