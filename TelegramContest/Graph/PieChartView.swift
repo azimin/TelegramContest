@@ -26,7 +26,7 @@ class PieChartNumbersView: UIView {
         }
     }
 
-    func show(values: [PieChartValue]) {
+    func show(values: [PieChartValue], force: Bool) {
         while values.count > labels.count {
             let label = UILabel()
             label.textAlignment = .center
@@ -39,10 +39,10 @@ class PieChartNumbersView: UIView {
         }
 
         while values.count > valuesAnimationCounters.count {
-            let counter = AnimationCounter()
+            let counter = AnimationCounter(isQuality: true)
             valuesAnimationCounters.append(counter)
 
-            let fontCounter = AnimationCounter()
+            let fontCounter = AnimationCounter(isQuality: true)
             fontAnimationCounters.append(fontCounter)
         }
 
@@ -56,23 +56,34 @@ class PieChartNumbersView: UIView {
             }
             let valuesCounter = valuesAnimationCounters[index]
             let fontCounter = fontAnimationCounters[index]
-            UIView.animate(withDuration: 0.15, animations: {
+            if force {
                 label.frame = value.rect
-            })
+            } else {
+                UIView.animate(withDuration: 0.15, animations: {
+                    label.frame = value.rect
+                })
+            }
+
             label.isHidden = value.isHidden
 
             if oldValue > 100 {
                 oldValue = 0
             }
 
-            valuesCounter.animate(from: oldValue, to: value.value) { (value) in
-                label.text = "\(value)%"
-            }
             let fontSize = self.fontSize(string: "\(value.value)%", width: value.rect.width)
             let currentSize = Int(label.font.pointSize * 2)
-            fontCounter.animate(from: currentSize, to: Int(fontSize * 2)) { (value) in
-                label.font = UIFont.font(with: .bold, size: CGFloat(value) / 2)
+            if !force {
+                valuesCounter.animate(from: oldValue, to: value.value) { (value) in
+                    label.text = "\(value)%"
+                }
+                fontCounter.animate(from: currentSize, to: Int(fontSize * 2)) { (value) in
+                    label.font = UIFont.font(with: .bold, size: CGFloat(value) / 2)
+                }
+            } else {
+                label.text = "\(value.value)%"
+                label.font = UIFont.font(with: .bold, size: fontSize)
             }
+
         }
 
         self.values = values

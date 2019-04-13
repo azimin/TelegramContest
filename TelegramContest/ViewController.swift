@@ -298,6 +298,8 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
                     let zoomAnimationStyle: Zoom.AnimationStyle
                     if section.graph == .forth || section.graph == .third {
                         zoomAnimationStyle = .zooming
+                    } else if section.graph == .fivth {
+                        zoomAnimationStyle = .pie
                     } else {
                         zoomAnimationStyle = .basic
                     }

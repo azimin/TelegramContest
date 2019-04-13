@@ -14,7 +14,7 @@ enum GraphStyle: String {
     case stackedBar
     case percentStackedBar
     case pie
-
+    
     var transformerStyle: Transformer.Style {
         switch self {
         case .basic:

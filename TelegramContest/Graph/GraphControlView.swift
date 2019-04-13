@@ -179,13 +179,26 @@ class GraphControlView: UIView {
         }
     }
 
-    func showFilterView(dataSource: GraphDataSource?, enableRows: [Int]) {
+    func hideContentView() {
         let contentImage = self.contentView.asImage()
         self.contentImage = contentImage
 
         let contentImageView = UIImageView(image: contentImage)
         contentImageView.frame = self.contentView.frame
         self.addSubview(contentImageView)
+
+        self.contentView.isHidden = true
+
+        UIView.animate(withDuration: 0.25, delay: 0, options: .curveEaseOut, animations: {
+            contentImageView.transform = CGAffineTransform.init(scaleX: 0.5, y: 0.5)
+            contentImageView.alpha = 0
+        }) { (_) in
+            contentImageView.removeFromSuperview()
+        }
+    }
+
+    func showFilterView() {
+        self.hideContentView(dataSource: dataSource, enableRows: enableRows)
 
         var rows: [Row] = []
         for (index, yRow) in (dataSource?.yRows ?? []).enumerated() {
@@ -195,7 +208,6 @@ class GraphControlView: UIView {
         filterViewController.rows = rows
         filterViewController.update(width: self.frame.width, contentView: self.filtersView)
         self.height = filterViewController.height - 6
-        self.contentView.isHidden = true
 
         self.filtersView.isHidden = false
         self.filtersView.alpha = 0
@@ -203,10 +215,8 @@ class GraphControlView: UIView {
         UIView.animate(withDuration: 0.25, delay: 0, options: .curveEaseOut, animations: {
             self.filtersView.alpha = 1
             self.filtersView.transform = CGAffineTransform.identity
-            contentImageView.transform = CGAffineTransform.init(scaleX: 0.5, y: 0.5)
-            contentImageView.alpha = 0
         }) { (_) in
-            contentImageView.removeFromSuperview()
+
         }
 
         self.updateSizeAction?()

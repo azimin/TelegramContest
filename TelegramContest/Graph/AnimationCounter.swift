@@ -15,6 +15,11 @@ class AnimationCounter {
     private var cachedTo: Int = 0
     private var progress: CGFloat = 0
     private var block: ((Int) -> Void)?
+    private var isQuality: Bool
+
+    init(isQuality: Bool) {
+        self.isQuality = isQuality
+    }
 
     func reset() {
         self.cachedFrom = 0
@@ -33,7 +38,11 @@ class AnimationCounter {
         self.progress = 0
         self.block = block
 
-        self.timer = Timer(timeInterval: 1 / 60, target: self, selector: #selector(self.fireTimer), userInfo: nil, repeats: true)
+        if isQuality {
+            self.timer = Timer(timeInterval: 1 / 60, target: self, selector: #selector(self.fireTimerQuality), userInfo: nil, repeats: true)
+        } else {
+            self.timer = Timer(timeInterval: 1 / 60, target: self, selector: #selector(self.fireTimer), userInfo: nil, repeats: true)
+        }
         RunLoop.main.add(self.timer!, forMode: RunLoop.Mode.common)
     }
 
@@ -41,12 +50,36 @@ class AnimationCounter {
     func fireTimer() {
         self.progress += 1 / 15
         if self.progress >= 1 {
+            OperationQueue.main.addOperation {
+                self.block?(self.cachedTo)
+            }
             self.timer?.invalidate()
         }
         let progress = self.quadraticEaseOut(self.progress)
         let delta = self.cachedTo - self.cachedFrom
         self.currentValue = self.cachedFrom + Int(CGFloat(delta) * progress)
         self.block?(self.currentValue)
+    }
+
+    @objc
+    func fireTimerQuality() {
+        self.progress += 1 / 15
+        if self.progress >= 1 {
+            OperationQueue.main.addOperation {
+                self.block?(self.cachedTo)
+            }
+            self.timer?.invalidate()
+        }
+        let progress = self.quadraticEaseOut(self.progress)
+        let delta = self.cachedTo - self.cachedFrom
+        self.currentValue = self.cachedFrom + Int(round(CGFloat(delta) * progress))
+        if abs(delta) <= 1 {
+            self.block?(self.cachedTo)
+            self.timer?.invalidate()
+            return
+        } else {
+            self.block?(self.currentValue)
+        }
     }
 
     func invalidate() {

@@ -47,6 +47,7 @@ class GraphContentView: UIView {
     private var selectionAvailable: Bool = true
 
     func updateDataSouce(_ dataSource: GraphDataSource?, enableRows: [Int], animated: Bool, zoom: Zoom?, zoomed: Bool) {
+        let oldStyle = self.dataSource?.style ?? .basic
         self.dataSource = dataSource
         self.style = dataSource?.style ?? self.style
         self.zoomed = zoomed
@@ -80,13 +81,25 @@ class GraphContentView: UIView {
             if self.pieChartNumbersView == nil {
                 self.pieChartNumbersView = PieChartNumbersView()
             }
+            self.pieChartNumbersView?.alpha = 0
             self.addSubview(self.pieChartNumbersView!)
             self.selectionAvailable = false
             self.pieChartNumbersView?.isUserInteractionEnabled = false
+            UIView.animate(withDuration: 0.25) {
+                self.yAxisOverlays.forEach({ $0.alpha = 0 })
+                self.pieChartNumbersView?.alpha = 1
+            }
         } else {
+            if oldStyle == .pie {
+                UIView.animate(withDuration: 0.25, animations: {
+                    self.yAxisOverlays.forEach({ $0.alpha = 1 })
+                    self.pieChartNumbersView?.alpha = 0
+                }) { (_) in
+                    self.pieChartNumbersView?.removeFromSuperview()
+                }
+            }
             self.pieSelectedIndex = -1
             self.selectionAvailable = true
-            self.pieChartNumbersView?.removeFromSuperview()
         }
 
         self.updateTansformer()
@@ -177,7 +190,7 @@ class GraphContentView: UIView {
     }
 
     private var graphDrawLayers: [GraphDrawLayerView] = []
-    private var counter: AnimationCounter = AnimationCounter()
+    private var counter: AnimationCounter = AnimationCounter(isQuality: false)
     private var dateLabels = ViewsOverlayView()
     private var yAxisLineOverlay = YAxisOverlayView(style: .line)
     private var yAxisLabelOverlay = YAxisOverlayView(style: .label)
@@ -397,7 +410,7 @@ class GraphContentView: UIView {
         }
 
         var imageBefore: UIImage? = nil
-        if let zoom = zoom, animated, zoom.style == .zooming {
+        if let zoom = zoom, animated, zoom.style == .zooming || zoom.style == .pie {
             imageBefore = self.graphView.asImage()
         }
 
@@ -430,7 +443,11 @@ class GraphContentView: UIView {
 
             let yRow = dataSource.yRows[index]
             let range: Range<CGFloat>
+            var animateAppear: Bool = animated
             if yRow.style == .pie {
+                if zoom != nil {
+                    animateAppear = false
+                }
                 let sumValue = CGFloat(self.converValues(values: yRow.values, range: self.selectedRange, rounded: true).reduce(0, { $0 + $1 }))
                 let delta = sumValue / CGFloat(self.pieChartSumValue)
                 if !isHidden {
@@ -451,7 +468,7 @@ class GraphContentView: UIView {
                 isSelected: pieSelectedIndex == index,
                 style: yRow.style
             )
-            graphView.update(graphContext: context, animationDuration: animated ? Constants.aniamtionDuration : 0, zoom: zoom)
+            graphView.update(graphContext: context, animationDuration: animateAppear ? Constants.aniamtionDuration : 0, zoom: zoom)
             graphView.color = yRow.color
 
             if yRow.style == .pie {
@@ -487,7 +504,7 @@ class GraphContentView: UIView {
             }
         }
 
-        self.pieChartNumbersView?.show(values: pieValues)
+        self.pieChartNumbersView?.show(values: pieValues, force: zoom != nil)
 
         var items: [ViewsOverlayView.Item] = []
         for point in anyPoints {
@@ -544,20 +561,20 @@ class GraphContentView: UIView {
             }
         }
 
-        if let zoom = zoom, animated, zoom.style == .zooming {
+        if let zoom = zoom, animated, zoom.style == .zooming || zoom.style == .pie {
             let imageAfter = graphView.asImage()
             switch zoom.index {
             case .inside(_):
-                self.animateZoom(imageBefore: imageBefore ?? UIImage(), imageAfter: imageAfter, reversed: false)
+                self.animateZoom(imageBefore: imageBefore ?? UIImage(), imageAfter: imageAfter, reversed: false, animeteInside: zoom.style == .zooming)
             case .outside(_):
-                self.animateZoom(imageBefore: imageAfter, imageAfter: imageBefore ?? UIImage(), reversed: true)
+                self.animateZoom(imageBefore: imageAfter, imageAfter: imageBefore ?? UIImage(), reversed: true, animeteInside: zoom.style == .zooming)
             }
         }
     }
 
-    func animateZoom(imageBefore: UIImage, imageAfter: UIImage, reversed: Bool) {
+    func animateZoom(imageBefore: UIImage, imageAfter: UIImage, reversed: Bool, animeteInside: Bool) {
         let whiteView = UIView()
-        whiteView.frame = self.graphView.frame
+        whiteView.frame = self.graphView.bounds
         whiteView.backgroundColor = self.theme.configuration.backgroundColor
         self.graphView.addSubview(whiteView)
 
@@ -575,10 +592,14 @@ class GraphContentView: UIView {
         let snapshotImageBeforeView = UIImageView(image: imageBefore)
 
         if reversed {
-            self.graphView.insertSubview(snapshotImageAfterView, aboveSubview: whiteView)
+            if animeteInside || reversed {
+                self.graphView.insertSubview(snapshotImageAfterView, aboveSubview: whiteView)
+            }
             self.graphView.insertSubview(snapshotImageBeforeView, aboveSubview: snapshotImageAfterView)
         } else {
-            self.graphView.insertSubview(snapshotImageAfterView, aboveSubview: whiteView)
+            if animeteInside {
+                self.graphView.insertSubview(snapshotImageAfterView, aboveSubview: whiteView)
+            }
             self.graphView.insertSubview(snapshotImageBeforeView, aboveSubview: snapshotImageAfterView)
         }
 
@@ -619,7 +640,9 @@ class GraphContentView: UIView {
         UIView.animate(withDuration: reversed ? duration * 0.7 : duration, delay: 0, options: [reversed ? .curveEaseIn : .curveEaseOut], animations: {
             if reversed {
                 snapshotImageAfterView.alpha = 0
-                snapshotImageAfterView.transform = CGAffineTransform.init(scaleX: 0.3, y: 1)
+                if animeteInside {
+                    snapshotImageAfterView.transform = CGAffineTransform.init(scaleX: 0.3, y: 1)
+                }
             } else {
                 snapshotImageAfterView.alpha = 1
                 snapshotImageAfterView.transform = CGAffineTransform.identity
