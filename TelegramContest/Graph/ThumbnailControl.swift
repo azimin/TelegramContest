@@ -228,7 +228,7 @@ class ThumbnailControl: UIControl {
     }
 
     func normalize(range: Range<CGFloat>, collapse: Bool, movingRight: Bool) -> Range<CGFloat> {
-        var collapseDelta: CGFloat = 0.1
+        var collapseDelta: CGFloat = self.pagingDelta ?? 0.1
         if collapse {
             collapseDelta = min((range.upperBound - range.lowerBound), 1)
         }

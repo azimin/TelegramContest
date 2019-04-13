@@ -709,6 +709,15 @@ class GraphContentView: UIView {
         guard self.pieSelectedIndex != index else {
             return
         }
+
+        if index != -1 {
+            if #available(iOS 10.0, *) {
+                let lightImpactFeedbackGenerator = UIImpactFeedbackGenerator(style: .light)
+                lightImpactFeedbackGenerator.prepare()
+                lightImpactFeedbackGenerator.impactOccurred()
+            }
+        }
+
         self.pieSelectedIndex = index
         self.shouldUpdatePieChart = true
         self.update(animated: true, zoom: nil)
@@ -814,6 +823,12 @@ class GraphContentView: UIView {
                                                   canZoom: !self.zoomed,
                                                   dateStyle: dateStyle,
                                                   shouldShowPercentage: self.style == .percentStackedBar) })
+
+            if #available(iOS 10.0, *) {
+                let lightImpactFeedbackGenerator = UIImpactFeedbackGenerator(style: .light)
+                lightImpactFeedbackGenerator.prepare()
+                lightImpactFeedbackGenerator.impactOccurred()
+            }
         }
 
         if overlays.count > 0 {

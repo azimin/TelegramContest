@@ -848,6 +848,12 @@ extension Range where Bound: FloatingPoint {
     }
 }
 
+extension Range where Bound == Int {
+    var interval: Bound {
+        return self.upperBound - self.lowerBound
+    }
+}
+
 func findNear(value: Int, positive: Bool, devidedBy: Int) -> Int {
     if devidedBy == 0 {
         return 0

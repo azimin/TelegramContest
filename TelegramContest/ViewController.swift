@@ -309,6 +309,12 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
                 section.zoomedIndex = index
                 let zoom = Zoom(index: .inside(value: index), positionPercentage: positionPercentage, style: zoomAnimationStyle, shouldReplaceRangeController: shouldReplaceRangeController)
                 cell.graphView.transform(to: section.currentDataSource, enableRows: enableRows, zoom: zoom, zoomStep: nil, range: range, zoomed: true)
+
+                if #available(iOS 10.0, *) {
+                    let lightImpactFeedbackGenerator = UIImpactFeedbackGenerator(style: .light)
+                    lightImpactFeedbackGenerator.prepare()
+                    lightImpactFeedbackGenerator.impactOccurred()
+                }
             }
             cell.graphView.zoomOutAction = {
                 section.zoomedSection = nil
@@ -333,6 +339,12 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
                 }
                 cell.graphView.transform(to: section.currentDataSource, enableRows: section.enabledRows, zoom: zoom, zoomStep: section.currentZoomStep, range: section.currentSelectedRange, zoomed: false)
                 section.zoomedIndex = nil
+
+                if #available(iOS 10.0, *) {
+                    let lightImpactFeedbackGenerator = UIImpactFeedbackGenerator(style: .light)
+                    lightImpactFeedbackGenerator.prepare()
+                    lightImpactFeedbackGenerator.impactOccurred()
+                }
             }
             cell.graphView.updateZoomStep(newValue: section.currentZoomStep)
             cell.graphView.updateSelectedRange(range: section.currentSelectedRange, skip: false)

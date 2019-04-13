@@ -23,5 +23,5 @@ func convertIndexes(count: Int, range: Range<CGFloat>, rounded: Bool) -> Range<I
         firstCount = Int(floor(range.lowerBound * CGFloat(count)))
         endCount = Int(ceil(range.upperBound * CGFloat(count)))
     }
-    return max(firstCount, 0)..<min(endCount, count - 1)
+    return min(max(firstCount, 0), count - 1)..<min(endCount, count - 1)
 }

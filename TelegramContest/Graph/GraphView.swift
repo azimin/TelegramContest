@@ -25,7 +25,6 @@ class GraphView: UIView {
     var updateSizeAction: VoidBlock?
 
     var noDataLabel = UILabel()
-    var dogImageView = UIImageView(image: UIImage(named: "dog"))
 
     var selectedAction: SelectionBlock? {
         didSet {
@@ -41,6 +40,7 @@ class GraphView: UIView {
     var height: CGFloat = 404
 
     func updateDataSource(dataSource: GraphDataSource, enableRows: [Int], skip: Bool, zoomed: Bool) {
+        self.style = dataSource.style
         self.zoomOutButton.isHidden = !zoomed
         self.dataSource = dataSource
         if !skip {
@@ -72,12 +72,11 @@ class GraphView: UIView {
     var style: GraphStyle = .basic {
         didSet {
             self.graphControlView.style = style
-            self.graphContentView.style = style
         }
     }
 
     private func updateTheme() {
-        self.noDataLabel.textColor = theme.configuration.nameColor
+        self.noDataLabel.textColor = theme.configuration.axisTextColor
         self.graphControlView.theme = theme
         self.graphContentView.theme = theme
         self.titleLabel.textColor = theme.configuration.tooltipArrow
@@ -106,14 +105,12 @@ class GraphView: UIView {
                 self.zoomOutButton.alpha = 0
                 self.titleLabel.alpha = 0
                 self.noDataLabel.alpha = 1
-                self.dogImageView.alpha = 1
             } else {
                 self.zoomOutButton.alpha = 1
                 self.graphContentView.alpha = 1
                 self.graphControlView.alpha = 1
                 self.titleLabel.alpha = 1
                 self.noDataLabel.alpha = 0
-                self.dogImageView.alpha = 0
             }
         }
     }
@@ -129,10 +126,15 @@ class GraphView: UIView {
             return
         }
 
-        let indexs = convertIndexes(count: dataSource.xRow.fullDateStrings.count, range: self.selectedRange, rounded: false)
+        let count = dataSource.xRow.fullDateStrings.count
+        var indexs = convertIndexes(count: count, range: self.selectedRange, rounded: self.style == .pie)
+        if self.style == .pie, indexs.interval >= 1, self.selectedRange.upperBound <= 0.9 {
+            indexs = indexs.lowerBound..<(indexs.upperBound - 1)
+        }
         guard indexs != cachedIndexInterval else {
             return
         }
+
         self.cachedIndexInterval = indexs
         let firstDate = dataSource.xRow.fullDateStrings[indexs.lowerBound]
         let lastDate = dataSource.xRow.fullDateStrings[indexs.upperBound]
@@ -203,17 +205,12 @@ class GraphView: UIView {
         self.graphContentView.frame = CGRect(x: 0, y: 12 + labelHeight, width: self.frame.width, height: 320)
         self.graphControlView.frame = CGRect(x: 0, y: self.graphContentView.frame.maxY, width: self.frame.width, height: self.graphControlView.height)
 
-        var offset: CGFloat = 20
+        var offset: CGFloat = 0
         if !self.graphControlView.filtersView.isHidden {
             offset += 20 + (self.graphControlView.height - 42)
         }
-
-        self.dogImageView.frame = CGRect(x: self.frame.width / 2 - 28, y: self.frame.height / 2 - 28 - offset, width: 56, height: 56)
-        self.noDataLabel.frame = CGRect(x: self.frame.width / 2 - 50, y: self.dogImageView.frame.maxY + 8, width: 100, height: 30)
+        self.noDataLabel.frame = CGRect(x: self.frame.width / 2 - 50, y: self.frame.height / 2 - 15 - offset, width: 100, height: 30)
     }
-
-    // 390
-    // 404
 
     private func setup() {
         self.addSubview(self.graphControlView)
@@ -222,12 +219,9 @@ class GraphView: UIView {
         self.addSubview(self.zoomOutButton)
 
         self.noDataLabel.alpha = 0
-        self.dogImageView.alpha = 0
         self.addSubview(self.noDataLabel)
-        self.addSubview(self.dogImageView)
-
         self.noDataLabel.textAlignment = .center
-        self.noDataLabel.font = UIFont.font(with: .bold, size: 16)
+        self.noDataLabel.font = UIFont.font(with: .regular, size: 16)
         self.noDataLabel.text = "No Data"
 
         self.titleLabel.font = UIFont.systemFont(ofSize: 13)
