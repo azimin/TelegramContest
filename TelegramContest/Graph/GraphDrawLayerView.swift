@@ -137,7 +137,7 @@ class GraphDrawLayerView: UIView {
             var fakeDotsBefore: FakeDots?
             var fakeDotsAfter: FakeDots?
             let oldContext = self.graphContext
-            if let zoom = zoom, zoom.style == .basic, let firstGraph = self.graphContext, let secondGraph = graphContext {
+            if let zoom = zoom, (zoom.style == .basic || zoom.style == .pie), let firstGraph = self.graphContext, let secondGraph = graphContext {
                 let zoomingIndex = zoom.index
                 let index: Int
                 let oldGraphContext: GraphContext
@@ -189,7 +189,7 @@ class GraphDrawLayerView: UIView {
                 animation.fromValue = self.pathLayer.path
                 animation.toValue = self.generatePath(graphContext: graphContext, fakeDots: (0, 0))
             }
-            animation.duration = animationDuration
+            animation.duration = animationDuration * 10
             animation.timingFunction = CAMediaTimingFunction(name: .easeOut)
             self.pathLayer.add(animation, forKey: "path")
         }
@@ -244,9 +244,9 @@ class GraphDrawLayerView: UIView {
         case .graph:
             return self.generatePathGraph(graphContext: graphContext, fakeDots: fakeDots)
         case .bar, .areaBar:
-            return self.generatePathStack(graphContext: graphContext)
+            return self.generatePathStack(graphContext: graphContext, fakeDots: (0, 0))
         case .area:
-            return self.generatePathOverlay(graphContext: graphContext)
+            return self.generatePathOverlay(graphContext: graphContext, fakeDots: (0, 0))
         case .pie:
             return self.generatePathPie(graphContext: graphContext)
         }
@@ -331,7 +331,7 @@ class GraphDrawLayerView: UIView {
         return number * 180 / .pi
     }
 
-    func generatePathStack(graphContext: GraphContext?) -> CGPath {
+    func generatePathStack(graphContext: GraphContext?, fakeDots: FakeDots) -> CGPath {
         guard let graphContext = graphContext, self.availbleFrame.width > 0 else {
             return CGMutablePath()
         }
@@ -355,11 +355,22 @@ class GraphDrawLayerView: UIView {
                 if !isMoved {
                     path.move(to: CGPoint(x: x, y: y))
                     firstPoint = CGPoint(x: x, y: y)
+                    if fakeDots.beggining > 2 {
+                        for _ in 0..<fakeDots.beggining {
+                            path.addLine(to: CGPoint(x: x, y: y))
+                        }
+                    }
                     isMoved = true
                 }
                 path.addLine(to: CGPoint(x: x, y: y))
                 path.addLine(to: CGPoint(x: x + steps.pixels, y: y))
                 lastPoint = CGPoint(x: x + steps.pixels, y: y)
+            }
+        }
+
+        if fakeDots.end > 2 {
+            for _ in 0..<(fakeDots.end * 2) {
+                path.addLine(to: CGPoint(x: lastPoint.x, y: self.availbleFrame.height)) // FIXME
             }
         }
 
@@ -369,7 +380,7 @@ class GraphDrawLayerView: UIView {
         return path
     }
 
-    func generatePathOverlay(graphContext: GraphContext?) -> CGPath {
+    func generatePathOverlay(graphContext: GraphContext?, fakeDots: FakeDots) -> CGPath {
         guard let graphContext = graphContext, self.availbleFrame.width > 0 else {
             return CGMutablePath()
         }
@@ -389,9 +400,20 @@ class GraphDrawLayerView: UIView {
             if x > (-0.1 * self.availbleFrame.width) && x < (self.availbleFrame.width * 1.1) {
                 if !isMoved {
                     path.move(to: CGPoint(x: x, y: y))
+                    if fakeDots.beggining > 2 {
+                        for _ in 0..<fakeDots.beggining {
+                            path.move(to: CGPoint(x: x, y: y))
+                        }
+                    }
                     isMoved = true
                 }
                 path.addLine(to: CGPoint(x: x, y: y))
+            }
+        }
+
+        if fakeDots.end > 2 {
+            for _ in 0..<fakeDots.end {
+                path.addLine(to: CGPoint(x: 400, y: self.availbleFrame.height)) // FIXME
             }
         }
 

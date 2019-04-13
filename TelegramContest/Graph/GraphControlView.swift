@@ -35,13 +35,13 @@ class GraphControlView: UIView {
         self.dataSource = dataSource
         self.enabledRows = enableRows
         self.transformedValues = Transformer(rows: dataSource?.yRows.map({ $0.values }) ?? [], visibleRows: self.enabledRows, style: style.transformerStyle).values
-        self.update(animated: animated)
+        self.update(animated: animated, zoom: zoom)
     }
 
     func updateEnabledRows(_ values: [Int], animated: Bool) {
         self.enabledRows = values
         self.transformedValues = Transformer(rows: dataSource?.yRows.map({ $0.values }) ?? [], visibleRows: self.enabledRows, style: style.transformerStyle).values
-        self.update(animated: animated)
+        self.update(animated: animated, zoom: nil)
     }
 
     private var graphDrawLayers: [GraphDrawLayerView] = []
@@ -91,7 +91,7 @@ class GraphControlView: UIView {
         self.contentView.addSubview(self.control)
     }
 
-    private func update(animated: Bool) {
+    private func update(animated: Bool, zoom: Zoom?) {
         guard let dataSource = self.dataSource else {
             self.graphDrawLayers.forEach({ $0.isHidden = true })
             return
@@ -159,7 +159,7 @@ class GraphControlView: UIView {
                     isSelected: false,
                     style: yRow.style == .pie ? .areaBar : yRow.style
                 )
-                graphView.update(graphContext: context, animationDuration: animated ? Constants.aniamtionDuration : 0, zoom: nil)
+                graphView.update(graphContext: context, animationDuration: animated ? Constants.aniamtionDuration : 0, zoom: zoom)
                 graphView.color = yRow.color
             }
         }
