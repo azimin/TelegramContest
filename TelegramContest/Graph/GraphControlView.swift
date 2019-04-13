@@ -197,8 +197,8 @@ class GraphControlView: UIView {
         }
     }
 
-    func showFilterView() {
-        self.hideContentView(dataSource: dataSource, enableRows: enableRows)
+    func showFilterView(dataSource: GraphDataSource?, enableRows: [Int]) {
+        self.hideContentView()
 
         var rows: [Row] = []
         for (index, yRow) in (dataSource?.yRows ?? []).enumerated() {
@@ -222,28 +222,37 @@ class GraphControlView: UIView {
         self.updateSizeAction?()
     }
 
-    func hideFilterView() {
-        let contentImageView = UIImageView(image: contentImage)
+    func showContentView(image: UIImage) {
+        let contentImageView = UIImageView(image: image)
         contentImageView.frame = self.contentView.frame
         contentImageView.frame.size.height -= (self.height - 42)
         self.addSubview(contentImageView)
+
+        contentImageView.alpha = 0
+        contentImageView.transform = CGAffineTransform.init(scaleX: 0.5, y: 0.5)
+
+        UIView.animate(withDuration: 0.25, delay: 0, options: .curveEaseOut, animations: {
+            contentImageView.alpha = 1
+            contentImageView.transform = CGAffineTransform.identity
+        }) { (_) in
+            contentImageView.removeFromSuperview()
+            self.contentView.isHidden = false
+        }
+    }
+
+    func hideFilterView() {
+        self.showContentView(image: self.contentImage ?? UIImage())
 
         let filterImage = self.filtersView.asImage()
         let filterImageView = UIImageView(image: filterImage)
         filterImageView.frame = self.filtersView.frame
         self.addSubview(filterImageView)
 
-        contentImageView.alpha = 0
-        contentImageView.transform = CGAffineTransform.init(scaleX: 0.5, y: 0.5)
         UIView.animate(withDuration: 0.25, delay: 0, options: .curveEaseOut, animations: {
-            contentImageView.alpha = 1
-            contentImageView.transform = CGAffineTransform.identity
             filterImageView.transform = CGAffineTransform.init(scaleX: 0.5, y: 0.5)
             filterImageView.alpha = 0
         }) { (_) in
-            contentImageView.removeFromSuperview()
             filterImageView.removeFromSuperview()
-            self.contentView.isHidden = false
             self.filtersView.isHidden = true
         }
 
