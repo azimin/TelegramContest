@@ -41,6 +41,7 @@ class ViewsOverlayView: UIView {
 
     private var allItems: [VisualItem] = []
     private var onRemoving: [UILabel] = []
+    private var labelsToReuse: [UILabel] = []
     var thresholdOptimization = ThresholdOptimization(elapsedTime: 0.1)
 
     func showItems(items: [Item]) {
@@ -110,7 +111,18 @@ class ViewsOverlayView: UIView {
     func show(items: [Item]) {
         let config = self.theme.configuration
         for item in items {
-            let label = UILabel(frame: .zero)
+            let label: UILabel
+            if self.labelsToReuse.isEmpty {
+                label = UILabel()
+            } else {
+                label = self.labelsToReuse.removeLast()
+                if let index = self.onRemoving.firstIndex(of: label) {
+                    self.onRemoving.remove(at: index)
+                }
+                label.frame = .zero
+                label.isHidden = false
+                label.alpha = 1
+            }
             label.text = item.text
             label.font = UIFont.systemFont(ofSize: 12)
             label.textAlignment = .center
@@ -140,6 +152,7 @@ class ViewsOverlayView: UIView {
         UIView.animate(withDuration: 0.25, animations: {
             visualItem.label.alpha = 0
         }) { (success) in
+            self.labelsToReuse.append(visualItem.label)
             visualItem.label.removeFromSuperview()
         }
     }
@@ -205,6 +218,7 @@ class ViewsOverlayView: UIView {
             }
         }) { (_) in
             if !reversed {
+                allItems.forEach({ self.labelsToReuse.append($0.label) })
                 allItems.forEach({ $0.label.removeFromSuperview() })
             }
         }
@@ -240,6 +254,7 @@ class ViewsOverlayView: UIView {
             }
         }, completion: { _ in
             if reversed {
+                allItems.forEach({ self.labelsToReuse.append($0.label) })
                 allItems.forEach({ $0.label.removeFromSuperview() })
             }
         })
