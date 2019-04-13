@@ -217,13 +217,39 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
             }
             let graphCell = tableView.cellForRow(at: IndexPath(row: 0, section: indexPath.section)) as! GraphTableViewCell
             let graphView = graphCell.graphView
+
+            if #available(iOS 10.0, *) {
+                let lightImpactFeedbackGenerator = UIImpactFeedbackGenerator(style: .light)
+                lightImpactFeedbackGenerator.prepare()
+                lightImpactFeedbackGenerator.impactOccurred()
+            }
+
             graphView.updateEnabledRows(section.enabledRows, animated: true)
+            return .none
         }
         let longSelectAction: SelectionBlock = { index in
+            let action: Action
+            if section.enabledRows == [index] {
+                if #available(iOS 10.0, *) {
+                    let notificationFeedbackGenerator = UINotificationFeedbackGenerator()
+                    notificationFeedbackGenerator.prepare()
+                    notificationFeedbackGenerator.notificationOccurred(.warning)
+                }
+                action = .warning
+            } else {
+                if #available(iOS 10.0, *) {
+                    let lightImpactFeedbackGenerator = UIImpactFeedbackGenerator(style: .heavy)
+                    lightImpactFeedbackGenerator.prepare()
+                    lightImpactFeedbackGenerator.impactOccurred()
+                }
+                action = .none
+            }
+
             section.enabledRows = [index]
             let graphCell = tableView.cellForRow(at: IndexPath(row: 0, section: indexPath.section)) as! GraphTableViewCell
             let graphView = graphCell.graphView
             graphView.updateEnabledRows(section.enabledRows, animated: true)
+            return action
         }
 
         switch indexPath.row {

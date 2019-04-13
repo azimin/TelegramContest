@@ -58,18 +58,20 @@ class FiltersViewContentller {
             let filterView = FilterView(title: item.name, isSelected: item.isSelected, color: item.color, index: index)
 
             filterView.longAction = { index in
-                item.selectedLongAction?(index)
+                let result = item.selectedLongAction?(index)
                 filterView.updateSelection(isSelected: true, animated: true)
                 for (newIndex, filter) in self.filterViews.enumerated() {
                     if index != newIndex {
                         filter.updateSelection(isSelected: false, animated: true)
                     }
                 }
+                return result
             }
 
             filterView.action = { index in
-                item.selectedAction?(index)
+                let result = item.selectedAction?(index)
                 filterView.updateSelection(isSelected: !filterView.isSelected, animated: true)
+                return result
             }
 
             contentView.addSubview(filterView)
@@ -175,13 +177,27 @@ class FilterView: UIView {
     @objc
     func longPress(gesture: UILongPressGestureRecognizer) {
         if gesture.state == .began {
-            self.longAction?(self.index)
+            let action = self.longAction?(self.index)
+            self.execute(action: action)
         }
     }
 
     @objc
     func tapAction() {
-        self.action?(self.index)
+        let action = self.action?(self.index)
+        self.execute(action: action)
+    }
+
+    private func execute(action: Action?) {
+        guard let action = action else {
+            return
+        }
+        switch action {
+        case .none:
+            break
+        case .warning:
+            self.shake()
+        }
     }
 
     func updateFrame(animated: Bool) {
@@ -246,5 +262,26 @@ extension String {
     func sizeOfString(usingFont font: UIFont) -> CGSize {
         let fontAttributes = [NSAttributedString.Key.font: font]
         return self.size(withAttributes: fontAttributes)
+    }
+}
+
+public extension UIView {
+    private static let shakeAnimationKey = "shake"
+
+    func shake() {
+        self.stopShaking()
+        let animation = CAKeyframeAnimation(keyPath: "transform.translation.x")
+        animation.timingFunction = CAMediaTimingFunction(name: CAMediaTimingFunctionName.easeOut)
+        animation.duration = 1
+        animation.repeatCount = 1
+        let angle1 = 10
+        let angle2 = angle1 / 2
+        let angle3 = angle2 / 2
+        animation.values = [ 0.0, -angle1, angle1, -angle1, angle1, -angle2, angle2, -angle3, angle3, 0.0 ]
+        self.layer.add(animation, forKey: UIView.shakeAnimationKey)
+    }
+
+    func stopShaking() {
+        self.layer.removeAnimation(forKey: UIView.shakeAnimationKey)
     }
 }

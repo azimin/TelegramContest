@@ -8,7 +8,12 @@
 
 import UIKit
 
-typealias SelectionBlock = (_ index: Int) -> Void
+enum Action {
+    case none
+    case warning
+}
+
+typealias SelectionBlock = (_ index: Int) -> Action?
 
 class GraphView: UIView {
     var rangeUpdated: ((_ range: Range<CGFloat>) -> Void)?
