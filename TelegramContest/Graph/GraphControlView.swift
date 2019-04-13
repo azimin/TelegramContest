@@ -28,8 +28,14 @@ class GraphControlView: UIView {
     var height: CGFloat = 42
 
     func updateDataSouce(_ dataSource: GraphDataSource?, enableRows: [Int], animated: Bool, zoom: Zoom?) {
-        if let zoom = zoom, zoom.shouldReplaceRangeController {
-            self.triggerFilterView(zoom: zoom, dataSource: dataSource, enableRows: enableRows)
+        var animated = animated
+        if let zoom = zoom {
+            if zoom.shouldReplaceRangeController {
+                self.triggerFilterView(zoom: zoom, dataSource: dataSource, enableRows: enableRows)
+            } else if zoom.style == .pie || zoom.style == .zooming {
+                self.triggerPieOpacity()
+                animated = false
+            }
         }
 
         self.dataSource = dataSource
@@ -47,6 +53,7 @@ class GraphControlView: UIView {
     private var graphDrawLayers: [GraphDrawLayerView] = []
     var control = ThumbnailControl(frame: .zero)
     var contentView: UIView = UIView()
+    var graphsView: UIView = UIView()
     var filtersView: UIView = UIView()
 
     init(dataSource: GraphDataSource? = nil, selectedRange: Range<CGFloat> = 0..<1) {
@@ -79,6 +86,7 @@ class GraphControlView: UIView {
     private func updateFrame() {
         let topSpace = (self.frame.height - Constants.graphHeight) / 2
         self.control.frame = self.bounds
+        self.graphsView.frame = self.bounds
         self.contentView.frame = self.bounds
         self.filtersView.frame = self.bounds
         self.graphDrawLayers.forEach({ $0.frame = CGRect(x: Constants.offset, y: topSpace, width: self.frame.width - Constants.offset * 2, height: Constants.graphHeight) })
@@ -88,6 +96,7 @@ class GraphControlView: UIView {
         self.addSubview(self.contentView)
         self.filtersView.isHidden = true
         self.addSubview(self.filtersView)
+        self.contentView.addSubview(self.graphsView)
         self.contentView.addSubview(self.control)
     }
 
@@ -104,9 +113,9 @@ class GraphControlView: UIView {
             graphView.lineWidth = 1
             graphView.frame = CGRect(x: 0, y: 0, width: self.frame.width, height: self.frame.height)
             if let lates = self.graphDrawLayers.last {
-                self.contentView.insertSubview(graphView, belowSubview: lates)
+                self.graphsView.insertSubview(graphView, belowSubview: lates)
             } else {
-                self.contentView.insertSubview(graphView, belowSubview: self.control)
+                self.graphsView.addSubview(graphView)
             }
             self.graphDrawLayers.append(graphView)
         }
@@ -164,11 +173,31 @@ class GraphControlView: UIView {
             }
         }
 
+//        if let zoom = zoom, zoom.style == .pie {
+//            self.contentView.isHidden = false
+//            let contentImage = self.contentView.asImage()
+//            self.showContentView(image: contentImage)
+//            self.contentView.isHidden = true
+//        }
+
         self.updateFrame()
     }
 
     private let filterViewController = FiltersViewContentller()
     private var contentImage: UIImage?
+
+    func triggerPieOpacity() {
+        let contentImage = self.graphsView.asImage()
+        let contentImageView = UIImageView(image: contentImage)
+        contentImageView.frame = self.graphsView.frame
+        self.graphsView.addSubview(contentImageView)
+
+        UIView.animate(withDuration: 0.25, delay: 0, options: .curveEaseOut, animations: {
+            contentImageView.alpha = 0
+        }) { (_) in
+            contentImageView.removeFromSuperview()
+        }
+    }
 
     func triggerFilterView(zoom: Zoom, dataSource: GraphDataSource?, enableRows: [Int]) {
         if !zoom.index.isInside {
@@ -189,7 +218,7 @@ class GraphControlView: UIView {
 
         self.contentView.isHidden = true
 
-        UIView.animate(withDuration: 0.25, delay: 0, options: .curveEaseOut, animations: {
+        UIView.animate(withDuration: 0.24, delay: 0, options: .curveEaseOut, animations: {
             contentImageView.transform = CGAffineTransform.init(scaleX: 0.5, y: 0.5)
             contentImageView.alpha = 0
         }) { (_) in
@@ -231,7 +260,7 @@ class GraphControlView: UIView {
         contentImageView.alpha = 0
         contentImageView.transform = CGAffineTransform.init(scaleX: 0.5, y: 0.5)
 
-        UIView.animate(withDuration: 0.25, delay: 0, options: .curveEaseOut, animations: {
+        UIView.animate(withDuration: 0.26, delay: 0, options: .curveEaseOut, animations: {
             contentImageView.alpha = 1
             contentImageView.transform = CGAffineTransform.identity
         }) { (_) in

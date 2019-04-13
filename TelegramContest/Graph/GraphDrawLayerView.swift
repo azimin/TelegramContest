@@ -137,7 +137,7 @@ class GraphDrawLayerView: UIView {
             var fakeDotsBefore: FakeDots?
             var fakeDotsAfter: FakeDots?
             let oldContext = self.graphContext
-            if let zoom = zoom, (zoom.style == .basic || zoom.style == .pie), let firstGraph = self.graphContext, let secondGraph = graphContext {
+            if let zoom = zoom, zoom.style == .basic, let firstGraph = self.graphContext, let secondGraph = graphContext {
                 let zoomingIndex = zoom.index
                 let index: Int
                 let oldGraphContext: GraphContext
@@ -189,7 +189,7 @@ class GraphDrawLayerView: UIView {
                 animation.fromValue = self.pathLayer.path
                 animation.toValue = self.generatePath(graphContext: graphContext, fakeDots: (0, 0))
             }
-            animation.duration = animationDuration * 10
+            animation.duration = animationDuration
             animation.timingFunction = CAMediaTimingFunction(name: .easeOut)
             self.pathLayer.add(animation, forKey: "path")
         }
@@ -369,8 +369,8 @@ class GraphDrawLayerView: UIView {
         }
 
         if fakeDots.end > 2 {
-            for _ in 0..<(fakeDots.end * 2) {
-                path.addLine(to: CGPoint(x: lastPoint.x, y: self.availbleFrame.height)) // FIXME
+            for _ in 0..<(fakeDots.end) {
+                path.addLine(to: CGPoint(x: lastPoint.x + 100, y: lastPoint.y)) // FIXME
             }
         }
 
