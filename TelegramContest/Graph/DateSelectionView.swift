@@ -114,14 +114,14 @@ class DateSelectionView: UIView {
         }
     }
 
-    func show(position: CGFloat, graph: GraphDataSource, enabledRows: [Int], index: Int, height: CGFloat, canZoom: Bool, dateStyle: DateStyle) {
+    func show(position: CGFloat, graph: GraphDataSource, enabledRows: [Int], index: Int, height: CGFloat, canZoom: Bool, dateStyle: DateStyle, shouldShowPercentage: Bool) {
         self.canZoom = canZoom
         self.currentIndex = index
         switch self.style {
         case .line:
             self.showLine(position: position)
         case .plate:
-            self.showPlate(position: position, graph: graph, enabledRows: enabledRows, index: index, availableHeight: height, canZoom: canZoom, dateStyle: dateStyle)
+            self.showPlate(position: position, graph: graph, enabledRows: enabledRows, index: index, availableHeight: height, canZoom: canZoom, dateStyle: dateStyle, shouldShowPercentage: shouldShowPercentage)
         }
     }
 
@@ -135,26 +135,59 @@ class DateSelectionView: UIView {
         line.center = CGPoint(x: position, y: self.center.y)
     }
 
-    private func showPlate(position: CGFloat, graph: GraphDataSource, enabledRows: [Int], index: Int, availableHeight: CGFloat, canZoom: Bool, dateStyle: DateStyle) {
+    private func showPlate(position: CGFloat, graph: GraphDataSource, enabledRows: [Int], index: Int, availableHeight: CGFloat, canZoom: Bool, dateStyle: DateStyle, shouldShowPercentage: Bool) {
         guard let plate = self.plate else {
             return
         }
 
         plate.isHidden = false
+        self.percentageLabels.forEach({ $0.removeFromSuperview() })
         self.numberLabels.forEach({ $0.removeFromSuperview() })
         self.namesLabels.forEach({ $0.removeFromSuperview() })
         self.numberLabels = []
         self.namesLabels = []
+        self.percentageLabels = []
 
         self.selectedIndex = index
 
         var maxNameWidth: CGFloat = 0
+        var maxPercentageWidth: CGFloat = 0
         var maxValueWidth: CGFloat = 0
 
         var height: CGFloat = 0
 
+        var percentageValues: [Int: Int] = [:]
+        if shouldShowPercentage {
+            var sum = 0
+            for row in enabledRows.sorted() {
+                let rowValue = graph.yRows[row]
+                let value = rowValue.values[index]
+                sum += value
+            }
+
+            for row in enabledRows.sorted() {
+                let rowValue = graph.yRows[row]
+                let value = rowValue.values[index]
+                percentageValues[row] = Int(round(CGFloat(value) / CGFloat(sum) * 100))
+            }
+        }
+
         for row in enabledRows.sorted() {
             let rowValue = graph.yRows[row]
+
+            if shouldShowPercentage, let value = percentageValues[row] {
+                let percentageLabel = UILabel()
+                percentageLabel.textAlignment = .right
+                percentageLabel.font = UIFont.font(with: .bold, size: 12)
+                percentageLabel.textColor = self.theme.configuration.isLight ? UIColor(hex: "6D6D72") : UIColor.white
+                percentageLabel.text = "\(value)%"
+                let valueSize = percentageLabel.sizeThatFits(CGSize(width: 10000, height: 50))
+                if valueSize.width > maxPercentageWidth {
+                    maxPercentageWidth = valueSize.width
+                }
+                plate.addSubview(percentageLabel)
+                self.percentageLabels.append(percentageLabel)
+            }
 
             let valueLabel = UILabel()
             valueLabel.textAlignment = .right
@@ -189,6 +222,7 @@ class DateSelectionView: UIView {
 
         let offset: CGFloat = 12
         let smallOffset: CGFloat = 8
+        let anotherOffset = shouldShowPercentage ? smallOffset * 2 : smallOffset
 
         let date = graph.xRow.dates[index]
         let dateString = self.getDateComponents(date, dateStyle: dateStyle)
@@ -196,7 +230,7 @@ class DateSelectionView: UIView {
         let dateSize = self.dateLabel.sizeThatFits(CGSize(width: 10000, height: 50))
         self.dateLabel.frame = CGRect(x: offset, y: 6, width: dateSize.width, height: 15)
         let dateArrowWidth = dateSize.width + Constants.arrowSize.width + smallOffset
-        let leftWidth = max(dateArrowWidth, maxNameWidth + maxValueWidth + smallOffset)
+        let leftWidth = max(dateArrowWidth, maxPercentageWidth + maxNameWidth + maxValueWidth + anotherOffset)
 
         self.arrowImageView.frame = CGRect(
             x: offset + dateSize.width + smallOffset,
@@ -211,8 +245,13 @@ class DateSelectionView: UIView {
         for (index, valueLabel) in self.numberLabels.enumerated() {
             let nameLabel = self.namesLabels[index]
 
-            nameLabel.frame = CGRect(x: offset, y: y, width: maxNameWidth, height: height)
-            valueLabel.frame = CGRect(x: offset + maxNameWidth + smallOffset, y: y, width: leftWidth - maxNameWidth - smallOffset, height: height)
+            if shouldShowPercentage {
+                let perentageLabel = self.percentageLabels[index]
+                perentageLabel.frame = CGRect(x: offset, y: y, width: maxPercentageWidth, height: height)
+            }
+
+            nameLabel.frame = CGRect(x: offset + maxPercentageWidth + (anotherOffset - smallOffset), y: y, width: maxNameWidth, height: height)
+            valueLabel.frame = CGRect(x: offset + maxPercentageWidth + maxNameWidth + anotherOffset, y: y, width: leftWidth - maxPercentageWidth - maxNameWidth - anotherOffset, height: height)
             y += height + 3
         }
         y += 3
