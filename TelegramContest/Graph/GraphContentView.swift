@@ -785,7 +785,7 @@ class GraphContentView: UIView {
                 overlays.append(SelectOverlay(color: layer.color, rect: frame))
             }
 
-            if (selection?.height ?? 0) < newSelection.height {
+            if (selection?.height ?? -1) < newSelection.height {
                 selection = newSelection
             }
         }

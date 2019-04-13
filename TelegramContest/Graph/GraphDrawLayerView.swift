@@ -374,7 +374,7 @@ class GraphDrawLayerView: UIView {
             }
         }
 
-        path.addLine(to: CGPoint(x: lastPoint.x, y: self.availbleFrame.height)) // FIXME
+        path.addLine(to: CGPoint(x: lastPoint.x, y: self.availbleFrame.height))
         path.addLine(to: CGPoint(x: firstPoint.x, y: self.availbleFrame.height))
 
         return path
@@ -392,6 +392,7 @@ class GraphDrawLayerView: UIView {
         let path = CGMutablePath()
         var isMoved: Bool = false
 
+        var lastPoint: CGPoint = .zero
         for index in 0..<(graphContext.values.count / steps.points) {
             let value: Int = graphContext.values[index]
             let x = steps.pixels * CGFloat(index) - offset
@@ -408,16 +409,17 @@ class GraphDrawLayerView: UIView {
                     isMoved = true
                 }
                 path.addLine(to: CGPoint(x: x, y: y))
+                lastPoint = CGPoint(x: x, y: y)
             }
         }
 
         if fakeDots.end > 2 {
             for _ in 0..<fakeDots.end {
-                path.addLine(to: CGPoint(x: 400, y: self.availbleFrame.height)) // FIXME
+                path.addLine(to: CGPoint(x: lastPoint.x, y: self.availbleFrame.height))
             }
         }
 
-        path.addLine(to: CGPoint(x: 400, y: self.availbleFrame.height)) // FIXME
+        path.addLine(to: CGPoint(x: lastPoint.x, y: self.availbleFrame.height))
         path.addLine(to: CGPoint(x: 0, y: self.availbleFrame.height))
 
         return path

@@ -112,7 +112,7 @@ class PathManager {
 
         let jsonResult = try! JSONSerialization.jsonObject(with: data, options: .mutableLeaves)
         if let jsonResult = jsonResult as? [String: Any], let dataSource = GraphDataSource(json: jsonResult, byDay: byDay) {
-            return Section(dataSource: dataSource, selectedRange: byDay ? 0.0..<1.0 : 0.4..<0.6, enabledRows: Array(0..<dataSource.yRows.count), graph: graph)
+            return Section(dataSource: dataSource, selectedRange: byDay ? 0.9..<1.0 : 0.4..<0.6, enabledRows: Array(0..<dataSource.yRows.count), graph: graph)
         }
         return nil
     }
