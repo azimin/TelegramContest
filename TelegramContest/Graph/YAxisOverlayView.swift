@@ -122,7 +122,7 @@ class YAxisOverlayView: UIView {
         self.onRemoving = []
 
         for item in self.items {
-            let percent = CGFloat(item.value) / CGFloat(self.maxValue)
+            let percent = min(CGFloat(item.value) / CGFloat(self.maxValue), 2)
             self.onRemoving.append(item.view)
             UIView.animate(withDuration: animated ? 0.25 : 0, delay: 0, options: [UIView.AnimationOptions.curveEaseOut], animations: {
                 item.view.center = CGPoint(x: item.view.center.x, y: self.frame.height * (1 - percent) - item.view.frame.height / 2)
