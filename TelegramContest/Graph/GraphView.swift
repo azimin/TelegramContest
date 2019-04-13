@@ -24,6 +24,9 @@ class GraphView: UIView {
     var zoomOutAction: VoidBlock?
     var updateSizeAction: VoidBlock?
 
+    var noDataLabel = UILabel()
+    var dogImageView = UIImageView(image: UIImage(named: "dog"))
+
     var selectedAction: SelectionBlock? {
         didSet {
             self.graphControlView.selectedAction = selectedAction
@@ -74,14 +77,45 @@ class GraphView: UIView {
     }
 
     private func updateTheme() {
+        self.noDataLabel.textColor = theme.configuration.nameColor
         self.graphControlView.theme = theme
         self.graphContentView.theme = theme
-        self.titleLabel.textColor = theme.configuration.nameColor
+        self.titleLabel.textColor = theme.configuration.tooltipArrow
     }
 
     func updateEnabledRows(_ values: [Int], animated: Bool) {
         self.graphControlView.updateEnabledRows(values, animated: animated)
         self.graphContentView.updateEnabledRows(values, animated: animated)
+        self.updateNoDataState(isEmpty: values.isEmpty)
+    }
+
+    private var noData: Bool = false
+
+    func updateNoDataState(isEmpty: Bool) {
+        guard noData != isEmpty else {
+            return
+        }
+        self.noData = isEmpty
+        UIView.animate(withDuration: 0.25) {
+            let hasFilters = !self.graphControlView.filtersView.isHidden
+            if isEmpty {
+                self.graphContentView.alpha = 0
+                if !hasFilters {
+                    self.graphControlView.alpha = 0
+                }
+                self.zoomOutButton.alpha = 0
+                self.titleLabel.alpha = 0
+                self.noDataLabel.alpha = 1
+                self.dogImageView.alpha = 1
+            } else {
+                self.zoomOutButton.alpha = 1
+                self.graphContentView.alpha = 1
+                self.graphControlView.alpha = 1
+                self.titleLabel.alpha = 1
+                self.noDataLabel.alpha = 0
+                self.dogImageView.alpha = 0
+            }
+        }
     }
 
     func updateZoomStep(newValue: Int?) {
@@ -168,6 +202,9 @@ class GraphView: UIView {
 
         self.graphContentView.frame = CGRect(x: 0, y: 12 + labelHeight, width: self.frame.width, height: 320)
         self.graphControlView.frame = CGRect(x: 0, y: self.graphContentView.frame.maxY, width: self.frame.width, height: self.graphControlView.height)
+
+        self.dogImageView.frame = CGRect(x: self.frame.width / 2 - 28, y: self.frame.height / 2 - 28, width: 56, height: 56)
+        self.noDataLabel.frame = CGRect(x: self.frame.width / 2 - 50, y: self.dogImageView.frame.maxY + 8, width: 100, height: 30)
     }
 
     // 390
@@ -178,6 +215,15 @@ class GraphView: UIView {
         self.addSubview(self.graphContentView)
         self.addSubview(self.titleLabel)
         self.addSubview(self.zoomOutButton)
+
+        self.noDataLabel.alpha = 0
+        self.dogImageView.alpha = 0
+        self.addSubview(self.noDataLabel)
+        self.addSubview(self.dogImageView)
+
+        self.noDataLabel.textAlignment = .center
+        self.noDataLabel.font = UIFont.font(with: .bold, size: 16)
+        self.noDataLabel.text = "No Data"
 
         self.titleLabel.font = UIFont.systemFont(ofSize: 13)
         self.titleLabel.textAlignment = .center
