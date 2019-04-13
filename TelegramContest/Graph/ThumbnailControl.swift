@@ -115,18 +115,22 @@ class ThumbnailControl: UIControl {
         guard let touch = touches.first else {
             return
         }
+        let lentgh = self.range.interval * self.frame.width
+        let range = min((lentgh / 4), 40)
+        let innerRange = max(range, 30)
+
         let locationX = touch.location(in: self).x
         let increaseLeftRange = self.normalizeRange(
-            start: self.controlImageView.frame.minX - 16,
-            finish: self.controlImageView.frame.minX + 20
+            start: self.controlImageView.frame.minX - innerRange,
+            finish: self.controlImageView.frame.minX + range
         )
         let increaseMoveRange = self.normalizeRange(
-            start: self.controlImageView.frame.minX + 20,
-            finish: self.controlImageView.frame.maxX - 20
+            start: self.controlImageView.frame.minX + range,
+            finish: self.controlImageView.frame.maxX - range
         )
         let increaseRightRange = self.normalizeRange(
-            start: self.controlImageView.frame.maxX - 20,
-            finish: self.controlImageView.frame.maxX + 16
+            start: self.controlImageView.frame.maxX - range,
+            finish: self.controlImageView.frame.maxX + innerRange
         )
 
         if increaseLeftRange.contains(locationX) {
