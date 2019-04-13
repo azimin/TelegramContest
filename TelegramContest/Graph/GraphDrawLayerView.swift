@@ -327,6 +327,10 @@ class GraphDrawLayerView: UIView {
         return number * .pi / 180
     }
 
+    func rad2deg(_ number: CGFloat) -> CGFloat {
+        return number * 180 / .pi
+    }
+
     func generatePathStack(graphContext: GraphContext?) -> CGPath {
         guard let graphContext = graphContext, self.availbleFrame.width > 0 else {
             return CGMutablePath()
@@ -425,6 +429,63 @@ class GraphDrawLayerView: UIView {
         self.pathLayer.lineWidth = pathHeight
 
         return path
+    }
+
+    func sins(degrees: Double) -> Double {
+        return __sinpi(degrees / 180.0)
+    }
+
+    func sins(degrees: Float) -> Float {
+        return __sinpif(degrees / 180.0)
+    }
+
+    func sins(degrees: CGFloat) -> CGFloat {
+        return CGFloat(sins(degrees: degrees.native))
+    }
+
+    func isPieSelected(point: CGPoint, shouldRespectRadius: Bool) -> Bool {
+        guard let graphContext = graphContext else {
+            return false
+        }
+
+        let width = self.availbleFrame.width
+        let height = self.availbleFrame.height
+        let pathHeight = height / 2 - 10
+
+        let circleCenter = CGPoint(
+            x: width / 2,
+            y: self.availbleFrame.height / 2 + 14
+        )
+
+        let xPositive = point.x - circleCenter.x >= 0
+        let yPositive = point.y - circleCenter.y >= 0
+
+        let radius = sqrt(pow(point.x - circleCenter.x, 2) + pow(point.y - circleCenter.y, 2))
+        let sinus = (point.x - circleCenter.x) / radius
+        var degree = rad2deg(asin(sinus))
+        if xPositive && yPositive {
+            degree = 180 - degree
+        } else if !xPositive && yPositive {
+            degree = 180 - degree
+        } else if !xPositive && !yPositive {
+            degree = 360 + degree
+        }
+
+        if shouldRespectRadius, radius > pathHeight {
+            return false
+        }
+
+        func convertToNew(_ value: CGFloat) -> CGFloat {
+            let newValue = (value - 90)
+            if newValue < 0 {
+                return 360 + newValue
+            } else {
+                return newValue
+            }
+        }
+
+        let interval = (graphContext.range.lowerBound * 360)..<(graphContext.range.upperBound * 360)
+        return interval.contains(convertToNew(degree))
     }
 
     func reportPieLabelFrame(graphContext: GraphContext?) -> CGRect {

@@ -77,12 +77,14 @@ class GraphContentView: UIView {
         }
 
         if self.dataSource?.yRows.first?.style == .pie {
-            self.pieChartNumbersView?.removeFromSuperview()
-            self.pieChartNumbersView = PieChartNumbersView()
+            if self.pieChartNumbersView == nil {
+                self.pieChartNumbersView = PieChartNumbersView()
+            }
             self.addSubview(self.pieChartNumbersView!)
             self.selectionAvailable = false
             self.pieChartNumbersView?.isUserInteractionEnabled = false
         } else {
+            self.pieSelectedIndex = -1
             self.selectionAvailable = true
             self.pieChartNumbersView?.removeFromSuperview()
         }
@@ -253,6 +255,7 @@ class GraphContentView: UIView {
             self.yAxisOverlays.forEach({ $0.theme = theme })
             self.dateLabels.theme = theme
             self.shadowCachedSize = .zero
+            self.pieChartNumbersView?.theme = theme
             self.updateShadow()
             self.graphSelectionOverlayView.overlayerLayer.backgroundColor = config.backgroundColor.withAlphaComponent(0.4).cgColor
         }
@@ -457,6 +460,14 @@ class GraphContentView: UIView {
                 let sumValue = CGFloat(self.converValues(values: yRow.values, range: self.selectedRange, rounded: true).reduce(0, { $0 + $1 }))
                 let delta = sumValue / CGFloat(self.pieChartSumValue) * 100
                 pieValues.append(PieChartValue(isHidden: isHidden, value: Int(round(delta)), rect: rect))
+
+                if index == self.pieSelectedIndex {
+                    if isHidden {
+                        self.pieSelectedIndex = -1
+                    } else {
+                        self.pieChartNumbersView?.selection(range: range, name: yRow.name, value: Int(sumValue), color: yRow.color, index: index)
+                    }
+                }
             }
 
             if anyPoints.isEmpty && yRow.style != .pie {
@@ -542,7 +553,6 @@ class GraphContentView: UIView {
                 self.animateZoom(imageBefore: imageAfter, imageAfter: imageBefore ?? UIImage(), reversed: true)
             }
         }
-
     }
 
     func animateZoom(imageBefore: UIImage, imageAfter: UIImage, reversed: Bool) {
@@ -638,7 +648,13 @@ class GraphContentView: UIView {
         return Array(values[firstCount..<endCount])
     }
 
-    private var pieSelectedIndex: Int = -1
+    private var pieSelectedIndex: Int = -1 {
+        didSet {
+            if pieSelectedIndex == -1 {
+                self.pieChartNumbersView?.hideSelection()
+            }
+        }
+    }
 
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         super.touchesBegan(touches, with: event)
@@ -646,10 +662,12 @@ class GraphContentView: UIView {
         guard let touch = touches.first else {
             return
         }
+
+        let location = touch.location(in: self)
+        let locationInSelection = touch.location(in: self.selectionPlateView)
+
         guard self.selectionAvailable else {
-            pieSelectedIndex = Int.random(in: 0..<6)
-            self.shouldUpdatePieChart = true
-            self.update(animated: true, zoom: nil)
+            self.updatePieSelection(location: locationInSelection, shouldRespectRadius: true)
             return
         }
 
@@ -658,11 +676,28 @@ class GraphContentView: UIView {
             return
         }
 
-        let location = touch.location(in: self)
-        let locationInSelection = touch.location(in: self.selectionPlateView)
         if self.selectionPlateView.frame.contains(location) {
             self.showSelection(location: locationInSelection, animated: false, shouldRespectCahce: false)
         }
+    }
+
+    func updatePieSelection(location: CGPoint, shouldRespectRadius: Bool) {
+        let index = self.findPointInsideCircle(point: location, shouldRespectRadius: shouldRespectRadius)
+        guard self.pieSelectedIndex != index else {
+            return
+        }
+        self.pieSelectedIndex = index
+        self.shouldUpdatePieChart = true
+        self.update(animated: true, zoom: nil)
+    }
+
+    func findPointInsideCircle(point: CGPoint, shouldRespectRadius: Bool) -> Int {
+        for (index, layer) in self.graphDrawLayers.enumerated() {
+            if layer.isPieSelected(point: point, shouldRespectRadius: shouldRespectRadius) {
+                return index
+            }
+        }
+        return -1
     }
 
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -671,12 +706,15 @@ class GraphContentView: UIView {
         guard let touch = touches.first else {
             return
         }
-        guard self.selectionAvailable else {
-            return
-        }
 
         let location = touch.location(in: self)
         let locationInSelection = touch.location(in: self.selectionPlateView)
+
+        guard self.selectionAvailable else {
+            self.updatePieSelection(location: locationInSelection, shouldRespectRadius: false)
+            return
+        }
+
         if self.selectionPlateView.frame.contains(location) {
             self.showSelection(location: locationInSelection, animated: false, shouldRespectCahce: true)
         }
