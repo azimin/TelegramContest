@@ -162,7 +162,7 @@ class ViewsOverlayView: UIView {
         var xPositions: [CGFloat] = []
 
         for (index, item) in self.allItems.enumerated() {
-            if item.label.alpha == 1 {
+            if item.label.alpha > 0 {
                 labelsToShow.append(item.label)
                 xPositions.append(item.label.center.x)
                 if reversed {
@@ -215,7 +215,7 @@ class ViewsOverlayView: UIView {
         var labelsToShow: [UILabel] = []
 
         for item in self.allItems {
-            if item.label.alpha == 1 {
+            if item.label.alpha > 0 {
                 xPositions.append(item.label.center.x)
                 labelsToShow.append(item.label)
                 if !reversed {

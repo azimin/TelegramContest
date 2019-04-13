@@ -156,6 +156,7 @@ class GraphControlView: UIView {
                     values: self.transformedValues[index],
                     maxValue: maxValue,
                     minValue: minValue,
+                    isSelected: false,
                     style: yRow.style == .pie ? .areaBar : yRow.style
                 )
                 graphView.update(graphContext: context, animationDuration: animated ? Constants.aniamtionDuration : 0, zoom: nil)

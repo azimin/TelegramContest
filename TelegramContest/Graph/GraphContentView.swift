@@ -445,6 +445,7 @@ class GraphContentView: UIView {
                 values: self.transformedValues[index],
                 maxValue: self.currentMaxValue,
                 minValue: minValue,
+                isSelected: pieSelectedIndex == index,
                 style: yRow.style
             )
             graphView.update(graphContext: context, animationDuration: animated ? Constants.aniamtionDuration : 0, zoom: zoom)
@@ -637,6 +638,8 @@ class GraphContentView: UIView {
         return Array(values[firstCount..<endCount])
     }
 
+    private var pieSelectedIndex: Int = -1
+
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         super.touchesBegan(touches, with: event)
 
@@ -644,6 +647,9 @@ class GraphContentView: UIView {
             return
         }
         guard self.selectionAvailable else {
+            pieSelectedIndex = Int.random(in: 0..<6)
+            self.shouldUpdatePieChart = true
+            self.update(animated: true, zoom: nil)
             return
         }
 

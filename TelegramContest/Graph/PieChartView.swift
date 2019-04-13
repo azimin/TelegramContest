@@ -67,6 +67,17 @@ class PieChartNumbersView: UIView {
         self.values = values
     }
 
+    private var additionalCircleShapeLayer = CAShapeLayer()
+    private var selectionShapeLayer = CAShapeLayer()
+
+    func selection(range: Range<CGFloat>) {
+
+    }
+
+    func hideSelection() {
+
+    }
+
     private func fontSize(string: String, width: CGFloat) -> CGFloat {
         var currentSize: CGFloat = 26
         while currentSize > 3 {

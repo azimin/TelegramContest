@@ -32,6 +32,7 @@ class DateSelectionView: UIView {
     private var dateLabel: UILabel!
     private var arrowImageView: UIImageView!
     private var button: UIButton!
+    private var percentageLabels: [UILabel] = []
     private var numberLabels: [UILabel] = []
     private var namesLabels: [UILabel] = []
 

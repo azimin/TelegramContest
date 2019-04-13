@@ -21,13 +21,15 @@ class GraphContext {
     let values: [Int]
     let maxValue: Int
     let minValue: Int
+    let isSelected: Bool
     let style: Style
 
-    init(range: Range<CGFloat>, values: [Int], maxValue: Int, minValue: Int, style: Style = .area) {
+    init(range: Range<CGFloat>, values: [Int], maxValue: Int, minValue: Int, isSelected: Bool, style: Style = .area) {
         self.range = range
         self.values = values
         self.maxValue = maxValue
         self.minValue = minValue
+        self.isSelected = isSelected
         self.style = style
     }
 
@@ -217,7 +219,7 @@ class GraphDrawLayerView: UIView {
             self.pathLayer.fillColor = color.cgColor
             self.pathLayer.lineJoin = CAShapeLayerLineJoin.round
         case .pie:
-            self.pathLayer.lineWidth = self.availbleFrame.height / 2
+            self.pathLayer.lineWidth = self.availbleFrame.height / 2 - 10
             self.selectedPath.strokeColor = color.cgColor
             self.pathLayer.strokeColor = color.cgColor
             self.pathLayer.fillColor = UIColor.clear.cgColor
@@ -400,13 +402,27 @@ class GraphDrawLayerView: UIView {
             return CGMutablePath()
         }
 
+        var zoomOffset: CGFloat = 0
+        if graphContext.isSelected {
+            zoomOffset = 10
+        }
+
+        func point(degree: CGFloat, radius: CGFloat) -> CGPoint {
+            return CGPoint(x: radius * sin(deg2rad(degree)),
+                           y: radius * cos(deg2rad(degree)))
+        }
+
+        let moveCenterPoint = point(degree: graphContext.range.lowerBound * 360 + graphContext.range.interval / 2 * 360 + 90, radius: zoomOffset)
+
         let width = self.availbleFrame.width
         let height = self.availbleFrame.height
-        let pathHeight = height / 2
+        let pathHeight = height / 2 - 10
 
         let path = CGMutablePath()
-        path.addEllipse(in: CGRect(x: (width - pathHeight) / 2, y: (self.availbleFrame.height - pathHeight) / 2, width: pathHeight, height: pathHeight))
+        path.addEllipse(in: CGRect(x: (width - pathHeight) / 2 + moveCenterPoint.x, y: (self.availbleFrame.height - pathHeight) / 2 - moveCenterPoint.y, width: pathHeight, height: pathHeight))
+        self.pathLayer.strokeStart = graphContext.range.lowerBound
         self.pathLayer.strokeEnd = graphContext.range.upperBound
+        self.pathLayer.lineWidth = pathHeight
 
         return path
     }
@@ -418,7 +434,7 @@ class GraphDrawLayerView: UIView {
 
         let width = self.availbleFrame.width
         let height = self.availbleFrame.height
-        let pathHeight = height / 2
+        let pathHeight = height / 2 - 10
 
         var rect = self.square(radius: pathHeight, startAngle: 360 * graphContext.range.lowerBound + 90, endAngle: 360 * graphContext.range.upperBound + 90)
         rect.origin.x += (width - pathHeight) / 2 + pathHeight / 2
