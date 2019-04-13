@@ -178,7 +178,8 @@ class GraphView: UIView {
         self.titleLabel.textAlignment = .center
         self.titleLabel.adjustsFontSizeToFitWidth = true
 
-        self.zoomOutButton.setTitle("⤶ Zoom out", for: .normal)
+        self.zoomOutButton.setImage(UIImage(named: "img_arrow_back"), for: .normal)
+        self.zoomOutButton.setTitle("Zoom out", for: .normal)
         self.zoomOutButton.titleLabel?.font = UIFont.systemFont(ofSize: 13)
         self.zoomOutButton.isExclusiveTouch = true
         self.zoomOutButton.addTarget(self, action: #selector(self.zoomOutTapAction), for: .touchUpInside)
