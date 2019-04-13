@@ -183,7 +183,7 @@ class GraphControlView: UIView {
         self.updateFrame()
     }
 
-    private let filterViewController = FiltersViewContentller()
+    private let filterViewController = FiltersViewContentller(defaultOffset: 12)
     private var contentImage: UIImage?
 
     func triggerPieOpacity() {
@@ -236,7 +236,7 @@ class GraphControlView: UIView {
         }
         filterViewController.rows = rows
         filterViewController.update(width: self.frame.width, contentView: self.filtersView)
-        self.height = filterViewController.height - 6
+        self.height = filterViewController.height - 18
 
         self.filtersView.isHidden = false
         self.filtersView.alpha = 0

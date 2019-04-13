@@ -27,8 +27,13 @@ class Row {
 }
 
 class FiltersViewContentller {
+    let defaultOffset: CGFloat
     var height: CGFloat = 0
     var isCached = false
+
+    init(defaultOffset: CGFloat) {
+        self.defaultOffset = defaultOffset
+    }
 
     var rows: [Row] = [] {
         didSet {
@@ -48,7 +53,7 @@ class FiltersViewContentller {
             return
         }
 
-        var yCoord: CGFloat = 0
+        var yCoord: CGFloat = defaultOffset
         var xCoord: CGFloat = 16
         let offset: CGFloat = 8
 
@@ -93,7 +98,7 @@ class FiltersViewContentller {
 
 class FiltersTableViewCell: UITableViewCell {
 
-    let filtersViewController: FiltersViewContentller = FiltersViewContentller()
+    let filtersViewController: FiltersViewContentller = FiltersViewContentller(defaultOffset: 0)
 
     var rows: [Row] = [] {
         didSet {

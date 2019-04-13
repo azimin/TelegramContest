@@ -203,7 +203,12 @@ class GraphView: UIView {
         self.graphContentView.frame = CGRect(x: 0, y: 12 + labelHeight, width: self.frame.width, height: 320)
         self.graphControlView.frame = CGRect(x: 0, y: self.graphContentView.frame.maxY, width: self.frame.width, height: self.graphControlView.height)
 
-        self.dogImageView.frame = CGRect(x: self.frame.width / 2 - 28, y: self.frame.height / 2 - 28, width: 56, height: 56)
+        var offset: CGFloat = 20
+        if !self.graphControlView.filtersView.isHidden {
+            offset += 20 + (self.graphControlView.height - 42)
+        }
+
+        self.dogImageView.frame = CGRect(x: self.frame.width / 2 - 28, y: self.frame.height / 2 - 28 - offset, width: 56, height: 56)
         self.noDataLabel.frame = CGRect(x: self.frame.width / 2 - 50, y: self.dogImageView.frame.maxY + 8, width: 100, height: 30)
     }
 
