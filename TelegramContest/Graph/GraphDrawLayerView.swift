@@ -350,7 +350,7 @@ class GraphDrawLayerView: UIView {
 //            let x = steps.pixels * CGFloat(index) - offset - (steps.pixels / 2)
             let x = steps.pixels * CGFloat(index) - offset
             let yPercent = CGFloat(value) / CGFloat(graphContext.maxValue)
-            let y = round((1 - yPercent) * self.availbleFrame.height)
+            let y = (1 - yPercent) * self.availbleFrame.height
             if x > (-0.1 * self.availbleFrame.width) && x < (self.availbleFrame.width * 1.1) {
                 if !isMoved {
                     path.move(to: CGPoint(x: x, y: y))
@@ -397,7 +397,7 @@ class GraphDrawLayerView: UIView {
             let value: Int = graphContext.values[index]
             let x = steps.pixels * CGFloat(index) - offset
             let yPercent = CGFloat(value) / CGFloat(graphContext.maxValue)
-            let y = round((1 - yPercent) * self.availbleFrame.height)
+            let y = (1 - yPercent) * self.availbleFrame.height
             if x > (-0.1 * self.availbleFrame.width) && x < (self.availbleFrame.width * 1.1) {
                 if !isMoved {
                     path.move(to: CGPoint(x: x, y: y))
@@ -790,7 +790,8 @@ class GraphDrawLayerView: UIView {
 //        let x = steps.pixels * CGFloat(cachedIndex) - offset - (steps.pixels / 2)
         let x = steps.pixels * CGFloat(cachedIndex) - offset
         let yPercent = CGFloat(value) / CGFloat(graphContext.maxValue)
-        let y = round((1 - yPercent) * self.availbleFrame.height)
+        let y = (1 - yPercent) * self.availbleFrame.height
+
         let height = (self.availbleFrame.height - y)
 
         let rect = CGRect(x: x, y: self.availbleFrame.height - height + self.offset, width: steps.pixels, height: height)
