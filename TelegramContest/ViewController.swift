@@ -76,7 +76,7 @@ class PathManager {
         case forth = "4"
         case fivth = "5"
 
-        static var allCases: [Graph] = [.first, .second, .third, .forth, .fivth]
+        static var allCases: [Graph] = [.third, .forth, .fivth]
     }
 
     private static func path(to graph: Graph) -> String {

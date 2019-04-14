@@ -253,6 +253,7 @@ class GraphDrawLayerView: UIView {
     }
 
     private var cahce: GraphicsDataCache?
+    private var stackCache: StackGraphicsDataCache?
 
     func generatePointGraph(graphContext: GraphContext?, point: Int) -> CGPath {
         guard let graphContext = graphContext, self.availbleFrame.width > 0 else {
@@ -352,48 +353,59 @@ class GraphDrawLayerView: UIView {
             return CGMutablePath()
         }
 
-        let fullWidth = round(self.availbleFrame.width / graphContext.interval)
-        let offset = graphContext.range.lowerBound * fullWidth
-
-        let steps = graphContext.stepsBaseOn(width: fullWidth)
-        let path = CGMutablePath()
-        var isMoved: Bool = false
-
-        var firstPoint: CGPoint = .zero
-        var lastPoint: CGPoint = .zero
-        for index in 0..<(graphContext.values.count / steps.points) {
-            let value: Int = graphContext.values[index]
-//            let x = steps.pixels * CGFloat(index) - offset - (steps.pixels / 2)
-            let x = steps.pixels * CGFloat(index) - offset
-            let yPercent = CGFloat(value) / CGFloat(graphContext.maxValue)
-            let y = (1 - yPercent) * self.availbleFrame.height
-            if x > (-0.1 * self.availbleFrame.width) && x < (self.availbleFrame.width * 1.1) {
-                if !isMoved {
-                    path.move(to: CGPoint(x: x, y: y))
-                    firstPoint = CGPoint(x: x, y: y)
-                    if fakeDots.beggining > 2 {
-                        for _ in 0..<fakeDots.beggining {
-                            path.addLine(to: CGPoint(x: x, y: y))
-                        }
-                    }
-                    isMoved = true
-                }
-                path.addLine(to: CGPoint(x: x, y: y))
-                path.addLine(to: CGPoint(x: x + steps.pixels, y: y))
-                lastPoint = CGPoint(x: x + steps.pixels, y: y)
-            }
+        if self.stackCache == nil || self.stackCache?.isThisCache(values: graphContext.values) == false {
+            let cache = StackGraphicsDataCache(values: graphContext.values)
+            cache.calculate()
+            self.stackCache = cache
         }
 
-        if fakeDots.end > 2 {
-            for _ in 0..<(fakeDots.end) {
-                path.addLine(to: CGPoint(x: lastPoint.x + 100, y: lastPoint.y)) // FIXME
-            }
+        guard let stackCache = self.stackCache else {
+            return CGMutablePath()
         }
 
-        path.addLine(to: CGPoint(x: lastPoint.x, y: self.availbleFrame.height))
-        path.addLine(to: CGPoint(x: firstPoint.x, y: self.availbleFrame.height))
-
-        return path
+        return stackCache.transformStack(range: graphContext.range, size: self.availbleFrame.size, max: graphContext.maxValue)
+//        let fullWidth = round(self.availbleFrame.width / graphContext.interval)
+//        let offset = graphContext.range.lowerBound * fullWidth
+//
+//        let steps = graphContext.stepsBaseOn(width: fullWidth)
+//        let path = CGMutablePath()
+//        var isMoved: Bool = false
+//
+//        var firstPoint: CGPoint = .zero
+//        var lastPoint: CGPoint = .zero
+//        for index in 0..<(graphContext.values.count / steps.points) {
+//            let value: Int = graphContext.values[index]
+////            let x = steps.pixels * CGFloat(index) - offset - (steps.pixels / 2)
+//            let x = steps.pixels * CGFloat(index) - offset
+//            let yPercent = CGFloat(value) / CGFloat(graphContext.maxValue)
+//            let y = (1 - yPercent) * self.availbleFrame.height
+//            if x > (-0.1 * self.availbleFrame.width) && x < (self.availbleFrame.width * 1.1) {
+//                if !isMoved {
+//                    path.move(to: CGPoint(x: x, y: y))
+//                    firstPoint = CGPoint(x: x, y: y)
+//                    if fakeDots.beggining > 2 {
+//                        for _ in 0..<fakeDots.beggining {
+//                            path.addLine(to: CGPoint(x: x, y: y))
+//                        }
+//                    }
+//                    isMoved = true
+//                }
+//                path.addLine(to: CGPoint(x: x, y: y))
+//                path.addLine(to: CGPoint(x: x + steps.pixels, y: y))
+//                lastPoint = CGPoint(x: x + steps.pixels, y: y)
+//            }
+//        }
+//
+//        if fakeDots.end > 2 {
+//            for _ in 0..<(fakeDots.end) {
+//                path.addLine(to: CGPoint(x: lastPoint.x + 100, y: lastPoint.y)) // FIXME
+//            }
+//        }
+//
+//        path.addLine(to: CGPoint(x: lastPoint.x, y: self.availbleFrame.height))
+//        path.addLine(to: CGPoint(x: firstPoint.x, y: self.availbleFrame.height))
+//
+//        return path
     }
 
     func generatePathOverlay(graphContext: GraphContext?, fakeDots: FakeDots) -> CGPath {

@@ -248,7 +248,7 @@ class FilterView: UIView {
         }
 
         let animationCompletion = {
-            self.label.backgroundColor = self.isSelected ? self.color : self.theme.configuration.backgroundColor
+//            self.label.backgroundColor = self.isSelected ? self.color : self.theme.configuration.backgroundColor
         }
 
         if animated {
