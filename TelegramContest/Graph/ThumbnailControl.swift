@@ -103,13 +103,17 @@ class ThumbnailControl: UIControl {
         let topSpace = (self.frame.height - Constants.graphHeight) / 2
 
         let rect1 = CGRect(x: offset, y: topSpace, width: self.range.lowerBound * width + 10, height: Constants.graphHeight)
-        let path1 = CGPath(roundedRect: rect1, cornerWidth: 6, cornerHeight: 6, transform: nil)
+        if rect1.origin.y < 0 {
+            return
+        }
+
+        let path1 = CGPath(roundedRect: rect1, cornerWidth: 5, cornerHeight: 6, transform: nil)
         self.beforeOverlay.path = path1
 
         let lastWidth = width - self.range.upperBound * width
 
         let rect2 = CGRect(x: offset + self.range.upperBound * width - 10, y: topSpace, width: lastWidth + 10, height: Constants.graphHeight)
-        let path2 = CGPath(roundedRect: rect2, cornerWidth: 6, cornerHeight: 6, transform: nil)
+        let path2 = CGPath(roundedRect: rect2, cornerWidth: 5, cornerHeight: 6, transform: nil)
         self.endOverlay.path = path2
 
         self.controlImageView.frame = CGRect(x: offset + rect1.width - 10, y: 0, width: rect2.minX - rect1.width - offset + 20, height: height)
