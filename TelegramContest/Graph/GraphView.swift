@@ -78,7 +78,7 @@ class GraphView: UIView {
 
     private func updateTheme() {
         self.noDataLabel.textColor = theme.configuration.axisTextColor
-        self.noDataLabel.backgroundColor = theme.configuration.backgroundColor
+        
         self.graphControlView.theme = theme
         self.graphContentView.theme = theme
         self.titleLabel.textColor = theme.configuration.tooltipArrow

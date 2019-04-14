@@ -179,6 +179,7 @@ class FilterView: UIView {
         self.button.addTarget(self, action: #selector(self.tapAction), for: .touchUpInside)
 
         let longPress = UILongPressGestureRecognizer(target: self, action: #selector(self.longPress(gesture:)))
+        longPress.minimumPressDuration = 0.2
         self.button.addGestureRecognizer(longPress)
 
         self.layer.borderWidth = 1
