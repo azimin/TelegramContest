@@ -128,15 +128,15 @@ class GraphView: UIView {
             return
         }
 
-        let count = dataSource.xRow.fullDateStrings.count
+        let count = dataSource.xRow.count
         let indexs = convertIndexes(count: count, range: self.selectedRange, rounded: self.style == .pie)
         guard indexs != cachedIndexInterval else {
             return
         }
 
         self.cachedIndexInterval = indexs
-        let firstDate = dataSource.xRow.fullDateStrings[indexs.lowerBound]
-        let lastDate = dataSource.xRow.fullDateStrings[indexs.upperBound - 1]
+        let firstDate = dataSource.xRow.fullDate(at: indexs.lowerBound)
+        let lastDate = dataSource.xRow.fullDate(at: indexs.upperBound - 1)
 
         if firstDate == lastDate {
             self.titleLabel.text = firstDate
@@ -198,7 +198,7 @@ class GraphView: UIView {
         let zoomButtonWidth = self.zoomOutButton.sizeThatFits(CGSize(width: 10000, height: 20)).width
         self.zoomOutButton.frame = CGRect(x: 23, y: 12, width: zoomButtonWidth, height: labelHeight)
 
-        let labelOffset = 23 + zoomButtonWidth
+        let labelOffset = 25 + zoomButtonWidth
         self.titleLabel.frame = CGRect(x: labelOffset, y: 12, width: self.frame.width - labelOffset * 2, height: labelHeight)
 
         self.graphContentView.frame = CGRect(x: 0, y: 12 + labelHeight, width: self.frame.width, height: 320)

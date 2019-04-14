@@ -134,7 +134,7 @@ class GraphContentView: UIView {
             return
         }
 
-        let count = dataSource.xRow.dateStrings.count
+        let count = dataSource.xRow.count
         let lowValue = Int(round(CGFloat(count) * self.selectedRange.lowerBound))
         let upperValue = Int(round(CGFloat(count) * self.selectedRange.upperBound))
         let range = lowValue..<upperValue
@@ -508,7 +508,7 @@ class GraphContentView: UIView {
 
         var items: [ViewsOverlayView.Item] = []
         for point in anyPoints {
-            let xRow = dataSource.xRow.dateStrings[point.index]
+            let xRow = dataSource.xRow.date(at: point.index)
             let corner: ViewsOverlayView.Item.Corner
             if zoomed {
                 corner = .none
@@ -516,7 +516,7 @@ class GraphContentView: UIView {
                 switch point.index {
                 case 0:
                     corner = .left
-                case dataSource.xRow.dateStrings.count - 1:
+                case dataSource.xRow.count - 1:
                     corner = .right
                 default:
                     corner = .none

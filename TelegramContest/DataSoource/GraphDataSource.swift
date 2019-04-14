@@ -124,22 +124,78 @@ class GraphLineRow {
 
 class GraphXRow {
     var dates: [Date]
-    var dateStrings: [String]
-    var fullDateStrings: [String]
+    var count: Int
+    private var dateStrings: [String] = []
+    private var fullDateStrings: [String] = []
+
+    private var isCached: Bool = false
+    private var byDay: Bool = false
+
+    func date(at index: Int) -> String {
+        if isCached {
+            return dateStrings[index]
+        } else {
+            return self.partFormatter.string(from: self.dates[index])
+        }
+    }
+
+    func fullDate(at index: Int) -> String {
+        if isCached {
+            return fullDateStrings[index]
+        } else {
+            return self.fullDateFormatter.string(from: self.dates[index])
+        }
+    }
+
+    private var partFormatter: DateFormatter
+    private var fullDateFormatter: DateFormatter
 
     init(dates: [Date], byDay: Bool) {
         self.dates = dates
+        self.byDay = byDay
+        self.count = dates.count
 
-        let dateFormatter = DateFormatter()
+        self.partFormatter = DateFormatter()
         if byDay {
-            dateFormatter.dateFormat = "MMM d"
+            partFormatter.dateFormat = "MMM d"
         } else {
-            dateFormatter.dateFormat = "HH:mm"
+            partFormatter.dateFormat = "HH:mm"
         }
-        self.dateStrings = dates.map({ dateFormatter.string(from: $0) })
 
-        dateFormatter.dateFormat = "d MMM yyyy"
-        self.fullDateStrings = dates.map({ dateFormatter.string(from: $0) })
+        self.fullDateFormatter = DateFormatter()
+        self.fullDateFormatter.dateFormat = "d MMMM yyyy"
+
+        self.cacheDates()
+    }
+
+    private var concurrentDates: DispatchQueue?
+
+    func cacheDates() {
+        self.concurrentDates =
+            DispatchQueue(
+                label: "com.cache.date",
+                attributes: .concurrent)
+
+        let dates = self.dates
+        self.concurrentDates?.async {
+            let dateFormatter = DateFormatter()
+            if self.byDay {
+                dateFormatter.dateFormat = "MMM d"
+            } else {
+                dateFormatter.dateFormat = "HH:mm"
+            }
+            let cachedDates: [String] = dates.map({ dateFormatter.string(from: $0) })
+
+            dateFormatter.dateFormat = "d MMMM yyyy"
+            let cachedFullDates: [String] = dates.map({ dateFormatter.string(from: $0) })
+
+
+            OperationQueue.main.addOperation {
+                self.dateStrings = cachedDates
+                self.fullDateStrings = cachedFullDates
+                self.isCached = true
+            }
+        }
     }
 }
 
