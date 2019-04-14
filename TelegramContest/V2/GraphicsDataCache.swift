@@ -18,44 +18,51 @@ class GraphicsDataCache {
         self.values = values
     }
 
+    func isThisCache(values: [Int]) -> Bool {
+        return values.count == self.values.count && self.values.first == values.first && self.values.last == values.last
+    }
+
     func calculate() {
         self.max = self.values.max() ?? 0
         for (index, value) in self.values.enumerated() {
             let x = CGFloat(index)
-            let yPercent = CGFloat(value) / CGFloat(self.max)
-            let point = CGPoint(x: x, y: (1 - yPercent))
+            let point = CGPoint(x: x, y: CGFloat(value))
             self.points.append(point)
         }
     }
 
-    func transform(range: Range<CGFloat>, size: CGSize, max: Int) -> CGPath {
-        let width = size.width
-        let offset = range.lowerBound * CGFloat(self.values.count)
 
-        let newValues = converValues(values: self.values, range: range, rounded: false)
+    func transform(range: Range<CGFloat>, size: CGSize, max: Int) -> CGPath {
+        let fullWidth = round(size.width / range.interval)
+        let offset = range.lowerBound * fullWidth
+
+//        let width = size.width
+
+//        let newValues = converValues(values: self.values, range: range, rounded: false)
         let newPoints = converValues(values: self.points, range: range, rounded: false)
 
-        let newMax = newValues.max() ?? 0
-        var yScale = CGFloat(newMax) / CGFloat(self.max)
-        yScale = yScale / (CGFloat(newMax) / CGFloat(max))
-        let xScale = width /  CGFloat(newPoints.count)
-
-//        let tansformedPoints = self.tansfromPoints(points: newPoints, xScale: xScale, yScale: yScale, offset: offset, height: size.height)
+//        let newMax = newValues.max() ?? 0
+        let xScale = fullWidth / CGFloat(self.points.count)
+//        let yScale = CGFloat(newMax) / CGFloat(max)
+//        let globalIncrease = CGFloat(newMax) / CGFloat(self.max)
 
         let path = CGMutablePath()
-        path.addLines(between: newPoints, transform: CGAffineTransform.init(scaleX: xScale, y: yScale * size.height).translatedBy(x: -offset, y: 0))
-//        let firstPoint = tansformedPoints[0]
-//        path.move(to: firstPoint)
-//        for point in tansformedPoints {
-//            path.addLine(to: point)
-//        }
+
+//        let updatedPoints = self.points.map({ (point) -> CGPoint in
+//            let y = point.y / CGFloat(max)
+//            return CGPoint(x: (point.x * xScale - offset), y: size.height * (1 - y))
+//        })
+//        path.addLines(between: updatedPoints)
+
+
+        let firstTransform = CGAffineTransform(scaleX: xScale, y: (1 / CGFloat(max)))
+        let secondTransform = CGAffineTransform(translationX: -offset, y: -1)
+        let lastTransform = CGAffineTransform(scaleX: 1, y: -size.height)
+
+        let transform = firstTransform.concatenating(secondTransform).concatenating(lastTransform)
+        path.addLines(between: newPoints, transform: transform)
 
         return path
     }
 
-    func tansfromPoints(points: [CGPoint], xScale: CGFloat, yScale: CGFloat, offset: CGFloat, height: CGFloat) -> [CGPoint] {
-        return points.map({ (point) -> CGPoint in
-            return CGPoint(x: (point.x - offset), y: point.y)
-        })
-    }
 }

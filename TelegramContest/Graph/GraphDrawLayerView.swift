@@ -290,7 +290,7 @@ class GraphDrawLayerView: UIView {
             return CGMutablePath()
         }
 
-        if cahce == nil {
+        if self.cahce == nil || self.cahce?.isThisCache(values: graphContext.values) == false {
             let cache = GraphicsDataCache(values: graphContext.values)
             cache.calculate()
             self.cahce = cache
@@ -300,7 +300,9 @@ class GraphDrawLayerView: UIView {
             return CGMutablePath()
         }
 
-        return cacheValue.transform(range: graphContext.range, size: self.availbleFrame.size, max: graphContext.maxValue)
+        if fakeDots.beggining < 2 && fakeDots.end < 2 {
+            return cacheValue.transform(range: graphContext.range, size: self.availbleFrame.size, max: graphContext.maxValue)
+        }
 
         let fullWidth = round(self.availbleFrame.width / graphContext.interval)
         let offset = graphContext.range.lowerBound * fullWidth
