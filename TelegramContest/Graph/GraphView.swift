@@ -42,6 +42,7 @@ class GraphView: UIView {
     func updateDataSource(dataSource: GraphDataSource, enableRows: [Int], skip: Bool, zoomed: Bool) {
         self.style = dataSource.style
         self.zoomOutButton.isHidden = !zoomed
+        self.updateTitleAction()
         self.dataSource = dataSource
         if !skip {
             self.graphControlView.updateDataSouce(dataSource, enableRows: enableRows, animated: false, zoom: nil)
@@ -123,6 +124,12 @@ class GraphView: UIView {
 
     private var cachedIndexInterval: Range<Int> = -1..<1
 
+    private let dateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "EEEE, d MMM yyyy"
+        return formatter
+    }()
+
     func updateLabel() {
         guard let dataSource = self.dataSource else {
             return
@@ -139,7 +146,8 @@ class GraphView: UIView {
         let lastDate = dataSource.xRow.fullDate(at: indexs.upperBound - 1)
 
         if firstDate == lastDate {
-            self.titleLabel.text = firstDate
+            let string = dateFormatter.string(from: dataSource.xRow.dates[indexs.lowerBound])
+            self.titleLabel.text = string
             self.graphContentView.oneDayInterval = true
         } else {
             self.titleLabel.text = "\(firstDate) - \(lastDate)"
@@ -195,11 +203,8 @@ class GraphView: UIView {
 
     func updateFrame() {
         let labelHeight: CGFloat = 16
-        let zoomButtonWidth = self.zoomOutButton.sizeThatFits(CGSize(width: 10000, height: 20)).width
-        self.zoomOutButton.frame = CGRect(x: 23, y: 12, width: zoomButtonWidth, height: labelHeight)
-
-        let labelOffset = 25 + zoomButtonWidth
-        self.titleLabel.frame = CGRect(x: labelOffset, y: 12, width: self.frame.width - labelOffset * 2, height: labelHeight)
+        self.zoomOutButton.frame = CGRect(x: 23, y: 12, width: self.zoomOutButton.frame.width, height: self.zoomOutButton.frame.height)
+        self.updateTitleAction()
 
         self.graphContentView.frame = CGRect(x: 0, y: 12 + labelHeight, width: self.frame.width, height: 320)
         self.graphControlView.frame = CGRect(x: 0, y: self.graphContentView.frame.maxY, width: self.frame.width, height: self.graphControlView.height)
@@ -209,6 +214,20 @@ class GraphView: UIView {
             offset += 20 + (self.graphControlView.height - 42)
         }
         self.noDataLabel.frame = CGRect(x: self.frame.width / 2 - 50, y: self.frame.height / 2 - 15 - offset, width: 100, height: 30)
+    }
+
+    func updateTitleAction() {
+        let labelOffset: CGFloat
+        let labelHeight: CGFloat = 16
+        if self.zoomOutButton.isHidden {
+            labelOffset = 12
+            self.titleLabel.frame = CGRect(x: labelOffset, y: 12, width: self.frame.width - labelOffset * 2, height: labelHeight)
+            self.titleLabel.textAlignment = .center
+        } else {
+            labelOffset = 25 + self.zoomOutButton.frame.width
+            self.titleLabel.frame = CGRect(x: labelOffset, y: 12, width: self.frame.width - labelOffset - 12, height: labelHeight)
+            self.titleLabel.textAlignment = .right
+        }
     }
 
     private func setup() {
@@ -232,6 +251,10 @@ class GraphView: UIView {
         self.zoomOutButton.titleLabel?.font = UIFont.systemFont(ofSize: 13)
         self.zoomOutButton.isExclusiveTouch = true
         self.zoomOutButton.addTarget(self, action: #selector(self.zoomOutTapAction), for: .touchUpInside)
+
+        let labelHeight: CGFloat = 16
+        let zoomButtonWidth = self.zoomOutButton.sizeThatFits(CGSize(width: 10000, height: 20)).width
+        self.zoomOutButton.frame = CGRect(x: 23, y: 12, width: zoomButtonWidth, height: labelHeight)
 
         self.graphControlView.control.addTarget(self, action: #selector(self.rangeUpdated(control:)), for: .valueChanged)
         self.graphControlView.control.addTarget(self, action: #selector(self.rangeUpdateEnded(control:)), for: .editingDidEnd)

@@ -127,6 +127,7 @@ class GraphXRow {
     var count: Int
     private var dateStrings: [String] = []
     private var fullDateStrings: [String] = []
+    private var fullZoomedDateStrings: [String] = []
 
     private var isCached: Bool = false
     private var byDay: Bool = false
@@ -163,7 +164,11 @@ class GraphXRow {
         }
 
         self.fullDateFormatter = DateFormatter()
-        self.fullDateFormatter.dateFormat = "d MMMM yyyy"
+        if byDay {
+            self.fullDateFormatter.dateFormat = "d MMMM yyyy"
+        } else {
+            self.fullDateFormatter.dateFormat = "d MMMM yyyy"
+        }
 
         self.cacheDates()
     }
@@ -186,7 +191,12 @@ class GraphXRow {
             }
             let cachedDates: [String] = dates.map({ dateFormatter.string(from: $0) })
 
-            dateFormatter.dateFormat = "d MMMM yyyy"
+            if self.byDay {
+                dateFormatter.dateFormat = "d MMMM yyyy"
+            } else {
+                dateFormatter.dateFormat = "d MMMM yyyy"
+            }
+
             let cachedFullDates: [String] = dates.map({ dateFormatter.string(from: $0) })
 
 
