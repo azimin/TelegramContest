@@ -21,15 +21,15 @@ class ThumbnailControl: UIControl {
         case none
     }
 
-    private var beforeOverlay = UIView()
-    private var endOverlay = UIView()
+    private var beforeOverlay = CAShapeLayer()
+    private var endOverlay = CAShapeLayer()
     private var controlImageView: UIImageView = UIImageView()
 
     var theme: Theme = .default {
         didSet {
             let config = theme.configuration
-            self.beforeOverlay.backgroundColor = config.scrollBackground
-            self.endOverlay.backgroundColor = config.scrollBackground
+            self.beforeOverlay.fillColor = config.scrollBackground.cgColor
+            self.endOverlay.fillColor = config.scrollBackground.cgColor
 
             let image = ThumbnailImage.imageDraw(theme: self.theme)
             let insets = UIEdgeInsets(top: 16, left: 17, bottom: 16, right: 17)
@@ -77,14 +77,14 @@ class ThumbnailControl: UIControl {
     }
 
     private func setup() {
-        self.beforeOverlay.backgroundColor = UIColor.black.withAlphaComponent(0.3)
-        self.endOverlay.backgroundColor = UIColor.black.withAlphaComponent(0.3)
+//        self.beforeOverlay.backgroundColor = UIColor.clear
+//        self.endOverlay.backgroundColor = UIColor.black.withAlphaComponent(0.3)
 
-        self.beforeOverlay.layer.cornerRadius = 6
-        self.endOverlay.layer.cornerRadius = 6
+//        self.beforeOverlay.layer.cornerRadius = 6
+//        self.endOverlay.layer.cornerRadius = 6
 
-        self.addSubview(self.beforeOverlay)
-        self.addSubview(self.endOverlay)
+        self.layer.addSublayer(self.beforeOverlay)
+        self.layer.addSublayer(self.endOverlay)
         self.addSubview(self.controlImageView)
 
         self.update()
@@ -102,12 +102,17 @@ class ThumbnailControl: UIControl {
         let height = self.frame.height
         let topSpace = (self.frame.height - Constants.graphHeight) / 2
 
-        self.beforeOverlay.frame = CGRect(x: offset, y: topSpace, width: self.range.lowerBound * width + 10, height: Constants.graphHeight)
+        let rect1 = CGRect(x: offset, y: topSpace, width: self.range.lowerBound * width + 10, height: Constants.graphHeight)
+        let path1 = CGPath(roundedRect: rect1, cornerWidth: 6, cornerHeight: 6, transform: nil)
+        self.beforeOverlay.path = path1
 
         let lastWidth = width - self.range.upperBound * width
-        self.endOverlay.frame = CGRect(x: offset + self.range.upperBound * width - 10, y: topSpace, width: lastWidth + 10, height: Constants.graphHeight)
 
-        self.controlImageView.frame = CGRect(x: offset + self.beforeOverlay.frame.width - 10, y: 0, width: self.endOverlay.frame.minX - self.beforeOverlay.frame.width - offset + 20, height: height)
+        let rect2 = CGRect(x: offset + self.range.upperBound * width - 10, y: topSpace, width: lastWidth + 10, height: Constants.graphHeight)
+        let path2 = CGPath(roundedRect: rect2, cornerWidth: 6, cornerHeight: 6, transform: nil)
+        self.endOverlay.path = path2
+
+        self.controlImageView.frame = CGRect(x: offset + rect1.width - 10, y: 0, width: rect2.minX - rect1.width - offset + 20, height: height)
     }
 
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -247,3 +252,13 @@ class ThumbnailControl: UIControl {
         return lower..<upper
     }
 }
+
+//class CornerView: UIView {
+//    var drawRect: CGRect = .zero
+//
+//    override func draw(_ rect: CGRect) {
+//        let path = UIBezierPath(ovalIn: drawRect)
+//        UIColor.green.withAlphaComponent(0.5).setFill()
+//        path.fill()
+//    }
+//}
