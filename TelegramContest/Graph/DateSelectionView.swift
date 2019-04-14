@@ -114,7 +114,7 @@ class DateSelectionView: UIView {
         }
     }
 
-    func show(position: CGFloat, graph: GraphDataSource, enabledRows: [Int], index: Int, height: CGFloat, canZoom: Bool, dateStyle: DateStyle, shouldShowPercentage: Bool) {
+    func show(position: CGFloat, graph: GraphDataSource, enabledRows: [Int], index: Int, height: CGFloat, canZoom: Bool, dateStyle: DateStyle, shouldShowPercentage: Bool, shouldRespectCahce: Bool) {
         self.canZoom = canZoom
         self.currentIndex = index
         switch self.style {
@@ -122,14 +122,13 @@ class DateSelectionView: UIView {
             self.showLine(position: position)
         case .plate:
             if let plate = plate {
-                if plate.isHidden {
+                if plate.isHidden || !shouldRespectCahce {
                     self.preparePlate(graph: graph, enabledRows: enabledRows, canZoom: canZoom, dateStyle: dateStyle, shouldShowPercentage: shouldShowPercentage)
                     self.updatePlate(position: position, graph: graph, enabledRows: enabledRows, index: index, availableHeight: height, dateStyle: dateStyle, shouldShowPercentage: shouldShowPercentage)
                 } else {
                     self.updatePlate(position: position, graph: graph, enabledRows: enabledRows, index: index, availableHeight: height, dateStyle: dateStyle, shouldShowPercentage: shouldShowPercentage)
                 }
             }
-//            self.showPlate(position: position, graph: graph, enabledRows: enabledRows, index: index, availableHeight: height, canZoom: canZoom, dateStyle: dateStyle, shouldShowPercentage: shouldShowPercentage)
         }
     }
 
@@ -237,6 +236,7 @@ class DateSelectionView: UIView {
                 percentageLabel.textAlignment = .right
                 percentageLabel.font = UIFont.font(with: .bold, size: 12)
                 percentageLabel.textColor = self.theme.configuration.isLight ? UIColor(hex: "6D6D72") : UIColor.white
+                percentageLabel.backgroundColor = self.theme.configuration.mainBackgroundColor
                 if enabledRows.count == 1 {
                     percentageLabel.text = "100%"
                 } else {
@@ -256,6 +256,7 @@ class DateSelectionView: UIView {
             valueLabel.font = UIFont.font(with: .medium, size: 12)
             valueLabel.textColor = rowValue.color
             valueLabel.text = "\(rowValue.values.max() ?? 0)"
+            valueLabel.backgroundColor = self.theme.configuration.mainBackgroundColor
             let valueSize = valueLabel.sizeThatFits(CGSize(width: 10000, height: 50))
             let valueWidth = valueSize.width + 8
             if valueWidth > maxValueWidth {
@@ -271,6 +272,7 @@ class DateSelectionView: UIView {
             nameLabel.textAlignment = .left
             nameLabel.font = UIFont.font(with: .regular, size: 12)
             nameLabel.textColor = self.theme.configuration.isLight ? UIColor(hex: "6D6D72") : UIColor.white
+            nameLabel.backgroundColor = self.theme.configuration.mainBackgroundColor
             nameLabel.text = rowValue.name
             let nameSize = nameLabel.sizeThatFits(CGSize(width: 10000, height: 50))
             if nameSize.width > maxNameWidth {
@@ -298,6 +300,8 @@ class DateSelectionView: UIView {
         }
 
         self.dateLabel.frame = CGRect(x: offset, y: 6, width: dateSize.width, height: 15)
+        self.dateLabel.backgroundColor = self.theme.configuration.mainBackgroundColor
+
         let dateArrowWidth = dateSize.width + Constants.arrowSize.width + smallOffset
         let leftWidth = max(dateArrowWidth, maxPercentageWidth + maxNameWidth + maxValueWidth + anotherOffset)
 

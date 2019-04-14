@@ -822,7 +822,8 @@ class GraphContentView: UIView {
                                                   height: height,
                                                   canZoom: !self.zoomed,
                                                   dateStyle: dateStyle,
-                                                  shouldShowPercentage: self.style == .percentStackedBar) })
+                                                  shouldShowPercentage: self.style == .percentStackedBar,
+                                                  shouldRespectCahce: shouldRespectCahce) })
 
             if #available(iOS 10.0, *) {
                 let lightImpactFeedbackGenerator = UIImpactFeedbackGenerator(style: .light)
