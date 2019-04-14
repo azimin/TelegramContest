@@ -120,6 +120,7 @@ class YAxisOverlayView: UIView {
 
     private func disapear(animated: Bool) {
         for view in self.onRemoving {
+            view.layer.removeAllAnimations()
             view.isHidden = true
             self.onReuse.append(view)
         }

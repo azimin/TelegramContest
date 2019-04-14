@@ -37,7 +37,7 @@ class StackGraphicsDataCache {
         let fullWidth = round(size.width / range.interval)
 
         let newRange = (range.lowerBound - 0.1)..<(range.upperBound + 0.1)
-        let newPoints = converValues(values: self.points, range: newRange, rounded: false)
+        var newPoints = converValues(values: self.points, range: newRange, rounded: false)
         let xScale = fullWidth / CGFloat(self.points.count) * 2
         let offset = range.lowerBound * fullWidth
 
@@ -48,13 +48,15 @@ class StackGraphicsDataCache {
         let lastTransform = CGAffineTransform(scaleX: 1, y: -size.height)
 
         let transform = firstTransform.concatenating(secondTransform).concatenating(lastTransform)
-        path.addLines(between: newPoints, transform: transform)
         let lastPoint = CGPoint(x: (newPoints.last?.x ?? 0) + 1, y: 0)
         let preLastPoint = CGPoint(x: lastPoint.x, y: (newPoints.last?.y ?? 0))
         let firstPoint = CGPoint(x: (newPoints.first?.x ?? 0), y: 0)
-        path.addLine(to: preLastPoint, transform: transform)
-        path.addLine(to: lastPoint, transform: transform)
-        path.addLine(to: firstPoint, transform: transform)
+
+        newPoints.append(preLastPoint)
+        newPoints.append(lastPoint)
+        newPoints.append(firstPoint)
+
+        path.addLines(between: newPoints, transform: transform)
 
         return path
     }
