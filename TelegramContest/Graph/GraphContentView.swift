@@ -489,7 +489,7 @@ class GraphContentView: UIView {
 
             if anyPoints.isEmpty && yRow.style != .pie {
                 let zoomingForThisStep = zoom != nil
-                let zooming = zoomingForThisStep || self.isMovingZoomMode
+                let zooming = zoomingForThisStep || self.isMovingZoomMode || self.zoomStep == nil
                 let startingRange  = zoomingForThisStep ? self.selectedRange : self.cachedRange
                 let pair = graphView.reportLabelPoints(graphContext: context, startingRange: startingRange, zooming: zooming, zoomStep: self.zoomStep)
                 anyPoints = pair.points

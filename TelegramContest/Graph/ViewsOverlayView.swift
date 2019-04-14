@@ -139,7 +139,7 @@ class ViewsOverlayView: UIView {
     }
 
     func calculateAlpha(baseOn alpha: CGFloat) -> CGFloat {
-        return alpha < 0.8 ? 0 : (alpha - 0.8) * 5
+        return alpha < 0.5 ? 0 : (alpha - 0.5) * 2
     }
 
     func disaper(item: Item) {

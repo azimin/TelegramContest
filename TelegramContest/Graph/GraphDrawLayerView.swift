@@ -641,7 +641,15 @@ class GraphDrawLayerView: UIView {
 
         let progress = (1 - CGFloat(interval) / CGFloat(newUpper - newLower)) * 2
 
-        return (newLower, newUpper, step, progress, Int(maxValue))
+        return (newLower, newUpper, step, progress * progress, Int(maxValue))
+    }
+
+    private func square(_ x: CGFloat) -> CGFloat {
+        return x * x
+    }
+
+    private func quadraticEaseOut(_ x: CGFloat) -> CGFloat {
+        return -x * (x - 2)
     }
 
     private func converRange(range: Range<CGFloat>, isRight: Bool) -> Range<CGFloat> {

@@ -59,10 +59,10 @@ class ThumbnailControl: UIControl {
         self.range = range
         if animated {
             UIView.animate(withDuration: 0.25) {
-                self.update()
+                self.update(animated: true)
             }
         } else {
-            self.update()
+            self.update(animated: false)
         }
         self.sendActions(for: .valueChanged)
     }
@@ -87,16 +87,16 @@ class ThumbnailControl: UIControl {
         self.layer.addSublayer(self.endOverlay)
         self.addSubview(self.controlImageView)
 
-        self.update()
+        self.update(animated: false)
     }
 
     override var frame: CGRect {
         didSet {
-            self.update()
+            self.update(animated: false)
         }
     }
 
-    func update() {
+    func update(animated: Bool) {
         let offset = Constants.offset
         let width = self.frame.width - offset * 2
         let height = self.frame.height
@@ -108,15 +108,28 @@ class ThumbnailControl: UIControl {
         }
 
         let path1 = CGPath(roundedRect: rect1, cornerWidth: 5, cornerHeight: 6, transform: nil)
-        self.beforeOverlay.path = path1
-
         let lastWidth = width - self.range.upperBound * width
 
         let rect2 = CGRect(x: offset + self.range.upperBound * width - 10, y: topSpace, width: lastWidth + 10, height: Constants.graphHeight)
         let path2 = CGPath(roundedRect: rect2, cornerWidth: 5, cornerHeight: 6, transform: nil)
-        self.endOverlay.path = path2
 
         self.controlImageView.frame = CGRect(x: offset + rect1.width - 10, y: 0, width: rect2.minX - rect1.width - offset + 20, height: height)
+
+        if animated {
+            self.animate(layer: self.beforeOverlay, toPath: path1)
+            self.animate(layer: self.endOverlay, toPath: path2)
+        }
+        self.beforeOverlay.path = path1
+        self.endOverlay.path = path2
+    }
+
+    func animate(layer: CAShapeLayer, toPath: CGPath) {
+        let animation = CABasicAnimation(keyPath: "path")
+        animation.fromValue = layer.path
+        animation.toValue = toPath
+        animation.duration = 0.24 // FIXME
+        animation.timingFunction = CAMediaTimingFunction(name: .linear)
+        layer.add(animation, forKey: "path")
     }
 
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -124,8 +137,14 @@ class ThumbnailControl: UIControl {
         guard let touch = touches.first else {
             return
         }
+
         let lentgh = self.range.interval * self.frame.width
-        let range = min((lentgh / 4), 40)
+        let range: CGFloat
+        if lentgh < 50 {
+            range = 2
+        } else {
+            range = min((lentgh / 4), 40)
+        }
         let innerRange = max(range, 30)
 
         let locationX = touch.location(in: self).x
