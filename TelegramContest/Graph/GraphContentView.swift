@@ -510,13 +510,17 @@ class GraphContentView: UIView {
         for point in anyPoints {
             let xRow = dataSource.xRow.dateStrings[point.index]
             let corner: ViewsOverlayView.Item.Corner
-            switch point.index {
-            case 0:
-                corner = .left
-            case dataSource.xRow.dateStrings.count - 1:
-                corner = .right
-            default:
+            if zoomed {
                 corner = .none
+            } else {
+                switch point.index {
+                case 0:
+                    corner = .left
+                case dataSource.xRow.dateStrings.count - 1:
+                    corner = .right
+                default:
+                    corner = .none
+                }
             }
             let item = ViewsOverlayView.Item(text: xRow, position: point.position, alpha: point.alpha, corner: corner)
             items.append(item)

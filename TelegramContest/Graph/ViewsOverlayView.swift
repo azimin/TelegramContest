@@ -87,10 +87,9 @@ class ViewsOverlayView: UIView {
         }
         let visualItem = self.allItems[index]
         let label = visualItem.label
-        label.center = CGPoint(x: item.position, y: visualItem.label.center.y)
 
         let newAlpha = self.calculateAlpha(baseOn: item.alpha)
-        if abs(newAlpha - label.alpha) > 0.15 {
+        if abs(newAlpha - label.alpha) > 0.15, ThresholdOptimization.memorySize == .high {
             UIView.animate(withDuration: 0.25) {
                 label.alpha = newAlpha
             }
@@ -98,15 +97,14 @@ class ViewsOverlayView: UIView {
             label.alpha = newAlpha
         }
 
-        label.center = CGPoint(x: item.position, y: visualItem.label.center.y)
-        //        switch item.corner {
-        //        case .right:
-        //            label.center = CGPoint(x: item.position - visualItem.label.frame.width / 2, y: visualItem.label.center.y)
-        //        case .left:
-        //            label.center = CGPoint(x: item.position + visualItem.label.frame.width / 2, y: visualItem.label.center.y)
-        //        case .none:
-        //            label.center = CGPoint(x: item.position, y: visualItem.label.center.y)
-        //        }
+        switch item.corner {
+        case .none:
+            label.center = CGPoint(x: item.position, y: visualItem.label.center.y)
+        case .right:
+            label.center = CGPoint(x: item.position - 8, y: visualItem.label.center.y)
+        case .left:
+            label.center = CGPoint(x: item.position + 8, y: visualItem.label.center.y)
+        }
     }
 
     func show(items: [Item]) {
@@ -153,7 +151,6 @@ class ViewsOverlayView: UIView {
             visualItem.label.alpha = 0
         }) { (success) in
             self.labelsToReuse.append(visualItem.label)
-            visualItem.label.removeFromSuperview()
         }
     }
 
@@ -219,7 +216,6 @@ class ViewsOverlayView: UIView {
         }) { (_) in
             if !reversed {
                 allItems.forEach({ self.labelsToReuse.append($0.label) })
-                allItems.forEach({ $0.label.removeFromSuperview() })
             }
         }
     }
@@ -255,7 +251,6 @@ class ViewsOverlayView: UIView {
         }, completion: { _ in
             if reversed {
                 allItems.forEach({ self.labelsToReuse.append($0.label) })
-                allItems.forEach({ $0.label.removeFromSuperview() })
             }
         })
     }

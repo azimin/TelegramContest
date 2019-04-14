@@ -9,6 +9,8 @@
 import UIKit
 
 class ThresholdOptimization {
+    static let memorySize: MemorySize = MemorySize.current
+    
     enum MemorySize {
         case low, medium, high
 
