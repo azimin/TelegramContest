@@ -121,7 +121,15 @@ class DateSelectionView: UIView {
         case .line:
             self.showLine(position: position)
         case .plate:
-            self.showPlate(position: position, graph: graph, enabledRows: enabledRows, index: index, availableHeight: height, canZoom: canZoom, dateStyle: dateStyle, shouldShowPercentage: shouldShowPercentage)
+            if let plate = plate {
+                if plate.isHidden {
+                    self.preparePlate(graph: graph, enabledRows: enabledRows, canZoom: canZoom, dateStyle: dateStyle, shouldShowPercentage: shouldShowPercentage)
+                    self.updatePlate(position: position, graph: graph, enabledRows: enabledRows, index: index, availableHeight: height, dateStyle: dateStyle, shouldShowPercentage: shouldShowPercentage)
+                } else {
+                    self.updatePlate(position: position, graph: graph, enabledRows: enabledRows, index: index, availableHeight: height, dateStyle: dateStyle, shouldShowPercentage: shouldShowPercentage)
+                }
+            }
+//            self.showPlate(position: position, graph: graph, enabledRows: enabledRows, index: index, availableHeight: height, canZoom: canZoom, dateStyle: dateStyle, shouldShowPercentage: shouldShowPercentage)
         }
     }
 
@@ -135,28 +143,15 @@ class DateSelectionView: UIView {
         line.center = CGPoint(x: position, y: self.center.y)
     }
 
-    private func showPlate(position: CGFloat, graph: GraphDataSource, enabledRows: [Int], index: Int, availableHeight: CGFloat, canZoom: Bool, dateStyle: DateStyle, shouldShowPercentage: Bool) {
+    func updatePlate(position: CGFloat, graph: GraphDataSource, enabledRows: [Int], index: Int, availableHeight: CGFloat, dateStyle: DateStyle, shouldShowPercentage: Bool) {
         guard let plate = self.plate else {
             return
         }
 
-        plate.isHidden = false
-        self.percentageLabels.forEach({ $0.removeFromSuperview() })
-        self.numberLabels.forEach({ $0.removeFromSuperview() })
-        self.namesLabels.forEach({ $0.removeFromSuperview() })
-        self.numberLabels = []
-        self.namesLabels = []
-        self.percentageLabels = []
+        let offset: CGFloat = 12
+        let plateWidth = plate.frame.width
+        let plateHeigh = plate.frame.height
 
-        self.selectedIndex = index
-
-        var maxNameWidth: CGFloat = 0
-        var maxPercentageWidth: CGFloat = 0
-        var maxValueWidth: CGFloat = 0
-
-        var height: CGFloat = 0
-
-        var percentageValues: [Int: Int] = [:]
         if shouldShowPercentage {
             var sum = 0
             for row in enabledRows.sorted() {
@@ -165,25 +160,92 @@ class DateSelectionView: UIView {
                 sum += value
             }
 
-            for row in enabledRows.sorted() {
+            var maxPercent = 100
+            for (labelIndex, row) in enabledRows.sorted().enumerated() {
                 let rowValue = graph.yRows[row]
                 let value = rowValue.values[index]
-                percentageValues[row] = Int(round(CGFloat(value) / CGFloat(sum) * 100))
+                let label = self.percentageLabels[labelIndex]
+                let percentageValue = Int(round(CGFloat(value) / CGFloat(sum) * 100))
+                
+                if maxPercent < percentageValue {
+                    label.text = "\(maxPercent)%"
+                } else {
+                    label.text = "\(percentageValue)%"
+                }
+
+                maxPercent -= percentageValue
             }
         }
+
+        for (labelIndex, row) in enabledRows.sorted().enumerated() {
+            let rowValue = graph.yRows[row]
+            let valueLabel = self.numberLabels[labelIndex]
+            valueLabel.text = "\(rowValue.values[index])"
+        }
+
+        var platePosition = position
+        if platePosition - plateWidth / 2 < -1 {
+            platePosition -= (platePosition + 1 - plateWidth / 2)
+        } else if platePosition + plateWidth / 2 > (self.frame.width + 1) {
+            platePosition += (self.frame.width + 1 - platePosition - plateWidth / 2)
+        }
+
+        if availableHeight + offset * 2 > (self.frame.height - plateHeigh) {
+            let range = (platePosition - plateWidth / 2)..<(platePosition + plateWidth / 2)
+            if range.contains(position) {
+                if position > self.frame.width / 2 {
+                    platePosition = position - plateWidth / 2 - offset
+                } else {
+                    platePosition = position + plateWidth / 2 + offset
+                }
+            }
+        }
+
+        let date = graph.xRow.dates[index]
+        let dateString = self.getDateComponents(date, dateStyle: dateStyle)
+        self.dateLabel.text = dateString
+
+        plate.center = CGPoint(x: platePosition, y: plateHeigh / 2)
+        self.button.frame = plate.bounds
+    }
+
+    func preparePlate(graph: GraphDataSource, enabledRows: [Int], canZoom: Bool, dateStyle: DateStyle, shouldShowPercentage: Bool) {
+        guard let plate = self.plate else {
+            return
+        }
+
+        self.plate?.isHidden = false
+
+        self.percentageLabels.forEach({ $0.removeFromSuperview() })
+        self.numberLabels.forEach({ $0.removeFromSuperview() })
+        self.namesLabels.forEach({ $0.removeFromSuperview() })
+        self.numberLabels = []
+        self.namesLabels = []
+        self.percentageLabels = []
+
+        var maxNameWidth: CGFloat = 0
+        var maxPercentageWidth: CGFloat = 0
+        var maxValueWidth: CGFloat = 0
+
+        var height: CGFloat = 0
 
         for row in enabledRows.sorted() {
             let rowValue = graph.yRows[row]
 
-            if shouldShowPercentage, let value = percentageValues[row] {
+            if shouldShowPercentage {
                 let percentageLabel = UILabel()
                 percentageLabel.textAlignment = .right
                 percentageLabel.font = UIFont.font(with: .bold, size: 12)
                 percentageLabel.textColor = self.theme.configuration.isLight ? UIColor(hex: "6D6D72") : UIColor.white
-                percentageLabel.text = "\(value)%"
+                if enabledRows.count == 1 {
+                    percentageLabel.text = "100%"
+                } else {
+                    percentageLabel.text = "99%"
+                }
                 let valueSize = percentageLabel.sizeThatFits(CGSize(width: 10000, height: 50))
-                if valueSize.width > maxPercentageWidth {
-                    maxPercentageWidth = valueSize.width
+                let valueWidth = valueSize.width + 4
+                if valueWidth > maxPercentageWidth {
+                    maxPercentageWidth = valueWidth
                 }
                 plate.addSubview(percentageLabel)
                 self.percentageLabels.append(percentageLabel)
@@ -193,10 +255,11 @@ class DateSelectionView: UIView {
             valueLabel.textAlignment = .right
             valueLabel.font = UIFont.font(with: .medium, size: 12)
             valueLabel.textColor = rowValue.color
-            valueLabel.text = "\(rowValue.values[index])"
+            valueLabel.text = "\(rowValue.values.max() ?? 0)"
             let valueSize = valueLabel.sizeThatFits(CGSize(width: 10000, height: 50))
-            if valueSize.width > maxValueWidth {
-                maxValueWidth = valueSize.width
+            let valueWidth = valueSize.width + 8
+            if valueWidth > maxValueWidth {
+                maxValueWidth = valueWidth
             }
             if height < valueSize.height {
                 height = valueSize.height
@@ -224,16 +287,22 @@ class DateSelectionView: UIView {
         let smallOffset: CGFloat = 8
         let anotherOffset = shouldShowPercentage ? smallOffset * 2 : smallOffset
 
-        let date = graph.xRow.dates[index]
-        let dateString = self.getDateComponents(date, dateStyle: dateStyle)
-        self.dateLabel.text = dateString
-        let dateSize = self.dateLabel.sizeThatFits(CGSize(width: 10000, height: 50))
+        let dateSize: CGSize
+        switch dateStyle {
+        case .date:
+            dateSize = CGSize(width: 115, height: 15)
+        case .fullTime:
+            dateSize = CGSize(width: 92, height: 15)
+        case .time:
+            dateSize = CGSize(width: 40, height: 15)
+        }
+
         self.dateLabel.frame = CGRect(x: offset, y: 6, width: dateSize.width, height: 15)
         let dateArrowWidth = dateSize.width + Constants.arrowSize.width + smallOffset
         let leftWidth = max(dateArrowWidth, maxPercentageWidth + maxNameWidth + maxValueWidth + anotherOffset)
 
         self.arrowImageView.frame = CGRect(
-            x: offset + dateSize.width + smallOffset,
+            x: offset + leftWidth - Constants.arrowSize.width,
             y: 0,
             width: Constants.arrowSize.width,
             height: Constants.arrowSize.height
@@ -257,27 +326,8 @@ class DateSelectionView: UIView {
         y += 3
 
         let plateWidth = offset * 2 + leftWidth
-        var platePosition = position
-        plate.frame = CGRect(x: 0, y: 0, width: plateWidth, height: y)
-        if platePosition - plateWidth / 2 < -1 {
-            platePosition -= (platePosition + 1 - plateWidth / 2)
-        } else if platePosition + plateWidth / 2 > (self.frame.width + 1) {
-            platePosition += (self.frame.width + 1 - platePosition - plateWidth / 2)
-        }
-
-        if availableHeight + offset * 2 > (self.frame.height - y) {
-            let range = (platePosition - plateWidth / 2)..<(platePosition + plateWidth / 2)
-            if range.contains(position) {
-                if position > self.frame.width / 2 {
-                    platePosition = position - plateWidth / 2 - offset
-                } else {
-                    platePosition = position + plateWidth / 2 + offset
-                }
-            }
-        }
-
-        plate.center = CGPoint(x: platePosition, y: y / 2)
-        self.button.frame = plate.bounds
+        let plateHeight = y
+        plate.frame = CGRect(x: 0, y: 0, width: plateWidth, height: plateHeight)
     }
 
     private func getDateComponents(_ date: Date, dateStyle: DateStyle) -> String {
