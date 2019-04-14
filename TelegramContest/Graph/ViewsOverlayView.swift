@@ -36,6 +36,7 @@ class ViewsOverlayView: UIView {
             let config = theme.configuration
             self.backgroundColor = config.backgroundColor
             self.allItems.forEach({ $0.label.textColor = config.axisTextColor; $0.label.backgroundColor = config.backgroundColor })
+            self.labelsToReuse.forEach({ $0.textColor = config.axisTextColor; $0.backgroundColor = config.backgroundColor })
         }
     }
 
@@ -116,6 +117,8 @@ class ViewsOverlayView: UIView {
                 label = UILabel()
                 label.font = UIFont.systemFont(ofSize: 12)
                 label.textAlignment = .center
+                label.textColor = config.axisTextColor
+                label.backgroundColor = config.backgroundColor
             } else {
                 label = self.labelsToReuse.removeLast()
                 if let index = self.onRemoving.firstIndex(of: label) {
@@ -127,8 +130,6 @@ class ViewsOverlayView: UIView {
             }
             label.frame = CGRect(x: 0, y: 0, width: 46, height: 16)
             label.text = item.text
-            label.textColor = config.axisTextColor
-            label.backgroundColor = config.backgroundColor
             label.alpha = self.calculateAlpha(baseOn: item.alpha)
             label.center = CGPoint(x: item.position, y: label.center.y)
             self.addSubview(label)
