@@ -244,9 +244,9 @@ class GraphDrawLayerView: UIView {
         case .graph:
             return self.generatePathGraph(graphContext: graphContext, fakeDots: fakeDots)
         case .bar, .areaBar:
-            return self.generatePathStack(graphContext: graphContext, fakeDots: (0, 0))
+            return self.generatePathStack(graphContext: graphContext)
         case .area:
-            return self.generatePathOverlay(graphContext: graphContext, fakeDots: (0, 0))
+            return self.generatePathOverlay(graphContext: graphContext)
         case .pie:
             return self.generatePathPie(graphContext: graphContext)
         }
@@ -349,7 +349,7 @@ class GraphDrawLayerView: UIView {
         return number * 180 / .pi
     }
 
-    func generatePathStack(graphContext: GraphContext?, fakeDots: FakeDots) -> CGPath {
+    func generatePathStack(graphContext: GraphContext?) -> CGPath {
         guard let graphContext = graphContext, self.availbleFrame.width > 0 else {
             return CGMutablePath()
         }
@@ -367,7 +367,7 @@ class GraphDrawLayerView: UIView {
         return stackCache.transformStack(range: graphContext.range, size: self.availbleFrame.size, max: graphContext.maxValue)
     }
 
-    func generatePathOverlay(graphContext: GraphContext?, fakeDots: FakeDots) -> CGPath {
+    func generatePathOverlay(graphContext: GraphContext?) -> CGPath {
         guard let graphContext = graphContext, self.availbleFrame.width > 0 else {
             return CGMutablePath()
         }
@@ -383,45 +383,6 @@ class GraphDrawLayerView: UIView {
         }
 
         return overlayCache.transformOverlay(range: graphContext.range, size: self.availbleFrame.size, max: graphContext.maxValue)
-
-        let fullWidth = round(self.availbleFrame.width / graphContext.interval)
-        let offset = graphContext.range.lowerBound * fullWidth
-
-        let steps = graphContext.stepsBaseOn(width: fullWidth)
-        let path = CGMutablePath()
-        var isMoved: Bool = false
-
-        var lastPoint: CGPoint = .zero
-        for index in 0..<(graphContext.values.count / steps.points) {
-            let value: Int = graphContext.values[index]
-            let x = steps.pixels * CGFloat(index) - offset
-            let yPercent = CGFloat(value) / CGFloat(graphContext.maxValue)
-            let y = (1 - yPercent) * self.availbleFrame.height
-            if x > (-0.1 * self.availbleFrame.width) && x < (self.availbleFrame.width * 1.1) {
-                if !isMoved {
-                    path.move(to: CGPoint(x: x, y: y))
-                    if fakeDots.beggining > 2 {
-                        for _ in 0..<fakeDots.beggining {
-                            path.move(to: CGPoint(x: x, y: y))
-                        }
-                    }
-                    isMoved = true
-                }
-                path.addLine(to: CGPoint(x: x, y: y))
-                lastPoint = CGPoint(x: x, y: y)
-            }
-        }
-
-        if fakeDots.end > 2 {
-            for _ in 0..<fakeDots.end {
-                path.addLine(to: CGPoint(x: lastPoint.x, y: self.availbleFrame.height))
-            }
-        }
-
-        path.addLine(to: CGPoint(x: lastPoint.x, y: self.availbleFrame.height))
-        path.addLine(to: CGPoint(x: 0, y: self.availbleFrame.height))
-
-        return path
     }
 
     func generatePathPie(graphContext: GraphContext?) -> CGPath {
