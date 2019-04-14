@@ -102,7 +102,14 @@ class PathManager {
         if section.graph == .fivth {
             return self.fivth(index: index, section: section)
         }
-        return self.dataSource(fromPath: self.path(to: date, in: section.graph), byDay: false, graph: section.graph)
+
+        return self.sectionDataSource(
+            fromPath: self.path(to: date, in: section.graph),
+            byDay: false,
+            graph: section.graph,
+            index: index,
+            section: section
+        )
     }
 
     static func fivth(index: Int, section: Section) -> Section? {
@@ -136,7 +143,28 @@ class PathManager {
 
         let jsonResult = try! JSONSerialization.jsonObject(with: data, options: .mutableLeaves)
         if let jsonResult = jsonResult as? [String: Any], let dataSource = GraphDataSource(json: jsonResult, byDay: byDay) {
-            return Section(dataSource: dataSource, selectedRange: byDay ? 0.9..<1.0 : 0.4..<0.6, enabledRows: Array(0..<dataSource.yRows.count), graph: graph)
+            return Section(dataSource: dataSource, selectedRange: byDay ? 0.9..<1.0 : 0.39..<0.52, enabledRows: Array(0..<dataSource.yRows.count), graph: graph)
+        }
+        return nil
+    }
+
+    private static func sectionDataSource(fromPath: String, byDay: Bool, graph: Graph, index: Int, section: Section) -> Section? {
+        var offset: Int = 0
+        let count = section.currentDataSource.xRow.dates.count
+        if index > count - 4 {
+            offset = (index + 4) - count
+        } else {
+            offset = 0
+        }
+
+        let selectedRange: Range<CGFloat> = (0.39 + CGFloat(offset) * 0.145)..<(0.52 + CGFloat(offset) * 0.145)
+
+        let path = Bundle.main.path(forResource: fromPath, ofType: "json")!
+        let data = try! Data(contentsOf: URL(fileURLWithPath: path), options: .mappedIfSafe)
+
+        let jsonResult = try! JSONSerialization.jsonObject(with: data, options: .mutableLeaves)
+        if let jsonResult = jsonResult as? [String: Any], let dataSource = GraphDataSource(json: jsonResult, byDay: byDay) {
+            return Section(dataSource: dataSource, selectedRange: byDay ? 0.9..<1.0 : selectedRange, enabledRows: Array(0..<dataSource.yRows.count), graph: graph)
         }
         return nil
     }
