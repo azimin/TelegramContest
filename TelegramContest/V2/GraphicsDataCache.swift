@@ -51,7 +51,7 @@ class StackGraphicsDataCache {
         path.addLines(between: newPoints, transform: transform)
         let lastPoint = CGPoint(x: (newPoints.last?.x ?? 0) + 1, y: 0)
         let preLastPoint = CGPoint(x: lastPoint.x, y: (newPoints.last?.y ?? 0))
-        let firstPoint = CGPoint(x: (newPoints.first?.x ?? 0) + 1, y: 0)
+        let firstPoint = CGPoint(x: (newPoints.first?.x ?? 0), y: 0)
         path.addLine(to: preLastPoint, transform: transform)
         path.addLine(to: lastPoint, transform: transform)
         path.addLine(to: firstPoint, transform: transform)
