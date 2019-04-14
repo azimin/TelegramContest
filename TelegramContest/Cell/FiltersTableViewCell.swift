@@ -219,8 +219,14 @@ class FilterView: UIView {
     }
 
     func updateFrame(animated: Bool) {
+        self.label.backgroundColor = UIColor.clear
+        OperationQueue.main.addOperation {
+            self.updateFrameLogic(animated: animated)
+        }
+    }
+
+    func updateFrameLogic(animated: Bool) {
         let animationDuration: TimeInterval = 0.2
-        self.changeRestarise(state: false)
 
         let updateBlock: (_ animated: Bool) -> Void = { animated in
             let size = FilterView.size(text: self.label.text ?? "")
@@ -241,7 +247,7 @@ class FilterView: UIView {
         }
 
         let animationCompletion = {
-            self.changeRestarise(state: true)
+            self.label.backgroundColor = self.isSelected ? self.color : self.theme.configuration.backgroundColor
         }
 
         if animated {
