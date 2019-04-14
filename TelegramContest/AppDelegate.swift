@@ -29,6 +29,8 @@ class NavigationController: UINavigationController {
             if theme.configuration.isLight != oldValue.configuration.isLight {
                 self.animateThemeSwitch()
             }
+            UILabel.appearance(whenContainedInInstancesOf: [UITableViewHeaderFooterView.self]).backgroundColor = theme.configuration.mainBackgroundColor
+//            UILabel.appearance(whenContainedInInstancesOf: [UITableViewHeaderFooterView.self]).backgroundColor = UIColor.
             self.navigationBar.shadowImage = UIImage()
             self.navigationBar.isTranslucent = false
             self.navigationBar.barTintColor = theme.configuration.backgroundColor

@@ -20,8 +20,9 @@ class ThemeConfiguration {
     let gridLines: UIColor
     let tooltipArrow: UIColor
     let axisTextColor: UIColor
+    let sectionColor: UIColor
 
-    init(isLight: Bool, mainBackgroundColor: UIColor, backgroundColor: UIColor, selectionColor: UIColor, nameColor: UIColor, scrollBackground: UIColor, scrollSelector: UIColor, zoomOutText: UIColor, gridLines: UIColor, tooltipArrow: UIColor, axisTextColor: UIColor) {
+    init(isLight: Bool, mainBackgroundColor: UIColor, backgroundColor: UIColor, selectionColor: UIColor, nameColor: UIColor, scrollBackground: UIColor, scrollSelector: UIColor, zoomOutText: UIColor, gridLines: UIColor, tooltipArrow: UIColor, axisTextColor: UIColor, sectionColor: UIColor) {
         self.isLight = isLight
         self.mainBackgroundColor = mainBackgroundColor
         self.backgroundColor = backgroundColor
@@ -33,6 +34,7 @@ class ThemeConfiguration {
         self.gridLines = gridLines
         self.tooltipArrow = tooltipArrow
         self.axisTextColor = axisTextColor
+        self.sectionColor = sectionColor
     }
 }
 
@@ -67,7 +69,8 @@ class Theme: Equatable {
                 zoomOutText: UIColor(hex: "108BE3"),
                 gridLines: UIColor(hex: "182D3B").withAlphaComponent(0.1),
                 tooltipArrow: UIColor(hex: "59606D").withAlphaComponent(0.3),
-                axisTextColor: UIColor(hex: "8E8E93")
+                axisTextColor: UIColor(hex: "8E8E93"),
+                sectionColor: UIColor(hex: "6D6D72")
             )
         case .dark:
             return ThemeConfiguration(
@@ -81,7 +84,8 @@ class Theme: Equatable {
                 zoomOutText: UIColor(hex: "2EA6FE"),
                 gridLines: UIColor(hex: "8596AB").withAlphaComponent(0.2),
                 tooltipArrow: UIColor(hex: "D2D5D7"),
-                axisTextColor: UIColor(hex: "8596AB")
+                axisTextColor: UIColor(hex: "8596AB"),
+                sectionColor: UIColor(hex: "8895A9")
             )
         }
     }

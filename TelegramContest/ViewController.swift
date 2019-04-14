@@ -8,6 +8,30 @@
 
 import UIKit
 
+class CellHeaderView: UITableViewHeaderFooterView {
+    let label = UILabel()
+
+    override init(reuseIdentifier: String?) {
+        super.init(reuseIdentifier: reuseIdentifier)
+        self.setup()
+    }
+
+    required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override var frame: CGRect {
+        didSet {
+            self.label.frame = CGRect(x: 16, y: 16, width: self.frame.width - 32, height: 16)
+        }
+    }
+
+    func setup() {
+        self.contentView.addSubview(self.label)
+        self.label.font = UIFont.font(with: .regular, size: 13)
+    }
+}
+
 struct Zoom {
     enum ZoomIndex {
         case inside(value: Int)
@@ -161,6 +185,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         }
         self.tableView.register(ButtonTableViewCell.self, forCellReuseIdentifier: "ButtonTableViewCell")
         self.tableView.register(FiltersTableViewCell.self, forCellReuseIdentifier: "FiltersTableViewCell")
+        self.tableView.register(CellHeaderView.self, forHeaderFooterViewReuseIdentifier: "CellHeaderView")
         self.updateBarButton()
     }
 
@@ -373,13 +398,39 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         }
     }
 
-    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         if section == 0 {
             return nil
         }
-        return "Followers"
+
+        let header = tableView.dequeueReusableHeaderFooterView(withIdentifier: "CellHeaderView") as! CellHeaderView
+        header.label.textColor = theme.configuration.sectionColor
+        header.label.backgroundColor = theme.configuration.mainBackgroundColor
+        switch (section - 1) {
+        case 0:
+            header.label.text = "Followers".uppercased()
+        case 1:
+            header.label.text = "Interactions".uppercased()
+        case 2:
+            header.label.text = "Fruits".uppercased()
+        case 3:
+            header.label.text = "Views".uppercased()
+        case 4:
+            header.label.text = "Fruits".uppercased()
+        default:
+            break
+        }
+        return header
     }
 
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        if section == 0 {
+            return 0
+        }
+
+        return 38
+    }
+    
     var graphCachedHeigh: [IndexPath: CGFloat] = [:]
 
     func tableView(_ tableView: UITableView, estimatedHeightForRowAt indexPath: IndexPath) -> CGFloat {

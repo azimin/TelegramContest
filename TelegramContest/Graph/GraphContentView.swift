@@ -279,10 +279,10 @@ class GraphContentView: UIView {
         guard self.shadowCachedSize != shadowFrame else {
             return
         }
-        let config = self.theme.configuration
+//        let config = self.theme.configuration
         self.shadowCachedSize = shadowFrame
         self.shadowImage.frame = shadowFrame
-        self.shadowImage.image = UIImage(size: shadowFrame.size, gradientColor: [config.backgroundColor, config.backgroundColor.withAlphaComponent(0)])
+//        self.shadowImage.image = UIImage(size: shadowFrame.size, gradientColor: [config.backgroundColor, config.backgroundColor.withAlphaComponent(0)])
     }
 
     private func setup() {
