@@ -58,7 +58,6 @@ class StackGraphicsDataCache {
 
         return path
     }
-
 }
 
 class GraphicsDataCache {

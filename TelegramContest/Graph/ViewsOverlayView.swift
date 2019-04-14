@@ -115,6 +115,7 @@ class ViewsOverlayView: UIView {
             let label: UILabel
             if self.labelsToReuse.isEmpty {
                 label = UILabel()
+                label.frame = CGRect(x: 0, y: 0, width: 46, height: 16)
                 label.font = UIFont.systemFont(ofSize: 12)
                 label.textAlignment = .center
                 label.textColor = config.axisTextColor
@@ -124,11 +125,9 @@ class ViewsOverlayView: UIView {
                 if let index = self.onRemoving.firstIndex(of: label) {
                     self.onRemoving.remove(at: index)
                 }
-                label.frame = .zero
                 label.isHidden = false
                 label.alpha = 1
             }
-            label.frame = CGRect(x: 0, y: 0, width: 46, height: 16)
             label.text = item.text
             label.alpha = self.calculateAlpha(baseOn: item.alpha)
             label.center = CGPoint(x: item.position, y: label.center.y)
