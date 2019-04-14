@@ -64,7 +64,6 @@ class GraphView: UIView {
         didSet {
             let config = theme.configuration
             self.backgroundColor = config.backgroundColor
-            self.titleLabel.backgroundColor = config.backgroundColor
             self.zoomOutButton.setTitleColor(config.zoomOutText, for: .normal)
             self.updateTheme()
         }
@@ -81,7 +80,8 @@ class GraphView: UIView {
         
         self.graphControlView.theme = theme
         self.graphContentView.theme = theme
-        self.titleLabel.textColor = theme.configuration.tooltipArrow
+        self.titleLabel.textColor = theme.configuration.nameColor
+        self.titleLabel.backgroundColor = theme.configuration.backgroundColor
     }
 
     func updateEnabledRows(_ values: [Int], animated: Bool) {
@@ -223,7 +223,7 @@ class GraphView: UIView {
         self.noDataLabel.font = UIFont.font(with: .regular, size: 16)
         self.noDataLabel.text = "No Data"
 
-        self.titleLabel.font = UIFont.systemFont(ofSize: 13)
+        self.titleLabel.font = UIFont.font(with: .bold, size: 13)
         self.titleLabel.textAlignment = .center
         self.titleLabel.adjustsFontSizeToFitWidth = true
 
