@@ -49,9 +49,12 @@ class ViewsOverlayView: UIView {
         var newItems: [Item] = items
         var itemsToDisapear: [Item] = []
 
-        for item in self.allItems.map({ $0.item }) {
+        for itemContainer in self.allItems {
+            let item = itemContainer.item
             if let index = items.firstIndex(of: item) {
-                newItems.removeAll(where: { $0 == item })
+                if let newItemIndex = newItems.firstIndex(of: item) {
+                    newItems.remove(at: newItemIndex)
+                }
                 self.move(item: items[index])
             } else {
                 itemsToDisapear.append(item)

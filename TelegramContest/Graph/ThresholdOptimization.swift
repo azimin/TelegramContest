@@ -10,7 +10,7 @@ import UIKit
 
 class ThresholdOptimization {
     static let memorySize: MemorySize = MemorySize.current
-    
+
     enum MemorySize {
         case low, medium, high
 
@@ -74,7 +74,9 @@ class ThresholdOptimization {
         }
 
         if elapsed > self.elapsedTime {
-            self.action?()
+            OperationQueue.main.addOperation {
+                self.action?()
+            }
             self.displayLink?.invalidate()
             self.displayLink = nil
         }
