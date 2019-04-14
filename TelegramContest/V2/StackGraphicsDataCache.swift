@@ -1,14 +1,14 @@
 //
-//  GraphicsDataCache.swift
+//  StackGraphicsDataCache.swift
 //  TelegramContest
 //
-//  Created by Alexander Zimin on 14/04/2019.
+//  Created by Alexander Zimin on 15/04/2019.
 //  Copyright © 2019 alex. All rights reserved.
 //
 
 import UIKit
 
-class GraphicsDataCache {
+class StackGraphicsDataCache {
     var values: [Int]
     var points: [CGPoint] = []
     var max = 0
@@ -27,15 +27,18 @@ class GraphicsDataCache {
             let x = CGFloat(index)
             let point = CGPoint(x: x, y: CGFloat(value))
             self.points.append(point)
+            let anotherPoint = CGPoint(x: x + 1, y: CGFloat(value))
+            self.points.append(anotherPoint)
         }
     }
 
-    func transform(range: Range<CGFloat>, size: CGSize, max: Int) -> CGPath {
+    func transformStack(range: Range<CGFloat>, size: CGSize, max: Int) -> CGPath {
         let fullWidth = round(size.width / range.interval)
-        let offset = range.lowerBound * fullWidth
 
-        let newPoints = converValues(values: self.points, range: range, rounded: false)
-        let xScale = fullWidth / CGFloat(self.points.count)
+        let newRange = (range.lowerBound - 0.1)..<(range.upperBound + 0.1)
+        var newPoints = converValues(values: self.points, range: newRange, rounded: false)
+        let xScale = fullWidth / CGFloat(self.points.count) * 2
+        let offset = range.lowerBound * fullWidth
 
         let path = CGMutablePath()
 
@@ -44,9 +47,16 @@ class GraphicsDataCache {
         let lastTransform = CGAffineTransform(scaleX: 1, y: -size.height)
 
         let transform = firstTransform.concatenating(secondTransform).concatenating(lastTransform)
+        let lastPoint = CGPoint(x: (newPoints.last?.x ?? 0) + 1, y: 0)
+        let preLastPoint = CGPoint(x: lastPoint.x, y: (newPoints.last?.y ?? 0))
+        let firstPoint = CGPoint(x: (newPoints.first?.x ?? 0), y: 0)
+
+        newPoints.append(preLastPoint)
+        newPoints.append(lastPoint)
+        newPoints.append(firstPoint)
+
         path.addLines(between: newPoints, transform: transform)
 
         return path
     }
-
 }

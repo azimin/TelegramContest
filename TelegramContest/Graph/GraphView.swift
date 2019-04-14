@@ -129,17 +129,14 @@ class GraphView: UIView {
         }
 
         let count = dataSource.xRow.fullDateStrings.count
-        var indexs = convertIndexes(count: count, range: self.selectedRange, rounded: self.style == .pie)
-        if self.style == .pie, indexs.interval >= 1, self.selectedRange.upperBound <= 0.9 {
-            indexs = indexs.lowerBound..<(indexs.upperBound - 1)
-        }
+        let indexs = convertIndexes(count: count, range: self.selectedRange, rounded: self.style == .pie)
         guard indexs != cachedIndexInterval else {
             return
         }
 
         self.cachedIndexInterval = indexs
         let firstDate = dataSource.xRow.fullDateStrings[indexs.lowerBound]
-        let lastDate = dataSource.xRow.fullDateStrings[indexs.upperBound]
+        let lastDate = dataSource.xRow.fullDateStrings[indexs.upperBound - 1]
 
         if firstDate == lastDate {
             self.titleLabel.text = firstDate
