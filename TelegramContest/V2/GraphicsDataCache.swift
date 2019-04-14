@@ -86,24 +86,10 @@ class GraphicsDataCache {
         let fullWidth = round(size.width / range.interval)
         let offset = range.lowerBound * fullWidth
 
-//        let width = size.width
-
-//        let newValues = converValues(values: self.values, range: range, rounded: false)
         let newPoints = converValues(values: self.points, range: range, rounded: false)
-
-//        let newMax = newValues.max() ?? 0
         let xScale = fullWidth / CGFloat(self.points.count)
-//        let yScale = CGFloat(newMax) / CGFloat(max)
-//        let globalIncrease = CGFloat(newMax) / CGFloat(self.max)
 
         let path = CGMutablePath()
-
-//        let updatedPoints = self.points.map({ (point) -> CGPoint in
-//            let y = point.y / CGFloat(max)
-//            return CGPoint(x: (point.x * xScale - offset), y: size.height * (1 - y))
-//        })
-//        path.addLines(between: updatedPoints)
-
 
         let firstTransform = CGAffineTransform(scaleX: xScale, y: (1 / CGFloat(max)))
         let secondTransform = CGAffineTransform(translationX: -offset, y: -1)

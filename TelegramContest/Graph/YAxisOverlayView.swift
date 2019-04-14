@@ -81,6 +81,7 @@ class YAxisOverlayView: UIView {
 
     var maxValue: Int = 0
     var items: [Item] = []
+    var onReuse: [YAxisView] = []
     var onRemoving: [YAxisView] = []
     var labelOverrideColor: UIColor?
     var thresholdOptimization = ThresholdOptimization(elapsedTime: 0.02)
@@ -118,7 +119,10 @@ class YAxisOverlayView: UIView {
     }
 
     private func disapear(animated: Bool) {
-        self.onRemoving.forEach({ $0.removeFromSuperview() })
+        for view in self.onRemoving {
+            view.isHidden = true
+            self.onReuse.append(view)
+        }
         self.onRemoving = []
 
         for item in self.items {
@@ -128,7 +132,7 @@ class YAxisOverlayView: UIView {
                 item.view.center = CGPoint(x: item.view.center.x, y: self.frame.height * (1 - percent) - item.view.frame.height / 2)
                 item.view.alpha = 0
             }, completion: { _ in
-                item.view.removeFromSuperview()
+                self.onReuse.append(item.view)
             })
         }
         self.items = []
@@ -143,14 +147,24 @@ class YAxisOverlayView: UIView {
             } else {
                 oldPercent = CGFloat(i * step) / CGFloat(from)
             }
-            let view = YAxisView(style: self.style)
+            let view: YAxisView
+            if self.onReuse.isEmpty {
+                view = YAxisView(style: self.style)
+                view.frame = CGRect(x: 0, y: 0, width: self.frame.width, height: 26)
+                view.theme = self.theme
+                self.addSubview(view)
+            } else {
+                view = self.onReuse.removeLast()
+                if let index = self.onRemoving.firstIndex(of: view) {
+                    self.onRemoving.remove(at: index)
+                }
+                view.isHidden = false
+                view.alpha = 1
+            }
             view.labelOverrideColor = self.labelOverrideColor
             view.label?.text = self.convertToText(value: step * i)
-            view.frame = CGRect(x: 0, y: 0, width: self.frame.width, height: 26)
             view.alpha = 0
             view.center = CGPoint(x: view.center.x, y: self.frame.height * (1 - oldPercent) - view.frame.height / 2)
-            view.theme = self.theme
-            self.addSubview(view)
             self.items.append(Item(view: view, value: step * i))
 
             UIView.animate(withDuration: animated ? 0.25 : 0, delay: 0, options: [UIView.AnimationOptions.curveEaseOut], animations: {
