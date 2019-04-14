@@ -252,6 +252,8 @@ class GraphDrawLayerView: UIView {
         }
     }
 
+    private var cahce: GraphicsDataCache?
+
     func generatePointGraph(graphContext: GraphContext?, point: Int) -> CGPath {
         guard let graphContext = graphContext, self.availbleFrame.width > 0 else {
             return CGMutablePath()
@@ -287,6 +289,18 @@ class GraphDrawLayerView: UIView {
         guard let graphContext = graphContext, self.availbleFrame.width > 0 else {
             return CGMutablePath()
         }
+
+        if cahce == nil {
+            let cache = GraphicsDataCache(values: graphContext.values)
+            cache.calculate()
+            self.cahce = cache
+        }
+
+        guard let cacheValue = self.cahce else {
+            return CGMutablePath()
+        }
+
+        return cacheValue.transform(range: graphContext.range, size: self.availbleFrame.size, max: graphContext.maxValue)
 
         let fullWidth = round(self.availbleFrame.width / graphContext.interval)
         let offset = graphContext.range.lowerBound * fullWidth
