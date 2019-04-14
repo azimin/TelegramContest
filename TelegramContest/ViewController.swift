@@ -391,6 +391,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
             }
 
             let config = theme.configuration
+            cell.filtersViewController.theme = theme
             cell.contentView.backgroundColor = config.backgroundColor
             cell.backgroundColor = config.backgroundColor
             cell.rows = rows

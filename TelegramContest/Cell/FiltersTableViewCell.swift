@@ -43,6 +43,8 @@ class FiltersViewContentller {
 
     var filterViews: [FilterView] = []
 
+    var theme: Theme = .default
+
     func clear() {
         self.filterViews.forEach({ $0.removeFromSuperview() })
         self.filterViews = []
@@ -60,7 +62,7 @@ class FiltersViewContentller {
         self.clear()
 
         for (index, item) in rows.enumerated() {
-            let filterView = FilterView(title: item.name, isSelected: item.isSelected, color: item.color, index: index)
+            let filterView = FilterView(title: item.name, isSelected: item.isSelected, color: item.color, index: index, theme: theme)
 
             filterView.longAction = { index in
                 let result = item.selectedLongAction?(index)
@@ -141,13 +143,16 @@ class FilterView: UIView {
     var action: SelectionBlock?
     var longAction: SelectionBlock?
 
+    let theme: Theme
+
     func updateSelection(isSelected: Bool, animated: Bool) {
         self.isSelected = isSelected
         self.updateFrame(animated: animated)
     }
 
-    init(title: String, isSelected: Bool, color: UIColor, index: Int, action: SelectionBlock? = nil, longAction: SelectionBlock? = nil) {
+    init(title: String, isSelected: Bool, color: UIColor, index: Int, theme: Theme, action: SelectionBlock? = nil, longAction: SelectionBlock? = nil) {
         self.isSelected = isSelected
+        self.theme = theme
         self.action = action
         self.color = color
         self.index = index
@@ -163,6 +168,7 @@ class FilterView: UIView {
     func setup() {
         self.layer.cornerRadius = 6
         self.addSubview(self.label)
+        self.backgroundColor = self.theme.configuration.backgroundColor
         self.label.textColor = UIColor.white
         self.label.font = FilterView.font
         self.label.textAlignment = .center
@@ -177,6 +183,8 @@ class FilterView: UIView {
 
         self.layer.borderWidth = 1
         self.layer.borderColor = self.color.cgColor
+
+        self.changeRestarise(state: true)
     }
 
     @objc
@@ -205,8 +213,14 @@ class FilterView: UIView {
         }
     }
 
+    func changeRestarise(state: Bool) {
+        self.layer.shouldRasterize = state
+        self.layer.rasterizationScale = UIScreen.main.scale
+    }
+
     func updateFrame(animated: Bool) {
         let animationDuration: TimeInterval = 0.2
+        self.changeRestarise(state: false)
 
         let updateBlock: (_ animated: Bool) -> Void = { animated in
             let size = FilterView.size(text: self.label.text ?? "")
@@ -226,10 +240,19 @@ class FilterView: UIView {
             self.button.frame.size = size
         }
 
+        let animationCompletion = {
+            self.changeRestarise(state: true)
+        }
+
         if animated {
-            UIView.animate(withDuration: animationDuration) {
+            UIView.animate(withDuration: animationDuration, animations: {
                 updateBlock(true)
+            }) { (success) in
+                if success {
+                    animationCompletion()
+                }
             }
+
             let changeColor = CATransition()
             changeColor.duration = animationDuration
             CATransaction.begin()
@@ -242,6 +265,7 @@ class FilterView: UIView {
         } else {
             updateBlock(false)
             self.label.textColor = self.isSelected ? .white : self.color
+            animationCompletion()
         }
     }
 
