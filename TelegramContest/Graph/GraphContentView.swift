@@ -251,13 +251,14 @@ class GraphContentView: UIView {
 
         let graphHeight = self.frame.height - Constants.labelsHeight - 20
         let graphFrame = CGRect(x: Constants.offset, y: 0, width: self.frame.size.width - Constants.offset * 2, height: graphHeight + 20)
-        self.graphView.frame = graphFrame
+        let fullGraphFrame = CGRect(x: 0, y: 0, width: self.frame.size.width, height: graphHeight + 20)
+        self.graphView.frame = fullGraphFrame
         self.graphDrawLayers.forEach({ $0.frame = self.graphView.bounds })
-        self.graphSelectionOverlayView.frame = graphFrame
+        self.graphSelectionOverlayView.frame = fullGraphFrame
         self.yAxisOverlays.forEach({ $0.frame = graphFrame })
         self.secondYAxisLabelOverlay.frame = graphFrame
         self.dateLabels.frame = CGRect(x: Constants.offset, y: graphHeight + 20, width: self.frame.size.width - Constants.offset * 2, height: Constants.labelsHeight)
-        self.selectionViews.forEach({ $0.frame = CGRect(x: Constants.offset, y: 6, width: self.frame.size.width - Constants.offset * 2, height: graphHeight + 8) })
+        self.selectionViews.forEach({ $0.frame = CGRect(x: 0, y: 6, width: self.frame.size.width, height: graphHeight + 8) })
         self.graphDrawLayers.forEach({ $0.offset = 20 }) // self.graphDrawLayers.forEach({ $0.offset = 6 })
         self.pieChartNumbersView?.frame = graphFrame
         self.updateShadow()
@@ -342,6 +343,7 @@ class GraphContentView: UIView {
 
         while graphDrawLayers.count < dataSource.yRows.count {
             let graphView = GraphDrawLayerView()
+            graphView.xOffset = 16
             //            graphView.layer.masksToBounds = true
             graphView.frame = CGRect(x: 0, y: 0, width: self.frame.width, height: self.frame.height - Constants.labelsHeight)
             if let lates = self.graphDrawLayers.last {
@@ -694,7 +696,8 @@ class GraphContentView: UIView {
         }
 
         let location = touch.location(in: self)
-        let locationInSelection = touch.location(in: self.selectionPlateView)
+        var locationInSelection = touch.location(in: self.selectionPlateView)
+        locationInSelection.x -= 16
 
         guard self.selectionAvailable else {
             self.updatePieSelection(location: locationInSelection, shouldRespectRadius: true)
@@ -752,7 +755,8 @@ class GraphContentView: UIView {
         }
 
         let location = touch.location(in: self)
-        let locationInSelection = touch.location(in: self.selectionPlateView)
+        var locationInSelection = touch.location(in: self.selectionPlateView)
+        locationInSelection.x -= 16
 
         guard self.selectionAvailable else {
             self.updatePieSelection(location: locationInSelection, shouldRespectRadius: false)

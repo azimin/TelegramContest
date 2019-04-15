@@ -47,7 +47,7 @@ class StackGraphicsDataCache {
         let lastTransform = CGAffineTransform(scaleX: 1, y: -size.height)
 
         let transform = firstTransform.concatenating(secondTransform).concatenating(lastTransform)
-        let lastPoint = CGPoint(x: (newPoints.last?.x ?? 0) + 1, y: 0)
+        let lastPoint = CGPoint(x: (newPoints.last?.x ?? 0), y: 0)
         let preLastPoint = CGPoint(x: lastPoint.x, y: (newPoints.last?.y ?? 0))
         let firstPoint = CGPoint(x: (newPoints.first?.x ?? 0), y: 0)
 

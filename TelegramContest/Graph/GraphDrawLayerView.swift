@@ -122,9 +122,10 @@ class GraphDrawLayerView: UIView {
     }
 
     var availbleFrame: CGRect = .zero
+    var xOffset: CGFloat = 0
 
     func updateFrame() {
-        self.availbleFrame = CGRect(x: 0, y: self.offset, width: self.frame.width, height: self.frame.height - self.offset)
+        self.availbleFrame = CGRect(x: self.xOffset, y: self.offset, width: self.frame.width - self.xOffset * 2, height: self.frame.height - self.offset)
         self.pathLayer.frame = self.availbleFrame
         self.selectedPath.frame = self.availbleFrame
         self.pathLayer.path = self.generatePath(graphContext: self.graphContext, fakeDots: (0, 0))
@@ -711,7 +712,7 @@ class GraphDrawLayerView: UIView {
     func selectPosition(graphContext: GraphContext?, position: CGFloat, animationDuration: TimeInterval) -> Selection {
         switch self.graphContext?.style ?? .graph {
         case .graph, .area, .pie:
-            return self.selectLine(graphContext: graphContext, position: position, animationDuration: animationDuration)
+            return self.selectLine(graphContext: graphContext, selectedPosition: position, animationDuration: animationDuration)
         case .bar, .areaBar:
             return self.selectSquare(graphContext: graphContext, position: position, animationDuration: animationDuration)
         }
@@ -754,15 +755,17 @@ class GraphDrawLayerView: UIView {
 
         let height = (self.availbleFrame.height - y)
 
-        let rect = CGRect(x: x, y: self.availbleFrame.height - height + self.offset, width: steps.pixels, height: height)
+        let rect = CGRect(x: x + xOffset, y: self.availbleFrame.height - height + self.offset, width: steps.pixels, height: height)
 
         return (cachedPosition, cachedIndex, cachedHeight, rect)
     }
 
-    func selectLine(graphContext: GraphContext?, position: CGFloat, animationDuration: TimeInterval) -> Selection {
+    func selectLine(graphContext: GraphContext?, selectedPosition: CGFloat, animationDuration: TimeInterval) -> Selection {
         guard let graphContext = graphContext, self.availbleFrame.width > 0 else {
             return (0, 0, 0, nil)
         }
+
+        let position = selectedPosition
 
         let fullWidth = round(self.availbleFrame.width / graphContext.interval)
         let offset = graphContext.range.lowerBound * fullWidth
@@ -807,7 +810,7 @@ class GraphDrawLayerView: UIView {
             self.selectedPath.path = newPath
         }
 
-        return (cachedPosition, cachedIndex, cachedHeight, nil)
+        return (cachedPosition + xOffset, cachedIndex, cachedHeight, nil)
     }
 }
 

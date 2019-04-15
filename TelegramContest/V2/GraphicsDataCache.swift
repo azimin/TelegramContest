@@ -34,7 +34,8 @@ class GraphicsDataCache {
         let fullWidth = round(size.width / range.interval)
         let offset = range.lowerBound * fullWidth
 
-        let newPoints = converValues(values: self.points, range: range, rounded: false)
+        let newRange = (range.lowerBound - 0.1)..<(range.upperBound + 0.1)
+        let newPoints = converValues(values: self.points, range: newRange, rounded: false)
         let xScale = fullWidth / CGFloat(self.points.count)
 
         let path = CGMutablePath()

@@ -36,6 +36,8 @@ class GraphSelectionOverlayView: UIView {
         }
     }
 
+    var offset: CGFloat = 16
+
     func show(overlays: [SelectOverlay]) {
         self.shapeLayers.forEach({ $0.isHidden = false })
         while self.shapeLayers.count < overlays.count {
