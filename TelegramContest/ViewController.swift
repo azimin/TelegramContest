@@ -157,7 +157,18 @@ class PathManager {
             offset = 0
         }
 
-        let selectedRange: Range<CGFloat> = (0.39 + CGFloat(offset) * 0.145)..<(0.52 + CGFloat(offset) * 0.145)
+        let currentDate = Date()
+        let timeZone = NSTimeZone.system
+        let timeZoneOffset = timeZone.secondsFromGMT(for: currentDate) / 3600
+
+        // 168 // 7 days // 24 per day
+        let oneHourStep: CGFloat = 1 / 168
+        let timeZoneStep = -CGFloat(timeZoneOffset) * oneHourStep
+
+        var selectedRange: Range<CGFloat> = (0.44 + CGFloat(offset) * 0.143 + timeZoneStep)..<(0.57 + CGFloat(offset) * 0.143 + timeZoneStep)
+        if selectedRange.upperBound > 1 {
+            selectedRange = (selectedRange.lowerBound - (selectedRange.upperBound - 1))..<1
+        }
 
         let path = Bundle.main.path(forResource: fromPath, ofType: "json")!
         let data = try! Data(contentsOf: URL(fileURLWithPath: path), options: .mappedIfSafe)

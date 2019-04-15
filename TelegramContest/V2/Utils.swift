@@ -8,12 +8,12 @@
 
 import UIKit
 
-func converValues<T>(values: [T], range: Range<CGFloat>, rounded: Bool) -> [T] {
-    let index = convertIndexes(count: values.count, range: range, rounded: rounded)
+func converValues<T>(values: [T], range: Range<CGFloat>, rounded: Bool, appendOffset: Int = 0) -> [T] {
+    let index = convertIndexes(count: values.count, range: range, rounded: rounded, appendOffset: appendOffset)
     return Array(values[index])
 }
 
-func convertIndexes(count: Int, range: Range<CGFloat>, rounded: Bool) -> Range<Int> {
+func convertIndexes(count: Int, range: Range<CGFloat>, rounded: Bool, appendOffset: Int = 0) -> Range<Int> {
     let firstCount: Int
     let endCount: Int
     if rounded {
@@ -23,5 +23,5 @@ func convertIndexes(count: Int, range: Range<CGFloat>, rounded: Bool) -> Range<I
         firstCount = Int(floor(range.lowerBound * CGFloat(count)))
         endCount = Int(ceil(range.upperBound * CGFloat(count)))
     }
-    return min(max(firstCount, 0), count - 1)..<min(endCount, count)
+    return min(max(firstCount - appendOffset, 0), count - 1)..<min(endCount + appendOffset, count)
 }

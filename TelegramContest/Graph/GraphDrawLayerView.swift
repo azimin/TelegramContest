@@ -8,6 +8,8 @@
 
 import UIKit
 
+typealias FakeDots = (beggining: Int, end: Int)
+
 class GraphContext {
     enum Style {
         case graph
@@ -131,8 +133,6 @@ class GraphDrawLayerView: UIView {
         self.pathLayer.path = self.generatePath(graphContext: self.graphContext, fakeDots: (0, 0))
     }
 
-    typealias FakeDots = (beggining: Int, end: Int)
-
     func update(graphContext: GraphContext?, animationDuration: TimeInterval, zoom: Zoom?) {
         if animationDuration > 0 {
             var fakeDotsBefore: FakeDots?
@@ -156,6 +156,9 @@ class GraphDrawLayerView: UIView {
                 //  let oldGraphContext = self.graphContext, let newGraphContext = graphContext
                 let fullWidth1 = round(self.availbleFrame.width / oldGraphContext.interval)
 
+                let xScale1 = fullWidth1 / CGFloat(oldGraphContext.values.count - 1)
+                let numberOfAdditionalPoints1 = 16 * xScale1
+
                 let lowerIndex = Int(CGFloat(oldGraphContext.values.count) * oldGraphContext.range.lowerBound)
                 let upperIndex = Int(CGFloat(oldGraphContext.values.count) * oldGraphContext.range.upperBound)
                 let interval = upperIndex - lowerIndex
@@ -163,11 +166,13 @@ class GraphDrawLayerView: UIView {
                 let topPercentage = max(CGFloat(upperIndex - index) / CGFloat(interval), 0)
 
                 let steps1 = oldGraphContext.stepsBaseOn(width: fullWidth1)
-                let numberOfDots1 = self.availbleFrame.width / steps1.pixels
+                let numberOfDots1 = self.availbleFrame.width / steps1.pixels + numberOfAdditionalPoints1 * 2
 
                 let fullWidth2 = round(self.availbleFrame.width / newGraphContext.interval)
+                let xScale2 = fullWidth2 / CGFloat(newGraphContext.values.count - 1)
+                let numberOfAdditionalPoints2 = 16 * xScale2
                 let steps2 = newGraphContext.stepsBaseOn(width: fullWidth2)
-                let numberOfDots2 = self.availbleFrame.width / steps2.pixels
+                let numberOfDots2 = self.availbleFrame.width / steps2.pixels + numberOfAdditionalPoints2 * 2
 
                 let lowerFakeDots = (Int(CGFloat(numberOfDots1) * bottomPercentage) - Int(numberOfDots2 / 2))
                 let upperFakeDots = (Int(CGFloat(numberOfDots1) * topPercentage) - Int(numberOfDots2 / 2))
@@ -303,48 +308,46 @@ class GraphDrawLayerView: UIView {
             return CGMutablePath()
         }
 
-        if fakeDots.beggining < 2 && fakeDots.end < 2 {
-            return cacheValue.transform(range: graphContext.range, size: self.availbleFrame.size, max: graphContext.maxValue, min: graphContext.minValue)
-        }
+        return cacheValue.transform(range: graphContext.range, size: self.availbleFrame.size, max: graphContext.maxValue, min: graphContext.minValue, fakeDots: fakeDots)
 
-        let fullWidth = round(self.availbleFrame.width / graphContext.interval)
-        let offset = graphContext.range.lowerBound * fullWidth
-
-        let steps = graphContext.stepsBaseOn(width: fullWidth)
-        let path = CGMutablePath()
-        var isMoved: Bool = false
-
-        let max = graphContext.maxValue
-        let min = graphContext.minValue
-        let maxMinDelta = max - min
-        let devide = CGFloat(min) / CGFloat(maxMinDelta)
-
-        for index in 0..<(graphContext.values.count / steps.points) {
-            let value: Int = graphContext.values[index]
-            let x = steps.pixels * CGFloat(index + 1) - offset
-            if x > (-0.1 * self.availbleFrame.width) && x < (self.availbleFrame.width * 1.1) {
-                let yPercent = (CGFloat(value) / CGFloat(maxMinDelta)) - devide
-                if !isMoved {
-                    path.move(to: CGPoint(x: x, y: (1 - yPercent) * self.availbleFrame.height))
-                    if fakeDots.beggining > 2 {
-                        for _ in 0..<fakeDots.beggining {
-                            path.addLine(to: CGPoint(x: x, y: (1 - yPercent) * self.availbleFrame.height))
-                        }
-                    }
-                    isMoved = true
-                }
-                path.addLine(to: CGPoint(x: x, y: (1 - yPercent) * self.availbleFrame.height))
-            }
-        }
-
-
-        if fakeDots.end > 2 {
-            for _ in 0..<fakeDots.end {
-                path.addLine(to: CGPoint(x: self.availbleFrame.width * 1.1, y: self.availbleFrame.height / 2))
-            }
-        }
-
-        return path
+//        let fullWidth = round(self.availbleFrame.width / graphContext.interval)
+//        let offset = graphContext.range.lowerBound * fullWidth
+//
+//        let steps = graphContext.stepsBaseOn(width: fullWidth)
+//        let path = CGMutablePath()
+//        var isMoved: Bool = false
+//
+//        let max = graphContext.maxValue
+//        let min = graphContext.minValue
+//        let maxMinDelta = max - min
+//        let devide = CGFloat(min) / CGFloat(maxMinDelta)
+//
+//        for index in 0..<(graphContext.values.count / steps.points) {
+//            let value: Int = graphContext.values[index]
+//            let x = steps.pixels * CGFloat(index + 1) - offset
+//            if x > (-0.1 * self.availbleFrame.width) && x < (self.availbleFrame.width * 1.1) {
+//                let yPercent = (CGFloat(value) / CGFloat(maxMinDelta)) - devide
+//                if !isMoved {
+//                    path.move(to: CGPoint(x: x, y: (1 - yPercent) * self.availbleFrame.height))
+//                    if fakeDots.beggining > 2 {
+//                        for _ in 0..<fakeDots.beggining {
+//                            path.addLine(to: CGPoint(x: x, y: (1 - yPercent) * self.availbleFrame.height))
+//                        }
+//                    }
+//                    isMoved = true
+//                }
+//                path.addLine(to: CGPoint(x: x, y: (1 - yPercent) * self.availbleFrame.height))
+//            }
+//        }
+//
+//
+//        if fakeDots.end > 2 {
+//            for _ in 0..<fakeDots.end {
+//                path.addLine(to: CGPoint(x: self.availbleFrame.width * 1.1, y: self.availbleFrame.height / 2))
+//            }
+//        }
+//
+//        return path
     }
 
     private func deg2rad(_ number: CGFloat) -> CGFloat {
@@ -789,7 +792,7 @@ class GraphDrawLayerView: UIView {
 
         for index in 0..<(graphContext.values.count / steps.points) {
             let value: Int = graphContext.values[index] * steps.points
-            let x = round(steps.pixels * CGFloat(index + 1)) - offset
+            let x = steps.pixels * CGFloat(index + 1) - offset
             let yPercent = (CGFloat(value) / CGFloat(maxMinDelta)) - devide
 
             if abs(x - position) < delta {

@@ -455,7 +455,7 @@ class GraphContentView: UIView {
             }
 
             if animated && shouldUpdateOpacity {
-                graphView.alpha = isHidden ? 1 : 0
+                graphView.alpha = isHidden ? graphView.alpha : 0
                 UIView.animate(withDuration: Constants.aniamtionDuration, animations: {
                     graphView.alpha = isHidden ? 0 : 1
                 }) { (success) in
