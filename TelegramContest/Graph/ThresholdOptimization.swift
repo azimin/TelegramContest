@@ -47,9 +47,7 @@ class ThresholdOptimization {
 
         self.action = {
             action()
-            self.action = nil
-            self.displayLink?.invalidate()
-            self.displayLink = nil
+            self.cancel()
         }
 
         if displayLink == nil {
@@ -57,6 +55,12 @@ class ThresholdOptimization {
             self.displayLink = CADisplayLink(target: self, selector: #selector(self.displayLinkDidFire(_:)))
             self.displayLink?.add(to: .main, forMode: .common)
         }
+    }
+
+    func cancel() {
+        self.action = nil
+        self.displayLink?.invalidate()
+        self.displayLink = nil
     }
 
     @objc

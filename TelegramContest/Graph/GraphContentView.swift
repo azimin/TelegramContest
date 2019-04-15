@@ -325,6 +325,9 @@ class GraphContentView: UIView {
         }
     }
 
+    private var cachedMaxMinPair = (0, 0)
+    private var thresholdOnYAxis = ThresholdOptimization(elapsedTime: 0.2)
+
     private func update(animated: Bool, force: Bool = false, zoom: Zoom?) {
         var animated = animated
 
@@ -405,18 +408,26 @@ class GraphContentView: UIView {
 
         if force {
             self.currentMaxValue = (maxValue, minValue)
+            thresholdOnYAxis.cancel()
             self.updateYLines(minValue: minValue, maxValue: maxValue, animated: true, shouldDelay: false)
         }
 
         if self.currentMaxValue == (0, 0) || animated {
             self.currentMaxValue = (maxValue, minValue)
+            thresholdOnYAxis.cancel()
             self.updateYLines(minValue: minValue, maxValue: maxValue, animated: true, shouldDelay: false)
         } else {
             self.counter.animate(from: self.currentMaxValue, to: (maxValue, minValue)) { (value) in
                 self.currentMaxValue = value
                 self.update(animated: false, zoom: nil)
             }
-            self.updateYLines(minValue: minValue, maxValue: maxValue, animated: true, shouldDelay: true)
+            if cachedMaxMinPair != (maxValue, minValue) {
+                thresholdOnYAxis.update {
+                    self.updateYLines(minValue: minValue, maxValue: maxValue, animated: true, shouldDelay: true)
+                }
+                cachedMaxMinPair = (maxValue, minValue)
+            }
+//            self.updateYLines(minValue: minValue, maxValue: maxValue, animated: true, shouldDelay: true)
         }
 
         var imageBefore: UIImage? = nil
