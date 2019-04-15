@@ -19,7 +19,14 @@ class YAxisView: UIView {
     var line: UIView?
     let style: Style
 
-    var labelOverrideColor: UIColor?
+    var labelOverrideColor: UIColor? {
+        didSet {
+            if (oldValue == nil && labelOverrideColor != nil) || (oldValue != nil && labelOverrideColor == nil) {
+                self.label?.textColor = self.labelOverrideColor ?? self.theme.configuration.axisTextColor
+            }
+        }
+    }
+
     var theme: Theme = .default {
         didSet {
             let config = theme.configuration
@@ -83,7 +90,15 @@ class YAxisOverlayView: UIView {
     var items: [Item] = []
     var onReuse: [YAxisView] = []
     var onRemoving: [YAxisView] = []
-    var labelOverrideColor: UIColor?
+
+    var labelOverrideColor: UIColor? {
+        didSet {
+            if (oldValue == nil && labelOverrideColor != nil) || (oldValue != nil && labelOverrideColor == nil) {
+                self.items.forEach({ $0.view.labelOverrideColor = self.labelOverrideColor })
+            }
+        }
+    }
+
     var thresholdOptimization = ThresholdOptimization(elapsedTime: 0.02)
 
     var numberOfComponents = 6

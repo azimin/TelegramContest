@@ -256,7 +256,7 @@ class GraphContentView: UIView {
         self.graphDrawLayers.forEach({ $0.frame = self.graphView.bounds })
         self.graphSelectionOverlayView.frame = graphFrame
         self.yAxisOverlays.forEach({ $0.frame = graphFrame })
-        self.secondYAxisLabelOverlay.frame = topFrame
+        self.secondYAxisLabelOverlay.frame = graphFrame
         self.dateLabels.frame = CGRect(x: Constants.offset, y: graphHeight + 20, width: self.frame.size.width - Constants.offset * 2, height: Constants.labelsHeight)
         self.selectionViews.forEach({ $0.frame = CGRect(x: Constants.offset, y: 6, width: self.frame.size.width - Constants.offset * 2, height: graphHeight + 8) })
         self.graphDrawLayers.forEach({ $0.offset = 20 }) // self.graphDrawLayers.forEach({ $0.offset = 6 })
@@ -295,11 +295,11 @@ class GraphContentView: UIView {
         self.yAxisOverlays.forEach({ $0.layer.masksToBounds = true })
         self.secondYAxisLabelOverlay.layer.masksToBounds = true
         self.addSubview(self.dateLabels)
-        self.addSubview(self.yAxisLineOverlay)
         self.addSubview(self.selectionLineView)
         self.graphView.layer.masksToBounds = true
         self.addSubview(self.graphView)
         self.addSubview(self.yAxisLabelOverlay)
+        self.addSubview(self.yAxisLineOverlay)
         self.addSubview(self.shadowImage)
         self.addSubview(self.graphSelectionOverlayView)
         self.graphSelectionOverlayView.layer.masksToBounds = true
@@ -319,10 +319,8 @@ class GraphContentView: UIView {
         }
         self.linePositionAbove = newLinePositionAbove
         if newLinePositionAbove {
-            self.insertSubview(self.yAxisLineOverlay, aboveSubview: self.yAxisLabelOverlay)
             self.insertSubview(self.selectionLineView, aboveSubview: self.yAxisLabelOverlay)
         } else {
-            self.insertSubview(self.yAxisLineOverlay, belowSubview: self.dateLabels)
             self.insertSubview(self.selectionLineView, aboveSubview: self.dateLabels)
         }
     }

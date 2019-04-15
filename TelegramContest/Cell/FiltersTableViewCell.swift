@@ -184,8 +184,6 @@ class FilterView: UIView {
 
         self.layer.borderWidth = 1
         self.layer.borderColor = self.color.cgColor
-
-        self.changeRestarise(state: true)
     }
 
     @objc
