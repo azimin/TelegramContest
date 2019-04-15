@@ -599,6 +599,8 @@ class GraphContentView: UIView {
         }
 
         if let zoom = zoom, animated, zoom.style == .zooming || zoom.style == .pie {
+            self.zoomingViews.forEach({ $0.removeFromSuperview() })
+            self.zoomingViews = []
             let imageAfter = graphView.asImage()
             switch zoom.index {
             case .inside(_):
@@ -610,9 +612,6 @@ class GraphContentView: UIView {
     }
 
     func updateYLines(minValue: Int, maxValue: Int, animated: Bool, shouldDelay: Bool) {
-        self.zoomingViews.forEach({ $0.removeFromSuperview() })
-        self.zoomingViews = []
-        
         for yAxis in self.yAxisOverlays {
             switch yAxis.style {
             case .label, .line:
