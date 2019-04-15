@@ -259,7 +259,7 @@ class GraphContentView: UIView {
 
         let graphHeight = self.frame.height - Constants.labelsHeight - 20
         let graphFrame = CGRect(x: Constants.offset, y: 0, width: self.frame.size.width - Constants.offset * 2, height: graphHeight + 20)
-        let fullGraphFrame = CGRect(x: 0, y: 0, width: self.frame.size.width, height: graphHeight + 20)
+        let fullGraphFrame = CGRect(x: 0, y: 0, width: self.frame.size.width, height: graphHeight + 24)
         self.graphView.frame = fullGraphFrame
         self.graphDrawLayers.forEach({ $0.frame = self.graphView.bounds })
         self.graphSelectionOverlayView.frame = fullGraphFrame

@@ -59,19 +59,11 @@ class GraphSelectionOverlayView: UIView {
             layer.path = newPath.cgPath
         }
 
-        UIView.animate(withDuration: 0.25) {
-            self.alpha = 1
-        }
+        self.alpha = 1
     }
 
     func hide(animated: Bool) {
         self.shapeLayers.forEach({ $0.isHidden = true })
-        if animated {
-            UIView.animate(withDuration: 0.25) {
-                self.alpha = 0
-            }
-        } else {
-            self.alpha = 0
-        }
+        self.alpha = 0
     }
 }

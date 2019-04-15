@@ -128,7 +128,7 @@ class GraphDrawLayerView: UIView {
     var xOffset: CGFloat = 0
 
     func updateFrame() {
-        self.availbleFrame = CGRect(x: self.xOffset, y: self.offset, width: self.frame.width - self.xOffset * 2, height: self.frame.height - self.offset)
+        self.availbleFrame = CGRect(x: self.xOffset, y: self.offset, width: self.frame.width - self.xOffset * 2, height: self.frame.height - self.offset - 4)
         self.pathLayer.frame = self.availbleFrame
         self.selectedPath.frame = self.availbleFrame
         self.pathLayer.path = self.generatePath(graphContext: self.graphContext, fakeDots: (0, 0))
@@ -807,10 +807,10 @@ class GraphDrawLayerView: UIView {
 
         if graphContext.style == .graph {
             let newPath = UIBezierPath(ovalIn:
-                CGRect(x: cachedPosition - 4,
-                       y: cachedYPosition - 4,
-                       width: 8,
-                       height: 8)
+                CGRect(x: cachedPosition - 3,
+                       y: cachedYPosition - 3,
+                       width: 6,
+                       height: 6)
                 ).cgPath
 
             if animationDuration > 0, selectedPath.path != nil {
