@@ -204,10 +204,10 @@ class FilterView: UIView {
     }
 
     func tapAnimation() {
-        let keyframeDuration = 0.5
+        let keyframeDuration = 0.45
         UIView.animateKeyframes(withDuration: keyframeDuration, delay: 0, options: [.allowUserInteraction, .calculationModeCubic], animations: {
             UIView.addKeyframe(withRelativeStartTime: 0.0, relativeDuration: keyframeDuration / keyframeDuration) {
-                self.transform = CGAffineTransform(scaleX: 0.8, y: 0.8)
+                self.transform = CGAffineTransform(scaleX: 0.84, y: 0.84)
             }
 
             UIView.addKeyframe(withRelativeStartTime: keyframeDuration / 2, relativeDuration: keyframeDuration / 2) {
