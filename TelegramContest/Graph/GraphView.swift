@@ -15,6 +15,18 @@ enum Action {
 
 typealias SelectionBlock = (_ index: Int) -> Action?
 
+class TouchableButton: UIButton {
+    override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
+        let newArea = CGRect(
+            x: self.bounds.origin.x - 16,
+            y: self.bounds.origin.y - 16,
+            width: self.bounds.size.width + 50,
+            height: self.bounds.size.height + 30
+        )
+        return newArea.contains(point)
+    }
+}
+
 class GraphView: UIView {
     var rangeUpdated: ((_ range: Range<CGFloat>) -> Void)?
 
@@ -185,7 +197,7 @@ class GraphView: UIView {
     private let graphControlView = GraphControlView(dataSource: nil, selectedRange: 0..<1)
 
     private let titleLabel = UILabel()
-    private let zoomOutButton = UIButton(type: .system)
+    private let zoomOutButton = TouchableButton(type: .system)
 
     var updatedZoomStep: ((Int?) -> Void)?
 
