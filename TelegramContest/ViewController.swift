@@ -189,6 +189,8 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        self.theme = .init(style: .dark)
+
 //        let path = Bundle.main.path(forResource: "chart_data", ofType: "json")!
 //        let data = try! Data(contentsOf: URL(fileURLWithPath: path), options: .mappedIfSafe)
 //
@@ -252,26 +254,16 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     // MARK: - TableView
 
     func numberOfSections(in tableView: UITableView) -> Int {
-        return self.section.count + 1
+        return self.section.count
     }
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        if section == 0 {
-            return 1
-        } else {
-            let sectionType = self.section[section - 1]
-            return sectionType.graph != .forth ? 2 : 1
-        }
+        let sectionType = self.section[section]
+        return sectionType.graph != .forth ? 2 : 1
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        if indexPath.section == 0 {
-            let cell = tableView.dequeueReusableCell(withIdentifier: "ButtonTableViewCell", for: indexPath) as! ButtonTableViewCell
-            cell.theme = theme
-            return cell
-        }
-
-        let section = self.section[indexPath.section - 1]
+        let section = self.section[indexPath.section]
 
         let selectAction: SelectionBlock = { index in
             if section.enabledRows.contains(index) {
@@ -418,7 +410,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         default:
             let cell = tableView.dequeueReusableCell(withIdentifier: "FiltersTableViewCell", for: indexPath) as! FiltersTableViewCell
             let yRows = section.currentDataSource.yRows
-            let section = self.section[indexPath.section - 1]
+            let section = self.section[indexPath.section]
             var rows: [Row] = []
 
             for (index, yRow) in yRows.enumerated() {
@@ -440,14 +432,10 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     }
 
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        if section == 0 {
-            return nil
-        }
-
         let header = tableView.dequeueReusableHeaderFooterView(withIdentifier: "CellHeaderView") as! CellHeaderView
         header.label.textColor = theme.configuration.sectionColor
         header.label.backgroundColor = theme.configuration.mainBackgroundColor
-        switch (section - 1) {
+        switch (section) {
         case 0:
             header.label.text = "Followers".uppercased()
         case 1:
@@ -465,20 +453,12 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     }
 
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        if section == 0 {
-            return 0
-        }
-
         return 38
     }
     
     var graphCachedHeigh: [IndexPath: CGFloat] = [:]
 
     func tableView(_ tableView: UITableView, estimatedHeightForRowAt indexPath: IndexPath) -> CGFloat {
-        if indexPath.section == 0 {
-            return 65
-        }
-
         switch indexPath.row {
         case 0:
             if let height = self.graphCachedHeigh[indexPath] {
@@ -491,10 +471,6 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     }
 
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        if indexPath.section == 0 {
-            return 65
-        }
-
         switch indexPath.row {
         case 0:
             if let height = self.graphCachedHeigh[indexPath] {
@@ -504,35 +480,6 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         default:
             return UITableView.automaticDimension
         }
-    }
-
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        tableView.deselectRow(at: indexPath, animated: true)
-        guard indexPath.section > 0 else {
-            self.theme = self.theme.configuration.isLight ? Theme(style: .dark) : Theme(style: .light)
-
-            self.tableView.reloadData()
-            return
-        }
-
-//        let section = self.section[indexPath.section - 1]
-//        let cell = tableView.cellForRow(at: indexPath)
-//
-//        let row = indexPath.row - 1
-//        let shouldSelect: Bool
-//        if section.enabledRows.contains(row) {
-//            section.enabledRows.removeAll(where: { $0 == row })
-//            shouldSelect = false
-//        } else {
-//            section.enabledRows.append(row)
-//            shouldSelect = true
-//        }
-//
-//        let graphCell = tableView.cellForRow(at: IndexPath(row: 0, section: indexPath.section)) as! GraphTableViewCell
-//        let graphView = graphCell.graphView
-//        graphView.updateEnabledRows(section.enabledRows, animated: true)
-//
-//        cell?.accessoryType = shouldSelect ? .checkmark : .none
     }
 
     func animateThemeSwitch() {
