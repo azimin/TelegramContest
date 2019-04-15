@@ -606,6 +606,9 @@ class GraphContentView: UIView {
     }
 
     func updateYLines(minValue: Int, maxValue: Int, animated: Bool, shouldDelay: Bool) {
+        self.zoomingViews.forEach({ $0.removeFromSuperview() })
+        self.zoomingViews = []
+        
         for yAxis in self.yAxisOverlays {
             switch yAxis.style {
             case .label, .line:
@@ -619,6 +622,8 @@ class GraphContentView: UIView {
     private func deg2rad(_ number: CGFloat) -> CGFloat {
         return number * .pi / 180
     }
+
+    var zoomingViews: [UIView] = []
 
     func animateZoom(imageBefore: UIImage, imageAfter: UIImage, reversed: Bool, dublicateImages: Bool, animeteInside: Bool) {
         let whiteView = UIView()
@@ -682,6 +687,7 @@ class GraphContentView: UIView {
             snapshotImageBeforeView.removeFromSuperview()
             if reversed {
                 whiteView.removeFromSuperview()
+                self.zoomingViews = []
             }
         }
 
@@ -700,6 +706,7 @@ class GraphContentView: UIView {
                 snapshotImageAfterView.removeFromSuperview()
                 if !reversed {
                     whiteView.removeFromSuperview()
+                    self.zoomingViews = []
                 }
             }
         } else {
@@ -722,8 +729,11 @@ class GraphContentView: UIView {
             }, completion: { _ in
                 snapshotImageAfterView.removeFromSuperview()
                 whiteView.removeFromSuperview()
+                self.zoomingViews = []
             })
         }
+
+        self.zoomingViews.append(contentsOf: [whiteView, snapshotImageAfterView, snapshotImageBeforeView])
     }
 
     private func converValues(values: [Int], range: Range<CGFloat>, rounded: Bool) -> [Int] {
