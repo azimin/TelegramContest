@@ -311,6 +311,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
             let cell = tableView.dequeueReusableCell(withIdentifier: "GraphTableViewCell\(section.graph.rawValue)", for: indexPath) as! GraphTableViewCell
             cell.graphView.style = dataSource.style
             cell.graphView.theme = theme
+            cell.graphView.updateSelectedRange(range: section.currentSelectedRange, skip: false)
             cell.graphView.updateDataSource(dataSource: dataSource, enableRows: section.enabledRows, skip: false, zoomed: section.zoomedSection != nil)
             cell.graphView.selectedAction = selectAction
             cell.graphView.selectedLongAction = longSelectAction

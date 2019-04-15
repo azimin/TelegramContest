@@ -72,8 +72,10 @@ class GraphContentView: UIView {
         }
 
         if self.style == .percentStackedBar {
+            self.selectionViews.forEach({ $0.offset = 14 })
             self.yAxisOverlays.forEach({ $0.numberOfComponents = 4 })
         } else {
+            self.selectionViews.forEach({ $0.offset = 0 })
             self.yAxisOverlays.forEach({ $0.numberOfComponents = 6 })
         }
 
@@ -347,13 +349,11 @@ class GraphContentView: UIView {
         while graphDrawLayers.count < dataSource.yRows.count {
             let graphView = GraphDrawLayerView()
             graphView.xOffset = 16
-            //            graphView.layer.masksToBounds = true
             graphView.frame = CGRect(x: 0, y: 0, width: self.frame.width, height: self.frame.height - Constants.labelsHeight)
             if let lates = self.graphDrawLayers.last {
                 self.graphView.insertSubview(graphView, belowSubview: lates)
             } else {
                 self.graphView.addSubview(graphView)
-                //                self.insertSubview(graphView, belowSubview: self.yAxisLabelOverlay)
             }
             self.graphDrawLayers.append(graphView)
         }
@@ -415,7 +415,7 @@ class GraphContentView: UIView {
         if self.currentMaxValue == (0, 0) || animated {
             self.currentMaxValue = (maxValue, minValue)
             thresholdOnYAxis.cancel()
-            self.updateYLines(minValue: minValue, maxValue: maxValue, animated: true, shouldDelay: false)
+            self.updateYLines(minValue: minValue, maxValue: maxValue, animated: animated, shouldDelay: false)
         } else {
             self.counter.animate(from: self.currentMaxValue, to: (maxValue, minValue)) { (value) in
                 self.currentMaxValue = value

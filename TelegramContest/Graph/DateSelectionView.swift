@@ -45,6 +45,8 @@ class DateSelectionView: UIView {
     var tapAction: SelectIndexAction?
     var closeAction: VoidBlock?
 
+    var offset: CGFloat = 0
+
     init(style: Style) {
         self.style = style
         super.init(frame: .zero)
@@ -138,8 +140,7 @@ class DateSelectionView: UIView {
         }
 
         line.isHidden = false
-        line.frame.size = CGSize(width: 1, height: self.frame.height)
-        line.center = CGPoint(x: position, y: self.center.y)
+        line.frame = CGRect(x: position, y: self.offset, width: 1, height: self.frame.height - self.offset)
     }
 
     func updatePlate(position: CGFloat, graph: GraphDataSource, enabledRows: [Int], index: Int, availableHeight: CGFloat, dateStyle: DateStyle, shouldShowPercentage: Bool) {
@@ -204,7 +205,7 @@ class DateSelectionView: UIView {
         let dateString = self.getDateComponents(date, dateStyle: dateStyle)
         self.dateLabel.text = dateString
 
-        plate.center = CGPoint(x: platePosition, y: plateHeigh / 2)
+        plate.center = CGPoint(x: platePosition, y: plateHeigh / 2 + offset * 1.4)
         self.button.frame = plate.bounds
     }
 
