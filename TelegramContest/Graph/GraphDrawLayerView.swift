@@ -321,7 +321,7 @@ class GraphDrawLayerView: UIView {
 
         for index in 0..<(graphContext.values.count / steps.points) {
             let value: Int = graphContext.values[index]
-            let x = steps.pixels * CGFloat(index) - offset
+            let x = steps.pixels * CGFloat(index + 1) - offset
             if x > (-0.1 * self.availbleFrame.width) && x < (self.availbleFrame.width * 1.1) {
                 let yPercent = (CGFloat(value) / CGFloat(maxMinDelta)) - devide
                 if !isMoved {
