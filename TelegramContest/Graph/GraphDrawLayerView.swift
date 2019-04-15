@@ -757,7 +757,7 @@ class GraphDrawLayerView: UIView {
 
         let rect = CGRect(x: x + xOffset, y: self.availbleFrame.height - height + self.offset, width: steps.pixels, height: height)
 
-        return (cachedPosition, cachedIndex, cachedHeight, rect)
+        return (cachedPosition + xOffset, cachedIndex, cachedHeight, rect)
     }
 
     func selectLine(graphContext: GraphContext?, selectedPosition: CGFloat, animationDuration: TimeInterval) -> Selection {

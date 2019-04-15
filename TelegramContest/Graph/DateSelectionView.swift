@@ -183,10 +183,10 @@ class DateSelectionView: UIView {
         }
 
         var platePosition = position
-        if platePosition - plateWidth / 2 < -1 {
-            platePosition -= (platePosition + 1 - plateWidth / 2)
-        } else if platePosition + plateWidth / 2 > (self.frame.width + 1) {
-            platePosition += (self.frame.width + 1 - platePosition - plateWidth / 2)
+        if platePosition - plateWidth / 2 < 16 {
+            platePosition -= (platePosition - 16 - plateWidth / 2)
+        } else if platePosition + plateWidth / 2 > (self.frame.width - 16) {
+            platePosition += (self.frame.width - 16 - platePosition - plateWidth / 2)
         }
 
         if availableHeight + offset * 2 > (self.frame.height - plateHeigh) {
