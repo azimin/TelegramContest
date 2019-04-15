@@ -165,7 +165,7 @@ class PathManager {
         let oneHourStep: CGFloat = 1 / 168
         let timeZoneStep = -CGFloat(timeZoneOffset) * oneHourStep
 
-        var selectedRange: Range<CGFloat> = (0.44 + CGFloat(offset) * 0.143 + timeZoneStep)..<(0.57 + CGFloat(offset) * 0.143 + timeZoneStep)
+        var selectedRange: Range<CGFloat> = (0.436 + CGFloat(offset) * 0.143 + timeZoneStep)..<(0.57 + CGFloat(offset) * 0.143 + timeZoneStep)
         if selectedRange.upperBound > 1 {
             selectedRange = (selectedRange.lowerBound - (selectedRange.upperBound - 1))..<1
         }
