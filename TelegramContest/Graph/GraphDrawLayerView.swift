@@ -264,7 +264,7 @@ class GraphDrawLayerView: UIView {
 
     private var cahce: GraphicsDataCache?
     private var stackCache: StackGraphicsDataCache?
-    private var overlayCache: OverlayGraphicsDataCache?
+    var overlayCache: OverlayGraphicsDataCache?
 
     func generatePointGraph(graphContext: GraphContext?, point: Int) -> CGPath {
         guard let graphContext = graphContext, self.availbleFrame.width > 0 else {

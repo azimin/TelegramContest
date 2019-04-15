@@ -193,6 +193,10 @@ class GraphContentView: UIView {
         self.preveous = .zero
         self.enabledRows = values
 
+        if self.style == .percentStackedBar {
+            self.graphDrawLayers.forEach({ $0.overlayCache = nil })
+        }
+
         self.updateTansformer()
         self.updatePieSelectedRange(force: true)
 
