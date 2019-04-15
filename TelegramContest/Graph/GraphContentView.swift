@@ -71,6 +71,12 @@ class GraphContentView: UIView {
             }
         }
 
+        if self.style == .percentStackedBar {
+            self.yAxisOverlays.forEach({ $0.numberOfComponents = 4 })
+        } else {
+            self.yAxisOverlays.forEach({ $0.numberOfComponents = 6 })
+        }
+
         if self.style == .stackedBar || self.dataSource?.yRows.first?.style == .bar {
             self.selectionLineView.isHidden = true
         } else {
@@ -249,11 +255,11 @@ class GraphContentView: UIView {
         self.graphView.frame = graphFrame
         self.graphDrawLayers.forEach({ $0.frame = self.graphView.bounds })
         self.graphSelectionOverlayView.frame = graphFrame
-        self.yAxisOverlays.forEach({ $0.frame = topFrame })
+        self.yAxisOverlays.forEach({ $0.frame = graphFrame })
         self.secondYAxisLabelOverlay.frame = topFrame
         self.dateLabels.frame = CGRect(x: Constants.offset, y: graphHeight + 20, width: self.frame.size.width - Constants.offset * 2, height: Constants.labelsHeight)
         self.selectionViews.forEach({ $0.frame = CGRect(x: Constants.offset, y: 6, width: self.frame.size.width - Constants.offset * 2, height: graphHeight + 8) })
-        self.graphDrawLayers.forEach({ $0.offset = 20 })
+        self.graphDrawLayers.forEach({ $0.offset = 20 }) // self.graphDrawLayers.forEach({ $0.offset = 6 })
         self.pieChartNumbersView?.frame = graphFrame
         self.updateShadow()
         self.updateHierarhy()

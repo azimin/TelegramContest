@@ -85,6 +85,9 @@ class YAxisOverlayView: UIView {
     var onRemoving: [YAxisView] = []
     var labelOverrideColor: UIColor?
     var thresholdOptimization = ThresholdOptimization(elapsedTime: 0.02)
+
+    var numberOfComponents = 6
+
     let style: YAxisView.Style
 
     init(style: YAxisView.Style) {
@@ -103,8 +106,8 @@ class YAxisOverlayView: UIView {
     }
 
     func update(value: Int, animated: Bool) {
-        let step = (value / 5)
-        let maxValue = step * 5
+        let step = (value / self.numberOfComponents)
+        let maxValue = step * self.numberOfComponents
         let oldValue = self.maxValue
 
         guard oldValue != maxValue, maxValue != 0 else {
@@ -140,39 +143,48 @@ class YAxisOverlayView: UIView {
     }
 
     private func animate(step: Int, from: Int, animated: Bool) {
-        for i in 0..<5 {
-            let percent = CGFloat(i * step) / CGFloat(self.maxValue)
-            let oldPercent: CGFloat
-            if from == 0 {
-                oldPercent = 0
-            } else {
-                oldPercent = CGFloat(i * step) / CGFloat(from)
-            }
-            let view: YAxisView
-            if self.onReuse.isEmpty {
-                view = YAxisView(style: self.style)
-                view.frame = CGRect(x: 0, y: 0, width: self.frame.width, height: 26)
-                view.theme = self.theme
-                self.addSubview(view)
-            } else {
-                view = self.onReuse.removeLast()
-                if let index = self.onRemoving.firstIndex(of: view) {
-                    self.onRemoving.remove(at: index)
-                }
-                view.isHidden = false
-                view.alpha = 1
-            }
-            view.labelOverrideColor = self.labelOverrideColor
-            view.label?.text = self.convertToText(value: step * i)
-            view.alpha = 0
-            view.center = CGPoint(x: view.center.x, y: self.frame.height * (1 - oldPercent) - view.frame.height / 2)
-            self.items.append(Item(view: view, value: step * i))
-
-            UIView.animate(withDuration: animated ? 0.25 : 0, delay: 0, options: [UIView.AnimationOptions.curveEaseOut], animations: {
-                view.alpha = 1
-                view.center = CGPoint(x: view.center.x, y: self.frame.height * (1 - percent) - view.frame.height / 2)
-            }, completion: nil)
+        for i in 0..<self.numberOfComponents {
+            self.addItem(i: i, step: step, from: from, animated: animated)
         }
+        if self.numberOfComponents == 4 {
+            self.addItem(i: 4, step: step, from: from, animated: animated)
+        }
+    }
+
+    private func addItem(i: Int, step: Int, from: Int, animated: Bool) {
+        let percent = CGFloat(i * step) / CGFloat(self.maxValue)
+        let oldPercent: CGFloat
+        if from == 0 {
+            oldPercent = 0
+        } else {
+            oldPercent = CGFloat(i * step) / CGFloat(from)
+        }
+        let view: YAxisView
+        if self.onReuse.isEmpty {
+            view = YAxisView(style: self.style)
+            view.frame = CGRect(x: 0, y: 0, width: self.frame.width, height: 26)
+            view.theme = self.theme
+            self.addSubview(view)
+        } else {
+            view = self.onReuse.removeLast()
+            if let index = self.onRemoving.firstIndex(of: view) {
+                self.onRemoving.remove(at: index)
+            }
+            view.isHidden = false
+            view.alpha = 1
+        }
+        view.labelOverrideColor = self.labelOverrideColor
+        view.label?.text = self.convertToText(value: step * i)
+        view.alpha = 0
+
+        let height = (self.frame.height - 20)
+        view.center = CGPoint(x: view.center.x, y: height * (1 - oldPercent) - view.frame.height / 2 + 20)
+        self.items.append(Item(view: view, value: step * i))
+
+        UIView.animate(withDuration: animated ? 0.25 : 0, delay: 0, options: [UIView.AnimationOptions.curveEaseOut], animations: {
+            view.alpha = 1
+            view.center = CGPoint(x: view.center.x, y: height * (1 - percent) - view.frame.height / 2 + 20)
+        }, completion: nil)
     }
 
     private func convertToText(value: Int) -> String {
