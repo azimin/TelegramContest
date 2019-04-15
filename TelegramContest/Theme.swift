@@ -20,9 +20,10 @@ class ThemeConfiguration {
     let gridLines: UIColor
     let tooltipArrow: UIColor
     let axisTextColor: UIColor
+    let axisTextColor2: UIColor
     let sectionColor: UIColor
 
-    init(isLight: Bool, mainBackgroundColor: UIColor, backgroundColor: UIColor, selectionColor: UIColor, nameColor: UIColor, scrollBackground: UIColor, scrollSelector: UIColor, zoomOutText: UIColor, gridLines: UIColor, tooltipArrow: UIColor, axisTextColor: UIColor, sectionColor: UIColor) {
+    init(isLight: Bool, mainBackgroundColor: UIColor, backgroundColor: UIColor, selectionColor: UIColor, nameColor: UIColor, scrollBackground: UIColor, scrollSelector: UIColor, zoomOutText: UIColor, gridLines: UIColor, tooltipArrow: UIColor, axisTextColor: UIColor, axisTextColor2: UIColor, sectionColor: UIColor) {
         self.isLight = isLight
         self.mainBackgroundColor = mainBackgroundColor
         self.backgroundColor = backgroundColor
@@ -34,6 +35,7 @@ class ThemeConfiguration {
         self.gridLines = gridLines
         self.tooltipArrow = tooltipArrow
         self.axisTextColor = axisTextColor
+        self.axisTextColor2 = axisTextColor2
         self.sectionColor = sectionColor
     }
 }
@@ -68,6 +70,7 @@ class Theme: Equatable {
             gridLines: UIColor(hex: "8596AB").withAlphaComponent(0.2),
             tooltipArrow: UIColor(hex: "D2D5D7"),
             axisTextColor: UIColor(hex: "8596AB"),
+            axisTextColor2: UIColor(hex: "BACCE1").withAlphaComponent(0.6),
             sectionColor: UIColor(hex: "8895A9")
         )
     }()
@@ -85,6 +88,7 @@ class Theme: Equatable {
             gridLines: UIColor(hex: "182D3B").withAlphaComponent(0.1),
             tooltipArrow: UIColor(hex: "59606D").withAlphaComponent(0.3),
             axisTextColor: UIColor(hex: "8E8E93"),
+            axisTextColor2: UIColor(hex: "252529").withAlphaComponent(0.5),
             sectionColor: UIColor(hex: "6D6D72")
         )
     }()

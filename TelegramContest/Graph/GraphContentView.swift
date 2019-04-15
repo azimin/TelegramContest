@@ -79,6 +79,12 @@ class GraphContentView: UIView {
             self.yAxisOverlays.forEach({ $0.numberOfComponents = 6 })
         }
 
+        if self.style == .stackedBar || self.style == .percentStackedBar {
+            self.yAxisOverlays.forEach({ $0.isSecondStyle = true })
+        } else {
+            self.yAxisOverlays.forEach({ $0.isSecondStyle = false })
+        }
+
         if self.style == .stackedBar || self.dataSource?.yRows.first?.style == .bar {
             self.selectionLineView.isHidden = true
         } else {

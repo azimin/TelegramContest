@@ -18,11 +18,18 @@ class YAxisView: UIView {
     var label: UILabel?
     var line: UIView?
     let style: Style
+    var isSecondStyle: Bool = false {
+        didSet {
+            if oldValue != self.isSecondStyle {
+                 self.label?.textColor = self.labelOverrideColor ?? (isSecondStyle ? self.theme.configuration.axisTextColor2 : self.theme.configuration.axisTextColor)
+            }
+        }
+    }
 
     var labelOverrideColor: UIColor? {
         didSet {
             if (oldValue == nil && labelOverrideColor != nil) || (oldValue != nil && labelOverrideColor == nil) {
-                self.label?.textColor = self.labelOverrideColor ?? self.theme.configuration.axisTextColor
+                self.label?.textColor = self.labelOverrideColor ?? (isSecondStyle ? self.theme.configuration.axisTextColor2 : self.theme.configuration.axisTextColor)
             }
         }
     }
@@ -30,7 +37,7 @@ class YAxisView: UIView {
     var theme: Theme = .default {
         didSet {
             let config = theme.configuration
-            self.label?.textColor = self.labelOverrideColor ?? config.axisTextColor
+            self.label?.textColor = self.labelOverrideColor ?? (isSecondStyle ? self.theme.configuration.axisTextColor2 : self.theme.configuration.axisTextColor)
             self.line?.backgroundColor = config.gridLines
         }
     }
@@ -103,6 +110,13 @@ class YAxisOverlayView: UIView {
         didSet {
             if (oldValue == nil && labelOverrideColor != nil) || (oldValue != nil && labelOverrideColor == nil) {
                 self.items.values.forEach({ $0.view.labelOverrideColor = self.labelOverrideColor })
+            }
+        }
+    }
+    var isSecondStyle: Bool = false {
+        didSet {
+            if (oldValue != self.isSecondStyle) {
+                self.items.values.forEach({ $0.view.isSecondStyle = self.isSecondStyle })
             }
         }
     }
@@ -246,6 +260,7 @@ class YAxisOverlayView: UIView {
             view.isHidden = false
         }
 
+        view.isSecondStyle = self.isSecondStyle
         view.labelOverrideColor = self.labelOverrideColor
         view.alpha = 0
 
