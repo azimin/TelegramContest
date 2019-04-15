@@ -190,6 +190,7 @@ class GraphDrawLayerView: UIView {
                 }
             }
 
+            self.pathLayer.removeAllAnimations()
             let animation = CABasicAnimation(keyPath: "path")
             if let fakeDotsBefore = fakeDotsBefore, let fakeDotsAfter = fakeDotsAfter {
                 animation.fromValue = self.generatePath(graphContext: oldContext, fakeDots: fakeDotsBefore)

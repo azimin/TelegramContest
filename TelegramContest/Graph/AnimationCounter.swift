@@ -95,12 +95,14 @@ class AnimationCounter {
 class PairAnimationCounter {
     typealias Pair = (Int, Int)
 
-    var timer: Timer?
     var currentValue: Pair = (0, 0)
     private var cachedFrom: Pair = (0, 0)
     private var cachedTo: Pair = (0, 0)
     private var progress: CGFloat = 0
     private var block: ((Pair) -> Void)?
+
+    private var displayLink: CADisplayLink?
+    private var startTime = 0.0
 
     func reset() {
         self.cachedFrom = (0, 0)
@@ -119,18 +121,21 @@ class PairAnimationCounter {
         self.progress = 0
         self.block = block
 
-        self.timer = Timer(timeInterval: 1 / 60, target: self, selector: #selector(self.fireTimer), userInfo: nil, repeats: true)
-        RunLoop.main.add(self.timer!, forMode: RunLoop.Mode.common)
+        self.startTime = CACurrentMediaTime()
+        self.displayLink = CADisplayLink(target: self, selector: #selector(self.fireTimer))
+        self.displayLink?.add(to: .main, forMode: .common)
     }
 
     @objc
     func fireTimer() {
-        self.progress += 1 / 15
+        let elapsed = CACurrentMediaTime() - self.startTime
+        self.progress += CGFloat(elapsed) * 8
+        self.startTime = CACurrentMediaTime()
         if self.progress >= 1 {
             OperationQueue.main.addOperation {
                 self.block?(self.cachedTo)
             }
-            self.timer?.invalidate()
+            self.displayLink?.invalidate()
         }
         let progress = self.quadraticEaseOut(self.progress)
         let delta1 = self.cachedTo.0 - self.cachedFrom.0
@@ -149,7 +154,7 @@ class PairAnimationCounter {
     }
 
     func invalidate() {
-        self.timer?.invalidate()
+        self.displayLink?.invalidate()
     }
 
     private func quadraticEaseOut(_ x: CGFloat) -> CGFloat {
