@@ -55,38 +55,46 @@ class Theme: Equatable {
         return Theme(style: .light)
     }
 
+    static var nightConfiguration: ThemeConfiguration = {
+        return ThemeConfiguration(
+            isLight: false,
+            mainBackgroundColor: UIColor(hex: "1A222C"),
+            backgroundColor: UIColor(hex: "242E3E"),
+            selectionColor: UIColor(hex: "161C26"),
+            nameColor: UIColor(hex: "FEFEFE"),
+            scrollBackground: UIColor(hex: "18222D").withAlphaComponent(0.6),
+            scrollSelector: UIColor(hex: "56626D"),
+            zoomOutText: UIColor(hex: "2EA6FE"),
+            gridLines: UIColor(hex: "8596AB").withAlphaComponent(0.2),
+            tooltipArrow: UIColor(hex: "D2D5D7"),
+            axisTextColor: UIColor(hex: "8596AB"),
+            sectionColor: UIColor(hex: "8895A9")
+        )
+    }()
+
+    static var dayConfiguration: ThemeConfiguration = {
+        return ThemeConfiguration(
+            isLight: true,
+            mainBackgroundColor: UIColor(hex: "EFEFF4"),
+            backgroundColor: UIColor(hex: "FEFEFE"),
+            selectionColor: UIColor(hex: "D9D9D9"),
+            nameColor: UIColor(hex: "000000"),
+            scrollBackground: UIColor(hex: "E2EEF9").withAlphaComponent(0.6),
+            scrollSelector: UIColor(hex: "C0D1E1"),
+            zoomOutText: UIColor(hex: "108BE3"),
+            gridLines: UIColor(hex: "182D3B").withAlphaComponent(0.1),
+            tooltipArrow: UIColor(hex: "59606D").withAlphaComponent(0.3),
+            axisTextColor: UIColor(hex: "8E8E93"),
+            sectionColor: UIColor(hex: "6D6D72")
+        )
+    }()
+
     static func setupConfiguration(style: Style) -> ThemeConfiguration {
         switch style {
         case .light:
-            return ThemeConfiguration(
-                isLight: true,
-                mainBackgroundColor: UIColor(hex: "EFEFF4"),
-                backgroundColor: UIColor(hex: "FEFEFE"),
-                selectionColor: UIColor(hex: "D9D9D9"),
-                nameColor: UIColor(hex: "000000"),
-                scrollBackground: UIColor(hex: "E2EEF9").withAlphaComponent(0.6),
-                scrollSelector: UIColor(hex: "C0D1E1"),
-                zoomOutText: UIColor(hex: "108BE3"),
-                gridLines: UIColor(hex: "182D3B").withAlphaComponent(0.1),
-                tooltipArrow: UIColor(hex: "59606D").withAlphaComponent(0.3),
-                axisTextColor: UIColor(hex: "8E8E93"),
-                sectionColor: UIColor(hex: "6D6D72")
-            )
+            return self.dayConfiguration
         case .dark:
-            return ThemeConfiguration(
-                isLight: false,
-                mainBackgroundColor: UIColor(hex: "1A222C"),
-                backgroundColor: UIColor(hex: "242E3E"),
-                selectionColor: UIColor(hex: "161C26"),
-                nameColor: UIColor(hex: "FEFEFE"),
-                scrollBackground: UIColor(hex: "18222D").withAlphaComponent(0.6),
-                scrollSelector: UIColor(hex: "56626D"),
-                zoomOutText: UIColor(hex: "2EA6FE"),
-                gridLines: UIColor(hex: "8596AB").withAlphaComponent(0.2),
-                tooltipArrow: UIColor(hex: "D2D5D7"),
-                axisTextColor: UIColor(hex: "8596AB"),
-                sectionColor: UIColor(hex: "8895A9")
-            )
+            return self.nightConfiguration
         }
     }
 
