@@ -108,6 +108,7 @@ class GraphControlView: UIView {
 
         while graphDrawLayers.count < dataSource.yRows.count {
             let graphView = GraphDrawLayerView()
+            graphView.miniOffset = 0
             graphView.xOffset = 0
             graphView.layer.cornerRadius = 6
             graphView.layer.masksToBounds = true

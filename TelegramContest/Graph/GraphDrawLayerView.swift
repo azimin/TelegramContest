@@ -90,6 +90,8 @@ class GraphDrawLayerView: UIView {
         }
     }
 
+    var miniOffset: CGFloat = 0
+
     init() {
         super.init(frame: .zero)
 
@@ -128,7 +130,7 @@ class GraphDrawLayerView: UIView {
     var xOffset: CGFloat = 0
 
     func updateFrame() {
-        self.availbleFrame = CGRect(x: self.xOffset, y: self.offset, width: self.frame.width - self.xOffset * 2, height: self.frame.height - self.offset - 4)
+        self.availbleFrame = CGRect(x: self.xOffset, y: self.offset, width: self.frame.width - self.xOffset * 2, height: self.frame.height - self.offset - self.miniOffset)
         self.pathLayer.frame = self.availbleFrame
         self.selectedPath.frame = self.availbleFrame
         self.pathLayer.path = self.generatePath(graphContext: self.graphContext, fakeDots: (0, 0))

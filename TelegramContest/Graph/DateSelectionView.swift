@@ -140,7 +140,8 @@ class DateSelectionView: UIView {
         }
 
         line.isHidden = false
-        line.frame = CGRect(x: position, y: self.offset, width: 1, height: self.frame.height - self.offset)
+        let additionalOffset: CGFloat = self.offset != 0 ? offset : 20 + offset
+        line.frame = CGRect(x: position, y: additionalOffset, width: 1, height: self.frame.height - additionalOffset)
     }
 
     func updatePlate(position: CGFloat, graph: GraphDataSource, enabledRows: [Int], index: Int, availableHeight: CGFloat, dateStyle: DateStyle, shouldShowPercentage: Bool) {
