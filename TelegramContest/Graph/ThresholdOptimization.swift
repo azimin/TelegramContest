@@ -15,6 +15,7 @@ class ThresholdOptimization {
         case low, medium, high
 
         static var current: MemorySize {
+            return .low
             if ProcessInfo.processInfo.physicalMemory < 838860800 {
                 return .low
             } else if ProcessInfo.processInfo.physicalMemory < 1572864000 {

@@ -21,7 +21,7 @@ class GraphContentView: UIView {
     private var transformedValues: [[Int]] = []
     private var coeficent: CGFloat?
 
-    var style: GraphStyle = .basic
+    private var style: GraphStyle = .basic
     var zoomed: Bool = false
     var oneDayInterval: Bool = false
 
@@ -363,6 +363,7 @@ class GraphContentView: UIView {
         var maxValue = 0
         var minValue = Int.max
 
+        let isGraph = dataSource.yRows.first?.style == .graph
         let indexes = convertIndexes(count: self.transformedValues.first?.count ?? 0, range: self.selectedRange, rounded: false)
         for index in 0..<self.graphDrawLayers.count {
             if enabledRows.contains(index) {
@@ -374,7 +375,7 @@ class GraphContentView: UIView {
                     maxValue = max
                 }
 
-                if self.style == .basic {
+                if isGraph {
                     if min < minValue {
                         minValue = min
                     }
@@ -382,7 +383,7 @@ class GraphContentView: UIView {
             }
         }
 
-        if self.style != .basic {
+        if !isGraph {
             minValue = 0
         }
 
@@ -402,31 +403,31 @@ class GraphContentView: UIView {
             }
         }
 
-        let updateYAxis: (_ maxValue: Int, _ animated: Bool) -> Void = { (maxValue, animated) in
+        let updateYAxis: (_ minValue: Int, _ maxValue: Int, _ animated: Bool) -> Void = { (minValue, maxValue, animated) in
             for yAxis in self.yAxisOverlays {
                 switch yAxis.style {
                 case .label, .line:
-                    yAxis.update(value: maxValue, animated: animated)
+                    yAxis.update(minValue: minValue, maxValue: maxValue, animated: animated)
                 case .labelRight:
-                    yAxis.update(value: Int(CGFloat(maxValue) / (self.coeficent ?? 1)), animated: animated)
+                    yAxis.update(minValue: Int(CGFloat(minValue) / (self.coeficent ?? 1)), maxValue: Int(CGFloat(maxValue) / (self.coeficent ?? 1)), animated: animated)
                 }
             }
         }
 
         if force {
             self.currentMaxValue = (maxValue, minValue)
-            updateYAxis(maxValue, animated)
+            updateYAxis(minValue, maxValue, animated)
         }
 
         if self.currentMaxValue == (0, 0) || animated {
             self.currentMaxValue = (maxValue, minValue)
-            updateYAxis(maxValue, animated)
+            updateYAxis(minValue, maxValue, animated)
         } else {
             self.counter.animate(from: self.currentMaxValue, to: (maxValue, minValue)) { (value) in
                 self.currentMaxValue = value
                 self.update(animated: false, zoom: nil)
             }
-            updateYAxis(maxValue, true)
+            updateYAxis(minValue, maxValue, true)
         }
 
         var imageBefore: UIImage? = nil
