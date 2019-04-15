@@ -129,38 +129,46 @@ class YAxisOverlayView: UIView {
         }
     }
 
-    func update(minValue: Int, maxValue: Int, animated: Bool) {
-        self.thresholdOptimization.update {
-            let value = maxValue - minValue
-            let step = ((value) / self.numberOfComponents)
-            let oldMaxValue = self.maxValue
-            let oldMinValue = self.minValue
-
-            guard (self.maxValue != maxValue || self.minValue != minValue), maxValue != 0 else {
-                return
+    func update(minValue: Int, maxValue: Int, shouldDelay: Bool, animated: Bool) {
+        if shouldDelay {
+            self.thresholdOptimization.update {
+                self.updateFunction(minValue: minValue, maxValue: maxValue, shouldDelay: shouldDelay, animated: animated)
             }
-
-            self.maxValue = maxValue
-            self.minValue = minValue
-
-            var newComponents: [String] = []
-            var cachedComponentsIndexs: [Int] = []
-            for i in 0..<self.numberOfComponents {
-                let newValue = i * step + minValue
-                newComponents.append(convertToText(value: newValue))
-            }
-
-            for index in self.items.keys {
-                let item = self.items[index]!
-                if item.valueString == newComponents[index] {
-                    cachedComponentsIndexs.append(index)
-                }
-            }
-
-            self.disapear(animated: animated, cachedIndexes: cachedComponentsIndexs)
-            
-            self.animate(step: step, fromOldMax: oldMaxValue, toNewMax: self.maxValue, fromOldMin: oldMinValue, toNewMin: self.minValue, animated: animated)
+        } else {
+            self.updateFunction(minValue: minValue, maxValue: maxValue, shouldDelay: shouldDelay, animated: animated)
         }
+    }
+
+    func updateFunction(minValue: Int, maxValue: Int, shouldDelay: Bool, animated: Bool) {
+        let value = maxValue - minValue
+        let step = ((value) / self.numberOfComponents)
+        let oldMaxValue = self.maxValue
+        let oldMinValue = self.minValue
+
+        guard (self.maxValue != maxValue || self.minValue != minValue), maxValue != 0 else {
+            return
+        }
+
+        self.maxValue = maxValue
+        self.minValue = minValue
+
+        var newComponents: [String] = []
+        var cachedComponentsIndexs: [Int] = []
+        for i in 0..<self.numberOfComponents {
+            let newValue = i * step + minValue
+            newComponents.append(convertToText(value: newValue))
+        }
+
+        for index in self.items.keys {
+            let item = self.items[index]!
+            if item.valueString == newComponents[index] {
+                cachedComponentsIndexs.append(index)
+            }
+        }
+
+        self.disapear(animated: animated, cachedIndexes: cachedComponentsIndexs)
+
+        self.animate(step: step, fromOldMax: oldMaxValue, toNewMax: self.maxValue, fromOldMin: oldMinValue, toNewMin: self.minValue, animated: animated)
     }
 
     private func disapear(animated: Bool, cachedIndexes: [Int]) {

@@ -403,31 +403,20 @@ class GraphContentView: UIView {
             }
         }
 
-        let updateYAxis: (_ minValue: Int, _ maxValue: Int, _ animated: Bool) -> Void = { (minValue, maxValue, animated) in
-            for yAxis in self.yAxisOverlays {
-                switch yAxis.style {
-                case .label, .line:
-                    yAxis.update(minValue: minValue, maxValue: maxValue, animated: animated)
-                case .labelRight:
-                    yAxis.update(minValue: Int(CGFloat(minValue) / (self.coeficent ?? 1)), maxValue: Int(CGFloat(maxValue) / (self.coeficent ?? 1)), animated: animated)
-                }
-            }
-        }
-
         if force {
             self.currentMaxValue = (maxValue, minValue)
-            updateYAxis(minValue, maxValue, animated)
+            self.updateYLines(minValue: minValue, maxValue: maxValue, animated: true, shouldDelay: false)
         }
 
         if self.currentMaxValue == (0, 0) || animated {
             self.currentMaxValue = (maxValue, minValue)
-            updateYAxis(minValue, maxValue, animated)
+            self.updateYLines(minValue: minValue, maxValue: maxValue, animated: true, shouldDelay: false)
         } else {
             self.counter.animate(from: self.currentMaxValue, to: (maxValue, minValue)) { (value) in
                 self.currentMaxValue = value
                 self.update(animated: false, zoom: nil)
             }
-            updateYAxis(minValue, maxValue, true)
+            self.updateYLines(minValue: minValue, maxValue: maxValue, animated: true, shouldDelay: true)
         }
 
         var imageBefore: UIImage? = nil
@@ -455,7 +444,7 @@ class GraphContentView: UIView {
                 }) { (success) in
                     if success, isHidden {
                         // FIXME
-//                        graphView.isHidden = isHidden
+                        //                        graphView.isHidden = isHidden
                     }
                 }
             } else {
@@ -594,6 +583,17 @@ class GraphContentView: UIView {
                 self.animateZoom(imageBefore: imageBefore ?? UIImage(), imageAfter: imageAfter, reversed: false, animeteInside: zoom.style == .zooming)
             case .outside(_):
                 self.animateZoom(imageBefore: imageAfter, imageAfter: imageBefore ?? UIImage(), reversed: true, animeteInside: zoom.style == .zooming)
+            }
+        }
+    }
+
+    func updateYLines(minValue: Int, maxValue: Int, animated: Bool, shouldDelay: Bool) {
+        for yAxis in self.yAxisOverlays {
+            switch yAxis.style {
+            case .label, .line:
+                yAxis.update(minValue: minValue, maxValue: maxValue, shouldDelay: shouldDelay, animated: animated)
+            case .labelRight:
+                yAxis.update(minValue: Int(CGFloat(minValue) / (self.coeficent ?? 1)), maxValue: Int(CGFloat(maxValue) / (self.coeficent ?? 1)), shouldDelay: shouldDelay, animated: animated)
             }
         }
     }
