@@ -436,7 +436,7 @@ class GraphContentView: UIView {
                     graphView.alpha = isHidden ? 0 : 1
                 }) { (success) in
                     if success, isHidden {
-                        graphView.isHidden = isHidden
+//                        graphView.isHidden = isHidden
                     }
                 }
             } else {
