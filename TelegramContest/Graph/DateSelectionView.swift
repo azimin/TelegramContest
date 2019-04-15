@@ -191,7 +191,7 @@ class DateSelectionView: UIView {
             platePosition += (self.frame.width - 16 - platePosition - plateWidth / 2)
         }
 
-        if availableHeight + offset * 2 > (self.frame.height - plateHeigh) {
+        if availableHeight + offset * 3 > (self.frame.height - plateHeigh) {
             let range = (platePosition - plateWidth / 2)..<(platePosition + plateWidth / 2)
             if range.contains(position) {
                 if position > self.frame.width / 2 {
@@ -206,7 +206,14 @@ class DateSelectionView: UIView {
         let dateString = self.getDateComponents(date, dateStyle: dateStyle)
         self.dateLabel.text = dateString
 
-        plate.center = CGPoint(x: platePosition, y: plateHeigh / 2 + offset * 1.4)
+        if plate.frame.minX == 0 {
+            plate.center = CGPoint(x: platePosition, y: plateHeigh / 2 + offset * 1.4)
+        } else {
+            UIView.animate(withDuration: 0.15) {
+                plate.center = CGPoint(x: platePosition, y: plateHeigh / 2 + offset * 1.4)
+            }
+        }
+
         self.button.frame = plate.bounds
     }
 
