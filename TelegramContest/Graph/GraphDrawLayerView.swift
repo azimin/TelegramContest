@@ -304,7 +304,7 @@ class GraphDrawLayerView: UIView {
         }
 
         if fakeDots.beggining < 2 && fakeDots.end < 2 {
-            return cacheValue.transform(range: graphContext.range, size: self.availbleFrame.size, max: graphContext.maxValue)
+            return cacheValue.transform(range: graphContext.range, size: self.availbleFrame.size, max: graphContext.maxValue, min: graphContext.minValue)
         }
 
         let fullWidth = round(self.availbleFrame.width / graphContext.interval)
@@ -314,11 +314,16 @@ class GraphDrawLayerView: UIView {
         let path = CGMutablePath()
         var isMoved: Bool = false
 
+        let max = graphContext.maxValue
+        let min = graphContext.minValue
+        let maxMinDelta = max - min
+        let devide = CGFloat(min) / CGFloat(maxMinDelta)
+
         for index in 0..<(graphContext.values.count / steps.points) {
             let value: Int = graphContext.values[index]
             let x = steps.pixels * CGFloat(index) - offset
             if x > (-0.1 * self.availbleFrame.width) && x < (self.availbleFrame.width * 1.1) {
-                let yPercent = CGFloat(value) / CGFloat(graphContext.maxValue)
+                let yPercent = (CGFloat(value) / CGFloat(maxMinDelta)) - devide
                 if !isMoved {
                     path.move(to: CGPoint(x: x, y: (1 - yPercent) * self.availbleFrame.height))
                     if fakeDots.beggining > 2 {
@@ -777,10 +782,15 @@ class GraphDrawLayerView: UIView {
         var cachedYPosition: CGFloat = 0
         var cachedIndex = 0
 
+        let max = graphContext.maxValue
+        let min = graphContext.minValue
+        let maxMinDelta = max - min
+        let devide = CGFloat(min) / CGFloat(maxMinDelta)
+
         for index in 0..<(graphContext.values.count / steps.points) {
             let value: Int = graphContext.values[index] * steps.points
             let x = round(steps.pixels * CGFloat(index)) - offset
-            let yPercent = CGFloat(value) / CGFloat(graphContext.maxValue)
+            let yPercent = (CGFloat(value) / CGFloat(maxMinDelta)) - devide
 
             if abs(x - position) < delta {
                 delta = abs(x - position)

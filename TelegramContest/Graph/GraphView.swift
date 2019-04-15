@@ -98,20 +98,25 @@ class GraphView: UIView {
             return
         }
         self.noData = isEmpty
+        let hasFilters = !self.graphControlView.filtersView.isHidden
+        
+        if isEmpty {
+            if !hasFilters {
+                self.graphControlView.alpha = 0
+            }
+            self.graphContentView.alpha = 0
+        } else {
+            self.graphControlView.alpha = 1
+            self.graphContentView.alpha = 1
+        }
+
         UIView.animate(withDuration: 0.25) {
-            let hasFilters = !self.graphControlView.filtersView.isHidden
             if isEmpty {
-                self.graphContentView.alpha = 0
-                if !hasFilters {
-                    self.graphControlView.alpha = 0
-                }
                 self.zoomOutButton.alpha = 0
                 self.titleLabel.alpha = 0
                 self.noDataLabel.alpha = 1
             } else {
                 self.zoomOutButton.alpha = 1
-                self.graphContentView.alpha = 1
-                self.graphControlView.alpha = 1
                 self.titleLabel.alpha = 1
                 self.noDataLabel.alpha = 0
             }

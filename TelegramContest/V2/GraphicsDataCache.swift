@@ -30,7 +30,10 @@ class GraphicsDataCache {
         }
     }
 
-    func transform(range: Range<CGFloat>, size: CGSize, max: Int) -> CGPath {
+    func transform(range: Range<CGFloat>, size: CGSize, max: Int, min: Int) -> CGPath {
+        let delta = max - min
+        let devide = CGFloat(min) / CGFloat(delta) + 1
+
         let fullWidth = round(size.width / range.interval)
         let offset = range.lowerBound * fullWidth
 
@@ -40,8 +43,8 @@ class GraphicsDataCache {
 
         let path = CGMutablePath()
 
-        let firstTransform = CGAffineTransform(scaleX: xScale, y: (1 / CGFloat(max)))
-        let secondTransform = CGAffineTransform(translationX: -offset, y: -1)
+        let firstTransform = CGAffineTransform(scaleX: xScale, y: (1 / CGFloat(delta)))
+        let secondTransform = CGAffineTransform(translationX: -offset, y: -devide)
         let lastTransform = CGAffineTransform(scaleX: 1, y: -size.height)
 
         let transform = firstTransform.concatenating(secondTransform).concatenating(lastTransform)

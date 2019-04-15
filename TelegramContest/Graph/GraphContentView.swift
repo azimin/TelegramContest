@@ -52,7 +52,7 @@ class GraphContentView: UIView {
         self.style = dataSource?.style ?? self.style
         self.zoomed = zoomed
         self.preveous = .zero
-        self.currentMaxValue = 0
+        self.currentMaxValue = (0, 0)
         self.enabledRows = enableRows
 
         self.updatePieSelectedRange(force: true)
@@ -179,7 +179,7 @@ class GraphContentView: UIView {
     }
 
     private var enabledRows: [Int] = []
-    private var currentMaxValue: Int = 0
+    private var currentMaxValue: PairAnimationCounter.Pair = (0, 0)
 
     func updateEnabledRows(_ values: [Int], animated: Bool) {
         self.preveous = .zero
@@ -196,7 +196,7 @@ class GraphContentView: UIView {
     }
 
     private var graphDrawLayers: [GraphDrawLayerView] = []
-    private var counter: AnimationCounter = AnimationCounter(isQuality: false)
+    private var counter: PairAnimationCounter = PairAnimationCounter()
     private var dateLabels = ViewsOverlayView()
     private var yAxisLineOverlay = YAxisOverlayView(style: .line)
     private var yAxisLabelOverlay = YAxisOverlayView(style: .label)
@@ -361,7 +361,7 @@ class GraphContentView: UIView {
         }
 
         var maxValue = 0
-        var minValue = 0
+        var minValue = Int.max
 
         let indexes = convertIndexes(count: self.transformedValues.first?.count ?? 0, range: self.selectedRange, rounded: false)
         for index in 0..<self.graphDrawLayers.count {
@@ -374,16 +374,31 @@ class GraphContentView: UIView {
                     maxValue = max
                 }
 
-                if min < minValue {
-                    minValue = min
+                if self.style == .basic {
+                    if min < minValue {
+                        minValue = min
+                    }
                 }
             }
         }
-        if maxValue == 0 {
+
+        if self.style != .basic {
+            minValue = 0
+        }
+
+        if enabledRows.isEmpty {
             if let max = self.lastVisible?.graphContext?.maxValue {
                 maxValue = max
             } else {
                 maxValue = 1
+            }
+        }
+
+        if enabledRows.isEmpty {
+            if let min = self.lastVisible?.graphContext?.minValue {
+                minValue = min
+            } else {
+                maxValue = 0
             }
         }
 
@@ -399,15 +414,15 @@ class GraphContentView: UIView {
         }
 
         if force {
-            self.currentMaxValue = maxValue
+            self.currentMaxValue = (maxValue, minValue)
             updateYAxis(maxValue, animated)
         }
 
-        if self.currentMaxValue == 0 || animated {
-            self.currentMaxValue = maxValue
+        if self.currentMaxValue == (0, 0) || animated {
+            self.currentMaxValue = (maxValue, minValue)
             updateYAxis(maxValue, animated)
         } else {
-            self.counter.animate(from: self.currentMaxValue, to: maxValue) { (value) in
+            self.counter.animate(from: self.currentMaxValue, to: (maxValue, minValue)) { (value) in
                 self.currentMaxValue = value
                 self.update(animated: false, zoom: nil)
             }
@@ -438,6 +453,7 @@ class GraphContentView: UIView {
                     graphView.alpha = isHidden ? 0 : 1
                 }) { (success) in
                     if success, isHidden {
+                        // FIXME
 //                        graphView.isHidden = isHidden
                     }
                 }
@@ -468,8 +484,8 @@ class GraphContentView: UIView {
             let context = GraphContext(
                 range: range,
                 values: self.transformedValues[index],
-                maxValue: self.currentMaxValue,
-                minValue: minValue,
+                maxValue: self.currentMaxValue.0,
+                minValue: self.currentMaxValue.1,
                 isSelected: pieSelectedIndex == index,
                 style: yRow.style
             )
