@@ -176,6 +176,8 @@ class FilterView: UIView {
         self.addSubview(self.button)
         self.updateFrame(animated: false)
 
+        self.selectionArrow.frame = CGRect(x: 12, y: 10, width: 12, height: 10)
+
         self.button.addTarget(self, action: #selector(self.tapAction), for: .touchUpInside)
 
         let longPress = UILongPressGestureRecognizer(target: self, action: #selector(self.longPress(gesture:)))
@@ -198,6 +200,20 @@ class FilterView: UIView {
     func tapAction() {
         let action = self.action?(self.index)
         self.execute(action: action)
+        tapAnimation()
+    }
+
+    func tapAnimation() {
+        let keyframeDuration = 0.5
+        UIView.animateKeyframes(withDuration: keyframeDuration, delay: 0, options: [.allowUserInteraction, .calculationModeCubic], animations: {
+            UIView.addKeyframe(withRelativeStartTime: 0.0, relativeDuration: keyframeDuration / keyframeDuration) {
+                self.transform = CGAffineTransform(scaleX: 0.8, y: 0.8)
+            }
+
+            UIView.addKeyframe(withRelativeStartTime: keyframeDuration / 2, relativeDuration: keyframeDuration / 2) {
+                self.transform = CGAffineTransform.identity
+            }
+        })
     }
 
     private func execute(action: Action?) {
@@ -225,7 +241,7 @@ class FilterView: UIView {
     }
 
     func updateFrameLogic(animated: Bool) {
-        let animationDuration: TimeInterval = 0.2
+        let animationDuration: TimeInterval = 0.25
 
         let updateBlock: (_ animated: Bool) -> Void = { animated in
             let size = FilterView.size(text: self.label.text ?? "")
@@ -235,11 +251,11 @@ class FilterView: UIView {
                 let offset: CGFloat = 12 + 10 + 8
                 self.label.frame = CGRect(x: offset, y: 0, width: labelWidth, height: size.height)
                 self.backgroundColor = self.color
-                self.selectionArrow.frame = CGRect(x: 12, y: 10, width: 12, height: 10)
+//                self.selectionArrow.frame = CGRect(x: 12, y: 10, width: 12, height: 10)
             } else {
                 self.label.frame = CGRect(x: 20, y: 0, width: labelWidth, height: size.height)
                 self.backgroundColor = UIColor.clear
-                self.selectionArrow.frame = CGRect(x: -12, y: 10, width: 12, height: 10)
+//                self.selectionArrow.frame = CGRect(x: -12, y: 10, width: 12, height: 10)
             }
             self.selectionArrow.alpha = self.isSelected ? 1 : 0
             self.button.frame.size = size
@@ -250,13 +266,21 @@ class FilterView: UIView {
         }
 
         if animated {
-            UIView.animate(withDuration: animationDuration, animations: {
+            UIView.animate(withDuration: animationDuration, delay: 0, options: .allowUserInteraction, animations: {
                 updateBlock(true)
             }) { (success) in
                 if success {
                     animationCompletion()
                 }
             }
+
+//            UIView.animate(withDuration: animationDuration, animations: {
+//                updateBlock(true)
+//            }) { (success) in
+//                if success {
+//                    animationCompletion()
+//                }
+//            }
 
             let changeColor = CATransition()
             changeColor.duration = animationDuration

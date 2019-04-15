@@ -284,10 +284,10 @@ class GraphContentView: UIView {
         guard self.shadowCachedSize != shadowFrame else {
             return
         }
-//        let config = self.theme.configuration
+        //        let config = self.theme.configuration
         self.shadowCachedSize = shadowFrame
         self.shadowImage.frame = shadowFrame
-//        self.shadowImage.image = UIImage(size: shadowFrame.size, gradientColor: [config.backgroundColor, config.backgroundColor.withAlphaComponent(0)])
+        //        self.shadowImage.image = UIImage(size: shadowFrame.size, gradientColor: [config.backgroundColor, config.backgroundColor.withAlphaComponent(0)])
     }
 
     private func setup() {
@@ -342,13 +342,13 @@ class GraphContentView: UIView {
 
         while graphDrawLayers.count < dataSource.yRows.count {
             let graphView = GraphDrawLayerView()
-//            graphView.layer.masksToBounds = true
+            //            graphView.layer.masksToBounds = true
             graphView.frame = CGRect(x: 0, y: 0, width: self.frame.width, height: self.frame.height - Constants.labelsHeight)
             if let lates = self.graphDrawLayers.last {
                 self.graphView.insertSubview(graphView, belowSubview: lates)
             } else {
                 self.graphView.addSubview(graphView)
-//                self.insertSubview(graphView, belowSubview: self.yAxisLabelOverlay)
+                //                self.insertSubview(graphView, belowSubview: self.yAxisLabelOverlay)
             }
             self.graphDrawLayers.append(graphView)
         }
@@ -714,6 +714,11 @@ class GraphContentView: UIView {
     func updatePieSelection(location: CGPoint, shouldRespectRadius: Bool) {
         let index = self.findPointInsideCircle(point: location, shouldRespectRadius: shouldRespectRadius)
         guard self.pieSelectedIndex != index else {
+            if shouldRespectRadius, self.pieSelectedIndex != -1 {
+                self.pieSelectedIndex = -1
+                self.shouldUpdatePieChart = true
+                self.update(animated: true, zoom: nil)
+            }
             return
         }
 
@@ -846,7 +851,7 @@ extension UIImage {
         let newImageSize = CGSize(width: newImageWidth, height: newImageHeight)
 
         UIGraphicsBeginImageContextWithOptions(newImageSize, false, UIScreen.main.scale)
-
+        
         let firstImageDrawX: CGFloat = 0
         let firstImageDrawY  = round((newImageSize.height - firstImage.size.height ) / 2)
 
