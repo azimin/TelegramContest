@@ -113,7 +113,7 @@ class ThumbnailControl: UIControl {
         let rect2 = CGRect(x: offset + self.range.upperBound * width - 10, y: topSpace, width: lastWidth + 10, height: Constants.graphHeight)
         let path2 = CGPath(roundedRect: rect2, cornerWidth: 5, cornerHeight: 6, transform: nil)
 
-        self.controlImageView.frame = CGRect(x: offset + rect1.width - 10, y: 0, width: rect2.minX - rect1.width - offset + 20, height: height)
+        self.controlImageView.frame = CGRect(x: offset + rect1.width - 10, y: 1, width: rect2.minX - rect1.width - offset + 20, height: height - 1)
 
         if animated {
             self.animate(layer: self.beforeOverlay, toPath: path1)

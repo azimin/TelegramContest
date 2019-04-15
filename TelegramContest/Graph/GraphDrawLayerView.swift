@@ -789,7 +789,7 @@ class GraphDrawLayerView: UIView {
 
         for index in 0..<(graphContext.values.count / steps.points) {
             let value: Int = graphContext.values[index] * steps.points
-            let x = round(steps.pixels * CGFloat(index)) - offset
+            let x = round(steps.pixels * CGFloat(index + 1)) - offset
             let yPercent = (CGFloat(value) / CGFloat(maxMinDelta)) - devide
 
             if abs(x - position) < delta {

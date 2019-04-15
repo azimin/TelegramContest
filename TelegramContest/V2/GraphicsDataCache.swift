@@ -39,7 +39,7 @@ class GraphicsDataCache {
 
         let newRange = (range.lowerBound - 0.1)..<(range.upperBound + 0.1)
         let newPoints = converValues(values: self.points, range: newRange, rounded: false)
-        let xScale = fullWidth / CGFloat(self.points.count)
+        let xScale = fullWidth / CGFloat(self.points.count - 1)
 
         let path = CGMutablePath()
 

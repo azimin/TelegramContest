@@ -35,7 +35,7 @@ class OverlayGraphicsDataCache {
 
         let newRange = (range.lowerBound - 0.1)..<(range.upperBound + 0.1)
         var newPoints = converValues(values: self.points, range: newRange, rounded: false)
-        let xScale = fullWidth / CGFloat(self.points.count)
+        let xScale = fullWidth / CGFloat(self.points.count - 1)
         let offset = range.lowerBound * fullWidth
 
         let path = CGMutablePath()
