@@ -54,7 +54,7 @@ class Theme: Equatable {
     }
 
     static var `default`: Theme {
-        return Theme(style: .light)
+        return Theme(style: .dark)
     }
 
     static var nightConfiguration: ThemeConfiguration = {

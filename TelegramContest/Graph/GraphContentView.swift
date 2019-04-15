@@ -597,9 +597,9 @@ class GraphContentView: UIView {
             let imageAfter = graphView.asImage()
             switch zoom.index {
             case .inside(_):
-                self.animateZoom(imageBefore: imageBefore ?? UIImage(), imageAfter: imageAfter, reversed: false, animeteInside: zoom.style == .zooming)
+                self.animateZoom(imageBefore: imageBefore ?? UIImage(), imageAfter: imageAfter, reversed: false, dublicateImages: !zoom.shouldReplaceRangeController, animeteInside: zoom.style == .zooming)
             case .outside(_):
-                self.animateZoom(imageBefore: imageAfter, imageAfter: imageBefore ?? UIImage(), reversed: true, animeteInside: zoom.style == .zooming)
+                self.animateZoom(imageBefore: imageAfter, imageAfter: imageBefore ?? UIImage(), reversed: true, dublicateImages: !zoom.shouldReplaceRangeController, animeteInside: zoom.style == .zooming)
             }
         }
     }
@@ -615,23 +615,27 @@ class GraphContentView: UIView {
         }
     }
 
-    func animateZoom(imageBefore: UIImage, imageAfter: UIImage, reversed: Bool, animeteInside: Bool) {
+    func animateZoom(imageBefore: UIImage, imageAfter: UIImage, reversed: Bool, dublicateImages: Bool, animeteInside: Bool) {
         let whiteView = UIView()
         whiteView.frame = self.graphView.bounds
         whiteView.backgroundColor = self.theme.configuration.backgroundColor
         self.graphView.addSubview(whiteView)
 
-        let imageAfter2: UIImage
         let imageAfter3: UIImage
-        if #available(iOS 10.0, *) {
-            imageAfter2 = UIImage.imageByCombiningImage(firstImage: imageAfter, withImage: imageAfter.withHorizontallyFlippedOrientation())
-            imageAfter3 = UIImage.imageByCombiningImage(firstImage: imageAfter.withHorizontallyFlippedOrientation(), withImage: imageAfter2)
+        if dublicateImages {
+            let imageAfter2: UIImage
+            if #available(iOS 10.0, *) {
+                imageAfter2 = UIImage.imageByCombiningImage(firstImage: imageAfter, withImage: imageAfter.withHorizontallyFlippedOrientation())
+                imageAfter3 = UIImage.imageByCombiningImage(firstImage: imageAfter.withHorizontallyFlippedOrientation(), withImage: imageAfter2)
+            } else {
+                imageAfter2 = UIImage.imageByCombiningImage(firstImage: imageAfter, withImage: imageAfter)
+                imageAfter3 = UIImage.imageByCombiningImage(firstImage: imageAfter, withImage: imageAfter2)
+            }
         } else {
-            imageAfter2 = UIImage.imageByCombiningImage(firstImage: imageAfter, withImage: imageAfter)
-            imageAfter3 = UIImage.imageByCombiningImage(firstImage: imageAfter, withImage: imageAfter2)
+            imageAfter3 = imageAfter
         }
-        let snapshotImageAfterView = UIImageView(image: imageAfter3)
 
+        let snapshotImageAfterView = UIImageView(image: imageAfter3)
         let snapshotImageBeforeView = UIImageView(image: imageBefore)
 
         if reversed {
@@ -648,9 +652,9 @@ class GraphContentView: UIView {
 
         snapshotImageBeforeView.frame = self.graphView.bounds
         snapshotImageAfterView.frame = CGRect(
-            x: -self.graphView.frame.width,
+            x: dublicateImages ? -self.graphView.frame.width : 0,
             y: 0,
-            width: self.graphView.frame.width * 3,
+            width: dublicateImages ? self.graphView.frame.width * 3 : self.graphView.frame.width,
             height: self.graphView.frame.height)
         snapshotImageBeforeView.backgroundColor = self.theme.configuration.backgroundColor
         snapshotImageAfterView.backgroundColor = self.theme.configuration.backgroundColor

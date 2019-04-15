@@ -191,19 +191,6 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
 
         self.theme = .init(style: .dark)
 
-//        let path = Bundle.main.path(forResource: "chart_data", ofType: "json")!
-//        let data = try! Data(contentsOf: URL(fileURLWithPath: path), options: .mappedIfSafe)
-//
-//        let jsonResult = try! JSONSerialization.jsonObject(with: data, options: .mutableLeaves)
-//        if let jsonResult = jsonResult as? [Any] {
-//            for result in jsonResult {
-//                if let value = result as? [String: Any],
-//                    let dataSource = GraphDataSource(json: value) {
-//                    self.section.append(Section(dataSource: dataSource, selectedRange: 0..<1, enabledRows: Array(0..<dataSource.yRows.count)))
-//                }
-//            }
-//        }
-
         for graph in PathManager.Graph.allCases {
             if let section = PathManager.section(to: graph) {
                 self.section.append(section)

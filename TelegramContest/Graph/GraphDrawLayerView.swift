@@ -109,6 +109,7 @@ class GraphDrawLayerView: UIView {
 
         self.selectedPath.fillColor = UIColor.white.cgColor
         self.selectedPath.lineWidth = self.lineWidth
+        self.selectedPath.fillColor = self.theme.configuration.backgroundColor.cgColor
     }
 
     required init?(coder aDecoder: NSCoder) {
@@ -157,7 +158,7 @@ class GraphDrawLayerView: UIView {
                 let fullWidth1 = round(self.availbleFrame.width / oldGraphContext.interval)
 
                 let xScale1 = fullWidth1 / CGFloat(oldGraphContext.values.count - 1)
-                let numberOfAdditionalPoints1 = 16 * xScale1
+                let numberOfAdditionalPoints1 = 16 * (1 / xScale1)
 
                 let lowerIndex = Int(CGFloat(oldGraphContext.values.count) * oldGraphContext.range.lowerBound)
                 let upperIndex = Int(CGFloat(oldGraphContext.values.count) * oldGraphContext.range.upperBound)
@@ -170,7 +171,7 @@ class GraphDrawLayerView: UIView {
 
                 let fullWidth2 = round(self.availbleFrame.width / newGraphContext.interval)
                 let xScale2 = fullWidth2 / CGFloat(newGraphContext.values.count - 1)
-                let numberOfAdditionalPoints2 = 16 * xScale2
+                let numberOfAdditionalPoints2 = 16 * (1 / xScale2)
                 let steps2 = newGraphContext.stepsBaseOn(width: fullWidth2)
                 let numberOfDots2 = self.availbleFrame.width / steps2.pixels + numberOfAdditionalPoints2 * 2
 
