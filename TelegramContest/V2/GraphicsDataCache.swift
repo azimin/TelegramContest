@@ -36,7 +36,7 @@ class GraphicsDataCache {
 
         let fullWidth = round(size.width / range.interval)
         let offset = range.lowerBound * fullWidth
-        let xScale = fullWidth / CGFloat(self.points.count - 1)
+        let xScale = fullWidth / CGFloat(self.points.count)
         let numberOfAdditionalPoints = Int(16 / xScale) + 2
 
         let newRange = (range.lowerBound)..<(range.upperBound)

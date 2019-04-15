@@ -266,7 +266,7 @@ class GraphContentView: UIView {
         self.yAxisOverlays.forEach({ $0.frame = graphFrame })
         self.secondYAxisLabelOverlay.frame = graphFrame
         self.dateLabels.frame = CGRect(x: Constants.offset, y: graphHeight + 20, width: self.frame.size.width - Constants.offset * 2, height: Constants.labelsHeight)
-        self.selectionViews.forEach({ $0.frame = CGRect(x: 0, y: 6, width: self.frame.size.width, height: graphHeight + 8) })
+        self.selectionViews.forEach({ $0.frame = CGRect(x: 0, y: 6, width: self.frame.size.width, height: graphHeight + 14) })
         self.graphDrawLayers.forEach({ $0.offset = 20 }) // self.graphDrawLayers.forEach({ $0.offset = 6 })
         self.pieChartNumbersView?.frame = graphFrame
         self.updateShadow()
