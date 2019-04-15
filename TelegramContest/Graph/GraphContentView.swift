@@ -250,7 +250,6 @@ class GraphContentView: UIView {
         self.preveous = self.frame
 
         let graphHeight = self.frame.height - Constants.labelsHeight - 20
-        let topFrame = CGRect(x: Constants.offset, y: 20, width: self.frame.size.width - Constants.offset * 2, height: graphHeight)
         let graphFrame = CGRect(x: Constants.offset, y: 0, width: self.frame.size.width - Constants.offset * 2, height: graphHeight + 20)
         self.graphView.frame = graphFrame
         self.graphDrawLayers.forEach({ $0.frame = self.graphView.bounds })
@@ -298,10 +297,10 @@ class GraphContentView: UIView {
         self.addSubview(self.selectionLineView)
         self.graphView.layer.masksToBounds = true
         self.addSubview(self.graphView)
+        self.addSubview(self.graphSelectionOverlayView)
         self.addSubview(self.yAxisLabelOverlay)
         self.addSubview(self.yAxisLineOverlay)
         self.addSubview(self.shadowImage)
-        self.addSubview(self.graphSelectionOverlayView)
         self.graphSelectionOverlayView.layer.masksToBounds = true
         self.addSubview(self.selectionPlateView)
 
@@ -832,12 +831,6 @@ class GraphContentView: UIView {
                                                   dateStyle: dateStyle,
                                                   shouldShowPercentage: self.style == .percentStackedBar,
                                                   shouldRespectCahce: shouldRespectCahce) })
-
-            if #available(iOS 10.0, *) {
-                let lightImpactFeedbackGenerator = UIImpactFeedbackGenerator(style: .light)
-                lightImpactFeedbackGenerator.prepare()
-                lightImpactFeedbackGenerator.impactOccurred()
-            }
         }
 
         if overlays.count > 0 {
