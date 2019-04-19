@@ -76,6 +76,7 @@ class PieChartNumbersView: UIView {
                 valuesCounter.animate(from: oldValue, to: value.value) { (value) in
                     label.text = "\(value)%"
                 }
+                fontCounter.reset()
                 fontCounter.animate(from: currentSize, to: Int(fontSize * 2)) { (value) in
                     label.font = UIFont.font(with: .bold, size: CGFloat(value) / 2)
                 }

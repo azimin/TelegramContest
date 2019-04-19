@@ -22,6 +22,8 @@ class AnimationCounter {
     }
 
     func reset() {
+        self.block = nil
+        self.timer?.invalidate()
         self.cachedFrom = 0
         self.cachedTo = 0
         self.progress = 0
