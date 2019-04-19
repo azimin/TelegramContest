@@ -355,7 +355,7 @@ class DateSelectionView: UIView {
 
         let valueLabel = UILabel()
         valueLabel.textAlignment = .right
-        valueLabel.font = UIFont.font(with: .medium, size: 12)
+        valueLabel.font = UIFont.font(with: .bold, size: 12)
         valueLabel.textColor = valueColor
         valueLabel.text = value
         valueLabel.backgroundColor = self.theme.configuration.mainBackgroundColor

@@ -128,7 +128,8 @@ class PairAnimationCounter {
 
     @objc
     func fireTimer() {
-        let elapsed = CACurrentMediaTime() - self.startTime
+        var elapsed = CACurrentMediaTime() - self.startTime
+        elapsed = min(elapsed, 0.03)
         self.progress += CGFloat(elapsed) * 8
         self.startTime = CACurrentMediaTime()
         if self.progress >= 1 {
