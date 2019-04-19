@@ -782,7 +782,7 @@ class GraphDrawLayerView: UIView {
 
         let fullWidth = round(self.availbleFrame.width / graphContext.interval)
         let offset = graphContext.range.lowerBound * fullWidth
-        let steps = graphContext.stepsBaseOn(width: fullWidth)
+        let pixels = graphContext.style == .area ? fullWidth / CGFloat(graphContext.values.count - 1) : fullWidth / CGFloat(graphContext.values.count)
 
         var delta: CGFloat = 10000
         var cachedPosition: CGFloat = 0
@@ -795,9 +795,9 @@ class GraphDrawLayerView: UIView {
         let maxMinDelta = max - min
         let devide = CGFloat(min) / CGFloat(maxMinDelta)
 
-        for index in 0..<(graphContext.values.count / steps.points) {
-            let value: Int = graphContext.values[index] * steps.points
-            let x = steps.pixels * CGFloat(index) - offset
+        for index in 0..<graphContext.values.count {
+            let value: Int = graphContext.values[index]
+            let x = pixels * CGFloat(index) - offset
             let yPercent = (CGFloat(value) / CGFloat(maxMinDelta)) - devide
 
             if abs(x - position) < delta {
@@ -805,7 +805,7 @@ class GraphDrawLayerView: UIView {
                 cachedPosition = x
                 cachedHeight = yPercent * self.availbleFrame.height
                 cachedYPosition = (1 - yPercent) * self.availbleFrame.height
-                cachedIndex = index * steps.points
+                cachedIndex = index
             }
         }
 
