@@ -140,6 +140,8 @@ class YAxisOverlayView: UIView {
     var theme: Theme = .default {
         didSet {
             self.items.values.forEach({ $0.view.theme = theme })
+            self.onReuse.forEach({ $0.theme = theme })
+            self.onRemoving.forEach({ $0.theme = theme })
         }
     }
 
