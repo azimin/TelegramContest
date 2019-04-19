@@ -213,6 +213,7 @@ class GraphDrawLayerView: UIView {
             self.pathLayer.lineWidth = self.lineWidth
             self.selectedPath.lineWidth = self.lineWidth
             self.pathLayer.strokeColor = color.cgColor
+            self.selectedPath.fillColor = self.theme.configuration.backgroundColor.cgColor
             self.selectedPath.strokeColor = color.cgColor
             self.pathLayer.fillColor = UIColor.clear.cgColor
             self.pathLayer.lineJoin = CAShapeLayerLineJoin.round
