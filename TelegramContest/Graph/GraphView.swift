@@ -184,11 +184,17 @@ class GraphView: UIView {
         self.graphContentView.updateZoomStep(newValue: zoomStep, override: false)
         self.graphContentView.updateDataSouce(dataSource, enableRows: enableRows, animated: true, zoom: zoom, zoomed: zoomed)
 
-        self.graphControlView.updateDataSouce(dataSource, enableRows: enableRows, animated: true, zoom: zoom)
-        
-        shouldUpdateRange = false
-        self.graphControlView.control.update(range: range, animated: true)
-        shouldUpdateRange = true
+        if let zoom = zoom, !zoom.index.isInside, zoom.shouldReplaceRangeController {
+            shouldUpdateRange = false
+            self.graphControlView.control.update(range: range, animated: false)
+            shouldUpdateRange = true
+            self.graphControlView.updateDataSouce(dataSource, enableRows: enableRows, animated: true, zoom: zoom)
+        } else {
+            self.graphControlView.updateDataSouce(dataSource, enableRows: enableRows, animated: true, zoom: zoom)
+            shouldUpdateRange = false
+            self.graphControlView.control.update(range: range, animated: true)
+            shouldUpdateRange = true
+        }
 
         self.updateDataSource(dataSource: dataSource, enableRows: enableRows, skip: true, zoomed: zoomed)
         self.updateSelectedRange(range: range, skip: true)

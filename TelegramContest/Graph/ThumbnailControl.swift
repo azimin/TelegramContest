@@ -118,9 +118,12 @@ class ThumbnailControl: UIControl {
         if animated {
             self.animate(layer: self.beforeOverlay, toPath: path1)
             self.animate(layer: self.endOverlay, toPath: path2)
+            self.beforeOverlay.path = path1
+            self.endOverlay.path = path2
+        } else {
+            self.beforeOverlay.path = path1
+            self.endOverlay.path = path2
         }
-        self.beforeOverlay.path = path1
-        self.endOverlay.path = path2
     }
 
     func animate(layer: CAShapeLayer, toPath: CGPath) {

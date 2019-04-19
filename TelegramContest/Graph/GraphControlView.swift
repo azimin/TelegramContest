@@ -30,7 +30,7 @@ class GraphControlView: UIView {
     func updateDataSouce(_ dataSource: GraphDataSource?, enableRows: [Int], animated: Bool, zoom: Zoom?) {
         var animated = animated
         if let zoom = zoom {
-            if zoom.shouldReplaceRangeController {
+            if zoom.shouldReplaceRangeController, zoom.index.isInside {
                 self.triggerFilterView(zoom: zoom, dataSource: dataSource, enableRows: enableRows)
             } else if zoom.style == .pie || zoom.style == .zooming {
                 self.triggerPieOpacity()
@@ -175,12 +175,9 @@ class GraphControlView: UIView {
             }
         }
 
-//        if let zoom = zoom, zoom.style == .pie {
-//            self.contentView.isHidden = false
-//            let contentImage = self.contentView.asImage()
-//            self.showContentView(image: contentImage)
-//            self.contentView.isHidden = true
-//        }
+        if let zoom = zoom, zoom.shouldReplaceRangeController, !zoom.index.isInside {
+            self.triggerFilterView(zoom: zoom, dataSource: dataSource, enableRows: self.enabledRows)
+        }
 
         self.updateFrame()
     }
@@ -272,7 +269,10 @@ class GraphControlView: UIView {
     }
 
     func hideFilterView() {
-        self.showContentView(image: self.contentImage ?? UIImage())
+        self.contentView.isHidden = false
+        let imageView = self.contentView.asImage()
+        self.contentView.isHidden = true
+        self.showContentView(image: imageView)
 
         let filterImage = self.filtersView.asImage()
         let filterImageView = UIImageView(image: filterImage)
