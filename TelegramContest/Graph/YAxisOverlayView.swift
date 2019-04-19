@@ -201,7 +201,10 @@ class YAxisOverlayView: UIView {
                 continue
             }
 
-            let percent = min(CGFloat(item.value - self.minValue) / CGFloat(self.maxValue - self.minValue), 2)
+            let percent = CGFloat(item.value - self.minValue) / CGFloat(self.maxValue - self.minValue)
+            var height = self.frame.height * (1 - percent)
+            height = max(min(height, self.frame.height * 1.5), self.frame.height * -1.5)
+
             self.onRemoving.append(item.view)
             if animated {
                 UIView.animate(withDuration: 0.25, delay: 0, options: [UIView.AnimationOptions.curveEaseOut], animations: {
@@ -265,7 +268,11 @@ class YAxisOverlayView: UIView {
         view.alpha = 0
 
         let height = (self.frame.height - 20)
-        view.center = CGPoint(x: view.center.x, y: height * (1 - oldPercent) - view.frame.height / 2 + 20)
+
+        var center = height * (1 - oldPercent)
+        center = max(min(center, height * 1.5), height * -0.5)
+
+        view.center = CGPoint(x: view.center.x, y: center - view.frame.height / 2 + 20)
         let item = Item(view: view, value: newValue)
         self.items[i] = item
         view.label?.text = item.valueString
