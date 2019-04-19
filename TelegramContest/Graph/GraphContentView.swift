@@ -277,9 +277,13 @@ class GraphContentView: UIView {
         self.updateHierarhy()
     }
 
+    private var isThemeUpdated = false
     var theme: Theme = .default {
         didSet {
             let config = theme.configuration
+            if oldValue.configuration.isLight != config.isLight {
+                isThemeUpdated = true
+            }
             self.backgroundColor = config.backgroundColor
             self.graphDrawLayers.forEach({ $0.theme = theme })
             self.selectionViews.forEach({ $0.theme = theme })
@@ -852,7 +856,14 @@ class GraphContentView: UIView {
         self.graphSelectionOverlayView.hide(animated: true)
     }
 
-    private var selectedLocation: CGPoint?
+    func forceShowSelection() {
+        if let value = self.cachedSelectedLocation {
+            self.showSelection(location: value, animated: false, shouldRespectCahce: false)
+        }
+    }
+
+    var selectedLocation: CGPoint?
+    private var cachedSelectedLocation: CGPoint?
 
     private func showSelection(location: CGPoint, animated: Bool, shouldRespectCahce: Bool) {
         guard let dataSource = self.dataSource else {
@@ -867,6 +878,7 @@ class GraphContentView: UIView {
         }
 
         self.selectedLocation = location
+        self.cachedSelectedLocation = location
         var selection: GraphDrawLayerView.Selection?
         var overlays: [SelectOverlay] = []
 

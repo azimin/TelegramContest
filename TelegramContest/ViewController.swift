@@ -299,6 +299,9 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         case 0:
             let dataSource = section.currentDataSource
             let cell = tableView.dequeueReusableCell(withIdentifier: "GraphTableViewCell\(section.graph.rawValue)", for: indexPath) as! GraphTableViewCell
+            let themeUpdated = cell.graphView.theme.configuration.isLight != self.theme.configuration.isLight
+            let isSelected = cell.graphView.graphContentView.selectedLocation != nil
+
             cell.graphView.style = dataSource.style
             cell.graphView.theme = theme
             cell.graphView.updateSelectedRange(range: section.currentSelectedRange, skip: false)
@@ -393,6 +396,11 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
             cell.graphView.updateZoomStep(newValue: section.currentZoomStep)
             cell.graphView.updateSelectedRange(range: section.currentSelectedRange, skip: false)
             cell.graphView.updateEnabledRows(section.enabledRows, animated: false)
+
+            if themeUpdated && isSelected {
+                cell.graphView.graphContentView.forceShowSelection()
+            }
+            
             return cell
         default:
             let cell = tableView.dequeueReusableCell(withIdentifier: "FiltersTableViewCell", for: indexPath) as! FiltersTableViewCell

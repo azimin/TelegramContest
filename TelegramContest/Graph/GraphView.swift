@@ -78,6 +78,7 @@ class GraphView: UIView {
             let config = theme.configuration
             self.backgroundColor = config.backgroundColor
             self.zoomOutButton.setTitleColor(config.zoomOutText, for: .normal)
+            self.zoomOutButton.tintColor = config.zoomOutText
             self.updateTheme()
         }
     }
@@ -193,7 +194,7 @@ class GraphView: UIView {
         self.updateSelectedRange(range: range, skip: true)
     }
 
-    private let graphContentView = GraphContentView()
+    let graphContentView = GraphContentView()
     private let graphControlView = GraphControlView(dataSource: nil, selectedRange: 0..<1)
 
     private let titleLabel = UILabel()

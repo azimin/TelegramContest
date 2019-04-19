@@ -36,7 +36,6 @@ class ViewsOverlayView: UIView {
             let config = theme.configuration
             self.backgroundColor = config.backgroundColor
             self.allItems.forEach({ $0.label.textColor = config.axisTextColor; $0.label.backgroundColor = config.backgroundColor })
-            self.labelsToReuse.forEach({ $0.textColor = config.axisTextColor; $0.backgroundColor = config.backgroundColor })
         }
     }
 
@@ -128,6 +127,8 @@ class ViewsOverlayView: UIView {
                 }
                 label.isHidden = false
                 label.alpha = 1
+                label.textColor = config.axisTextColor
+                label.backgroundColor = config.backgroundColor
             }
             label.text = item.text
             label.alpha = self.calculateAlpha(baseOn: item.alpha)
@@ -147,8 +148,8 @@ class ViewsOverlayView: UIView {
             return
         }
         let visualItem = self.allItems[index]
-        self.allItems.remove(at: index)
         self.onRemoving.append(visualItem.label)
+        self.allItems.remove(at: index)
 
         UIView.animate(withDuration: 0.25, animations: {
             visualItem.label.alpha = 0
