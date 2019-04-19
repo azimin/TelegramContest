@@ -116,7 +116,7 @@ class DateSelectionView: UIView {
         }
     }
 
-    func show(position: CGFloat, graph: GraphDataSource, enabledRows: [Int], index: Int, height: CGFloat, canZoom: Bool, dateStyle: DateStyle, shouldShowPercentage: Bool, shouldRespectCahce: Bool) {
+    func show(position: CGFloat, graph: GraphDataSource, enabledRows: [Int], index: Int, height: CGFloat, canZoom: Bool, dateStyle: DateStyle, shouldShowPercentage: Bool, shouldRespectCahce: Bool, shouldShowAll: Bool) {
         self.canZoom = canZoom
         self.currentIndex = index
         switch self.style {
@@ -125,10 +125,10 @@ class DateSelectionView: UIView {
         case .plate:
             if let plate = plate {
                 if plate.isHidden || !shouldRespectCahce {
-                    self.preparePlate(graph: graph, enabledRows: enabledRows, canZoom: canZoom, dateStyle: dateStyle, shouldShowPercentage: shouldShowPercentage)
-                    self.updatePlate(position: position, graph: graph, enabledRows: enabledRows, index: index, availableHeight: height, dateStyle: dateStyle, shouldShowPercentage: shouldShowPercentage)
+                    self.preparePlate(graph: graph, enabledRows: enabledRows, canZoom: canZoom, dateStyle: dateStyle, shouldShowPercentage: shouldShowPercentage, shouldShowAll: shouldShowAll)
+                    self.updatePlate(position: position, graph: graph, enabledRows: enabledRows, index: index, availableHeight: height, dateStyle: dateStyle, shouldShowPercentage: shouldShowPercentage, shouldShowAll: shouldShowAll)
                 } else {
-                    self.updatePlate(position: position, graph: graph, enabledRows: enabledRows, index: index, availableHeight: height, dateStyle: dateStyle, shouldShowPercentage: shouldShowPercentage)
+                    self.updatePlate(position: position, graph: graph, enabledRows: enabledRows, index: index, availableHeight: height, dateStyle: dateStyle, shouldShowPercentage: shouldShowPercentage, shouldShowAll: shouldShowAll)
                 }
             }
         }
@@ -144,7 +144,7 @@ class DateSelectionView: UIView {
         line.frame = CGRect(x: position, y: additionalOffset, width: 1, height: self.frame.height - additionalOffset)
     }
 
-    func updatePlate(position: CGFloat, graph: GraphDataSource, enabledRows: [Int], index: Int, availableHeight: CGFloat, dateStyle: DateStyle, shouldShowPercentage: Bool) {
+    func updatePlate(position: CGFloat, graph: GraphDataSource, enabledRows: [Int], index: Int, availableHeight: CGFloat, dateStyle: DateStyle, shouldShowPercentage: Bool, shouldShowAll: Bool) {
         guard let plate = self.plate else {
             return
         }
@@ -178,10 +178,17 @@ class DateSelectionView: UIView {
             }
         }
 
+        var all: Int = 0
         for (labelIndex, row) in enabledRows.sorted().enumerated() {
             let rowValue = graph.yRows[row]
             let valueLabel = self.numberLabels[labelIndex]
-            valueLabel.text = "\(rowValue.values[index])"
+            let value = rowValue.values[index]
+            all += value
+            valueLabel.text = "\(value)"
+        }
+
+        if shouldShowAll {
+            self.numberLabels.last?.text = "\(all)"
         }
 
         var platePosition = position
@@ -217,7 +224,7 @@ class DateSelectionView: UIView {
         self.button.frame = plate.bounds
     }
 
-    func preparePlate(graph: GraphDataSource, enabledRows: [Int], canZoom: Bool, dateStyle: DateStyle, shouldShowPercentage: Bool) {
+    func preparePlate(graph: GraphDataSource, enabledRows: [Int], canZoom: Bool, dateStyle: DateStyle, shouldShowPercentage: Bool, shouldShowAll: Bool) {
         guard let plate = self.plate else {
             return
         }
@@ -260,38 +267,35 @@ class DateSelectionView: UIView {
                 self.percentageLabels.append(percentageLabel)
             }
 
-            let valueLabel = UILabel()
-            valueLabel.textAlignment = .right
-            valueLabel.font = UIFont.font(with: .medium, size: 12)
-            valueLabel.textColor = rowValue.color
-            valueLabel.text = "\(rowValue.values.max() ?? 0)"
-            valueLabel.backgroundColor = self.theme.configuration.mainBackgroundColor
-            let valueSize = valueLabel.sizeThatFits(CGSize(width: 10000, height: 50))
-            let valueWidth = valueSize.width + 8
-            if valueWidth > maxValueWidth {
-                maxValueWidth = valueWidth
-            }
-            if height < valueSize.height {
-                height = valueSize.height
-            }
-            plate.addSubview(valueLabel)
-            self.numberLabels.append(valueLabel)
+            let result = self.prepareLabels(value: "\(rowValue.values.max() ?? 0)", valueColor: rowValue.color, name: rowValue.name, maxValueWidth: maxValueWidth, maxNameWidth: maxNameWidth)
 
-            let nameLabel = UILabel()
-            nameLabel.textAlignment = .left
-            nameLabel.font = UIFont.font(with: .regular, size: 12)
-            nameLabel.textColor = self.theme.configuration.isLight ? UIColor(hex: "6D6D72") : UIColor.white
-            nameLabel.backgroundColor = self.theme.configuration.mainBackgroundColor
-            nameLabel.text = rowValue.name
-            let nameSize = nameLabel.sizeThatFits(CGSize(width: 10000, height: 50))
-            if nameSize.width > maxNameWidth {
-                maxNameWidth = nameSize.width
+            maxNameWidth = result.maxNameWidth
+            maxValueWidth = result.maxValueWidth
+
+            if height < result.height {
+                height = result.height
             }
-            if height < nameSize.height {
-                height = nameSize.height
-            }
-            plate.addSubview(nameLabel)
-            self.namesLabels.append(nameLabel)
+
+            plate.addSubview(result.valueLable)
+            self.numberLabels.append(result.valueLable)
+
+            plate.addSubview(result.nameLabel)
+            self.namesLabels.append(result.nameLabel)
+        }
+
+        if shouldShowAll {
+            let rowValue = (graph.yRows[enabledRows.first ?? 0].values.max() ?? 0) * 4
+            let color = self.theme.configuration.isLight ? UIColor(hex: "6D6D72") : UIColor.white
+            let result = self.prepareLabels(value: "\(rowValue)", valueColor: color, name: "All", maxValueWidth: maxValueWidth, maxNameWidth: maxNameWidth)
+
+            maxNameWidth = result.maxNameWidth
+            maxValueWidth = result.maxValueWidth
+
+            plate.addSubview(result.valueLable)
+            self.numberLabels.append(result.valueLable)
+
+            plate.addSubview(result.nameLabel)
+            self.namesLabels.append(result.nameLabel)
         }
 
         let offset: CGFloat = 12
@@ -341,6 +345,38 @@ class DateSelectionView: UIView {
         let plateWidth = offset * 2 + leftWidth
         let plateHeight = y
         plate.frame = CGRect(x: 0, y: 0, width: plateWidth, height: plateHeight)
+    }
+
+    typealias LabelsResult = (valueLable: UILabel, nameLabel: UILabel, maxValueWidth: CGFloat, maxNameWidth: CGFloat, height: CGFloat)
+
+    private func prepareLabels(value: String, valueColor: UIColor, name: String, maxValueWidth: CGFloat, maxNameWidth: CGFloat) -> LabelsResult {
+        var maxValueWidth = maxValueWidth
+        var maxNameWidth = maxNameWidth
+
+        let valueLabel = UILabel()
+        valueLabel.textAlignment = .right
+        valueLabel.font = UIFont.font(with: .medium, size: 12)
+        valueLabel.textColor = valueColor
+        valueLabel.text = value
+        valueLabel.backgroundColor = self.theme.configuration.mainBackgroundColor
+        let valueSize = valueLabel.sizeThatFits(CGSize(width: 10000, height: 50))
+        let valueWidth = valueSize.width + 8
+        if valueWidth > maxValueWidth {
+            maxValueWidth = valueWidth
+        }
+
+        let nameLabel = UILabel()
+        nameLabel.textAlignment = .left
+        nameLabel.font = UIFont.font(with: .regular, size: 12)
+        nameLabel.textColor = self.theme.configuration.isLight ? UIColor(hex: "6D6D72") : UIColor.white
+        nameLabel.backgroundColor = self.theme.configuration.mainBackgroundColor
+        nameLabel.text = name
+        let nameSize = nameLabel.sizeThatFits(CGSize(width: 10000, height: 50))
+        if nameSize.width > maxNameWidth {
+            maxNameWidth = nameSize.width
+        }
+
+        return (valueLabel, nameLabel, maxValueWidth, maxNameWidth, valueSize.height)
     }
 
     private func getDateComponents(_ date: Date, dateStyle: DateStyle) -> String {

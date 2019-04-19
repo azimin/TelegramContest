@@ -914,7 +914,8 @@ class GraphContentView: UIView {
                                                   canZoom: !self.zoomed,
                                                   dateStyle: dateStyle,
                                                   shouldShowPercentage: self.style == .percentStackedBar,
-                                                  shouldRespectCahce: shouldRespectCahce) })
+                                                  shouldRespectCahce: shouldRespectCahce,
+                                                  shouldShowAll: self.style == .stackedBar) })
         }
 
         if overlays.count > 0 {
