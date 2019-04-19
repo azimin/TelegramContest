@@ -405,6 +405,11 @@ class GraphContentView: UIView {
             minValue = 0
         }
 
+        if minValue > 0 {
+            minValue = minValue - Int(CGFloat(maxValue - minValue) * 0.05)
+            minValue = max(minValue, 0)
+        }
+
         if enabledRows.isEmpty {
             if let max = self.lastVisible?.graphContext?.maxValue {
                 maxValue = max
