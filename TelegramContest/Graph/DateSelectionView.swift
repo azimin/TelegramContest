@@ -192,15 +192,12 @@ class DateSelectionView: UIView {
         }
 
         var platePosition = position
-        if platePosition - plateWidth / 2 < 16 {
-            platePosition -= (platePosition - 16 - plateWidth / 2)
-        } else if platePosition + plateWidth / 2 > (self.frame.width - 16) {
-            platePosition += (self.frame.width - 16 - platePosition - plateWidth / 2)
-        }
+        var changeBaseOnHeight = false
 
         if availableHeight + offset * 3 > (self.frame.height - plateHeigh) {
             let range = (platePosition - plateWidth / 2)..<(platePosition + plateWidth / 2)
             if range.contains(position) {
+                changeBaseOnHeight = true
                 if position > self.frame.width / 2 {
                     platePosition = position - plateWidth / 2 - offset
                 } else {
@@ -208,6 +205,16 @@ class DateSelectionView: UIView {
                 }
             }
         }
+
+        let cornerOffset: CGFloat = changeBaseOnHeight ? 4 : 16
+
+
+        if platePosition - plateWidth / 2 < cornerOffset {
+            platePosition -= (platePosition - cornerOffset - plateWidth / 2)
+        } else if platePosition + plateWidth / 2 > (self.frame.width - cornerOffset) {
+            platePosition += (self.frame.width - cornerOffset - platePosition - plateWidth / 2)
+        }
+
 
         let date = graph.xRow.dates[index]
         let dateString = self.getDateComponents(date, dateStyle: dateStyle)
