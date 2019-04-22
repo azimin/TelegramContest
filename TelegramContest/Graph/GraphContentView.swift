@@ -406,7 +406,7 @@ class GraphContentView: UIView {
             minValue = 0
         }
 
-        if minValue > 0 {
+        if minValue > 0 && minValue != Int.max {
             minValue = minValue - Int(CGFloat(maxValue - minValue) * 0.05)
             minValue = max(minValue, 0)
         }
